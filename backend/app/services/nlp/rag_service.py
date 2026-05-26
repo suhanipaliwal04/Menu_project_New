@@ -31,10 +31,10 @@ class RAGService:
     End-to-end RAG pipeline for location-aware multi-restaurant food discovery.
     """
 
-    def __init__(self, top_k: int = 15):
+    def __init__(self, top_k: int = 10):
         self.top_k      = top_k
         self.parser     = get_query_parser()
-        self._hf_client = None
+        self._groq_client = None
 
     # ── Hard vs Soft filter split ──────────────────────────────────────────────
     HARD_FILTER_KEYS = {"is_veg", "max_price", "min_price"}
@@ -61,17 +61,23 @@ class RAGService:
         filters = self.parser.parse(query)
         logger.info(f"RAG: parsed filters = {filters}")
 
-        # 2. Hard SQL filters only (area + price + veg)
-        hard_filters = {k: v for k, v in filters.items()
-                        if k in self.HARD_FILTER_KEYS and v is not None}
-        hard_filters["semantic_query"] = filters.get("semantic_query", query)
+        # 2. Pass filters to EmbeddingService (SQL where clauses + soft boosting)
+        search_filters = {k: v for k, v in filters.items()
+                          if k in self.HARD_FILTER_KEYS and v is not None}
+        search_filters["semantic_query"] = filters.get("semantic_query", query)
+        
+        # Inject soft-boost properties and excude keywords
+        if filters.get("section_name"):
+            search_filters["section_name"] = filters["section_name"]
+        if filters.get("exclude_keywords"):
+            search_filters["exclude_keywords"] = filters["exclude_keywords"]
 
         restaurant_ids = [restaurant_id] if restaurant_id else None
 
         with EmbeddingService() as svc:
             items = svc.hybrid_search(
                 query=query,
-                filters=hard_filters,
+                filters=search_filters,
                 top_k=self.top_k,
                 restaurant_ids=restaurant_ids,
                 area_name=area_name or None,
@@ -153,12 +159,12 @@ Write a warm, helpful 3-5 sentence recommendation:
 - Do NOT invent items or prices not in the list above"""
 
         try:
-            client = self._get_hf_client()
+            client = self._get_groq_client()
             if client is None:
                 return self._fallback_answer(query, items)
 
-            response = client.chat_completion(
-                model="Qwen/Qwen2.5-7B-Instruct",
+            response = client.chat.completions.create(
+                model="llama-3.1-8b-instant",  # Groq's fast llama3 model
                 messages=[
                     {"role": "system", "content": system_msg},
                     {"role": "user",   "content": prompt},
@@ -183,18 +189,18 @@ Write a warm, helpful 3-5 sentence recommendation:
             + ", ".join(parts) + ". All options were selected based on your query."
         )
 
-    def _get_hf_client(self):
-        if self._hf_client is not None:
-            return self._hf_client
-        hf_key = getattr(settings, "HUGGINGFACE_API_KEY", None)
-        if not hf_key:
+    def _get_groq_client(self):
+        if self._groq_client is not None:
+            return self._groq_client
+        groq_key = getattr(settings, "GROQ_API_KEY", None)
+        if not groq_key:
             return None
         try:
-            from huggingface_hub import InferenceClient
-            self._hf_client = InferenceClient(token=hf_key)
-            return self._hf_client
+            from groq import Groq
+            self._groq_client = Groq(api_key=groq_key)
+            return self._groq_client
         except ImportError:
-            logger.warning("huggingface_hub not installed.")
+            logger.warning("groq SDK not installed.")
             return None
 
 

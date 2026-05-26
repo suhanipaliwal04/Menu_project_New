@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql://postgres:password@db.xxxxx.supabase.co:5432/postgres?sslmode=require"
     DB_ECHO: bool = False
     
-    # Supabase (Optional - for future features)
+    # Supabase
     SUPABASE_URL: Optional[str] = None
     SUPABASE_ANON_KEY: Optional[str] = None
     SUPABASE_SERVICE_KEY: Optional[str] = None
@@ -40,6 +40,7 @@ class Settings(BaseSettings):
     LLM_MODEL: str = "gpt-4-turbo-preview"
     LLM_TEMPERATURE: float = 0.3
     HUGGINGFACE_API_KEY: Optional[str] = None
+    GROQ_API_KEY: Optional[str] = None
     LLM_PROVIDER: Optional[str] = None
     
     # Embeddings
@@ -51,7 +52,7 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE: int = 10 * 1024 * 1024  # 10MB
     ALLOWED_EXTENSIONS: set = {".jpg", ".jpeg", ".png", ".pdf"}
     
-    # CORS
+    # CORS — do NOT use "*" with allow_credentials=True (browsers block it)
     CORS_ORIGINS: list = [
         "*",
         "http://localhost:3000",
