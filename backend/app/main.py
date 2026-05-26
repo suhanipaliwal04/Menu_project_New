@@ -22,8 +22,8 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=True,
+    allow_origins=["*"],       # Public API — wildcard is fine without credentials
+    allow_credentials=False,   # MUST be False when using "*" wildcard (browser rule)
     allow_methods=["*"],
     allow_headers=["*"],
 )
