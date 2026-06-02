@@ -23,6 +23,10 @@ class AppConstants {
   static const String dineCheckEndpoint    = '/dine/check-availability';
   static const String dineConfirmEndpoint  = '/dine/confirm-booking';
 
+  // ── Admin Endpoints ──────────────────────────────────────────────────────────
+  static const String adminLoginEndpoint   = '/auth/admin-login';
+  static const String adminEndpoint        = '/admin';
+
   // ── Timeouts ────────────────────────────────────────────────────────────────
   static const int connectTimeoutSeconds  = 15;
   static const int receiveTimeoutSeconds  = 60;  // RAG can take a moment

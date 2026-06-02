@@ -124,7 +124,6 @@ class VoiceActionHandler {
       var params = <String, dynamic>{};
       if (time.isNotEmpty) {
         params['time'] = time;
-        _checkMockAvailability(params);
       }
       if (item.isNotEmpty) {
         params['item'] = item;
@@ -206,9 +205,6 @@ class VoiceActionHandler {
       final newTime = _extractTime(q);
       if (newTime.isNotEmpty) {
         updatedParams['time'] = newTime;
-        if (pendingAction.type == VoiceActionType.scheduleTakeaway) {
-          _checkMockAvailability(updatedParams);
-        }
       }
     } else if (curr == 'alternative_time_confirm') {
       if (_isYes(q)) {
@@ -247,14 +243,7 @@ class VoiceActionHandler {
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
-  void _checkMockAvailability(Map<String, dynamic> params) {
-    final t = params['time'] as String;
-    if (t.contains('7:00') || t.contains('8:00') || t.contains('9:00')) {
-      params['time_unavailable'] = true;
-      params['original_time'] = t;
-      params['time'] = t.replaceAll(':00', ':30');
-    }
-  }
+
 
   bool _isYes(String q) => _matchesAny(q, ['yes', 'yeah', 'yep', 'sure', 'ok', 'okay', 'proceed', 'go ahead', 'fine', 'alright', 'sounds good', 'great']);
   bool _isNo(String q)  => _matchesAny(q, ['no', 'nope', 'cancel', 'wait', 'stop', 'abort', "don't", 'nevermind']);

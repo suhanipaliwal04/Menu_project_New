@@ -136,6 +136,21 @@ COMMENT ON COLUMN menu_uploads.ocr_status IS 'Status: pending, processing, compl
 COMMENT ON COLUMN menu_uploads.ocr_result IS 'Raw OCR output stored as JSON';
 COMMENT ON COLUMN menu_uploads.structured_data IS 'LLM-structured menu data as JSON';
 
+-- Bookings table: Table bookings requested via voice or app
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS bookings (
+    booking_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    restaurant_id UUID REFERENCES restaurants(restaurant_id) ON DELETE CASCADE NOT NULL,
+    party_size INTEGER NOT NULL,
+    time_slot VARCHAR(50) NOT NULL,
+    status VARCHAR(20) DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'CONFIRMED', 'REJECTED', 'CANCELLED')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE bookings IS 'Table bookings pending approval from restaurant admin';
+COMMENT ON COLUMN bookings.status IS 'Booking status (PENDING by default)';
+
 -- ============================================================================
 -- CREATE INDEXES FOR PERFORMANCE
 -- ============================================================================
@@ -192,6 +207,12 @@ CREATE TRIGGER update_restaurants_updated_at
 DROP TRIGGER IF EXISTS update_menu_items_updated_at ON menu_items;
 CREATE TRIGGER update_menu_items_updated_at 
     BEFORE UPDATE ON menu_items
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_bookings_updated_at ON bookings;
+CREATE TRIGGER update_bookings_updated_at 
+    BEFORE UPDATE ON bookings
     FOR EACH ROW 
     EXECUTE FUNCTION update_updated_at_column();
 
