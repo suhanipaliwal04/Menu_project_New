@@ -171,3 +171,100 @@ class VoiceChatResponse {
             json['filters_used'] as Map<String, dynamic>? ?? {}),
       );
 }
+
+// ── Dine-In Booking Models ─────────────────────────────────────────────────────
+
+/// A nearby restaurant returned when seats are unavailable at the requested venue.
+class NearbyRestaurant {
+  final String id;
+  final String name;
+  final String cuisine;
+  final String area;
+  final double rating;
+
+  const NearbyRestaurant({
+    required this.id,
+    required this.name,
+    required this.cuisine,
+    required this.area,
+    required this.rating,
+  });
+
+  factory NearbyRestaurant.fromJson(Map<String, dynamic> json) =>
+      NearbyRestaurant(
+        id: json['id']?.toString() ?? '',
+        name: json['name']?.toString() ?? '',
+        cuisine: json['cuisine']?.toString() ?? '',
+        area: json['area']?.toString() ?? '',
+        rating: ChatMenuItem._parseDouble(json['rating']) ?? 0.0,
+      );
+}
+
+/// Response from POST /dine/check-availability
+class DineAvailabilityResponse {
+  final bool available;
+  final String? confirmedSlot;
+  final String reason;
+  final List<String> alternativeSlots;
+  final List<NearbyRestaurant> nearbyRestaurants;
+  final String aiMessage;
+
+  const DineAvailabilityResponse({
+    required this.available,
+    this.confirmedSlot,
+    required this.reason,
+    required this.alternativeSlots,
+    required this.nearbyRestaurants,
+    required this.aiMessage,
+  });
+
+  factory DineAvailabilityResponse.fromJson(Map<String, dynamic> json) =>
+      DineAvailabilityResponse(
+        available: json['available'] as bool? ?? false,
+        confirmedSlot: json['confirmed_slot']?.toString(),
+        reason: json['reason']?.toString() ?? 'unknown',
+        alternativeSlots: (json['alternative_slots'] as List<dynamic>? ?? [])
+            .map((e) => e.toString())
+            .toList(),
+        nearbyRestaurants: (json['nearby_restaurants'] as List<dynamic>? ?? [])
+            .map((e) => NearbyRestaurant.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        aiMessage: json['ai_message']?.toString() ?? '',
+      );
+}
+
+/// Response from POST /dine/confirm-booking
+class DineBookingConfirmation {
+  final String bookingId;
+  final String restaurantId;
+  final String restaurantName;
+  final String timeSlot;
+  final int partySize;
+  final String date;
+  final String status;
+  final String aiMessage;
+
+  const DineBookingConfirmation({
+    required this.bookingId,
+    required this.restaurantId,
+    required this.restaurantName,
+    required this.timeSlot,
+    required this.partySize,
+    required this.date,
+    required this.status,
+    required this.aiMessage,
+  });
+
+  factory DineBookingConfirmation.fromJson(Map<String, dynamic> json) =>
+      DineBookingConfirmation(
+        bookingId: json['booking_id']?.toString() ?? '',
+        restaurantId: json['restaurant_id']?.toString() ?? '',
+        restaurantName: json['restaurant_name']?.toString() ?? '',
+        timeSlot: json['time_slot']?.toString() ?? '',
+        partySize: ChatMenuItem._parseInt(json['party_size']) ?? 1,
+        date: json['date']?.toString() ?? '',
+        status: json['status']?.toString() ?? 'confirmed',
+        aiMessage: json['ai_message']?.toString() ?? '',
+      );
+}
+

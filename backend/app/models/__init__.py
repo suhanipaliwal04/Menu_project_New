@@ -6,6 +6,7 @@ from app.models.restaurant import Restaurant
 from app.models.menu import MenuSection, MenuItem
 from app.models.embedding import MenuEmbedding
 from app.models.upload import MenuUpload
+from app.models.booking import Booking
 
 __all__ = [
     "Area",
@@ -13,5 +14,6 @@ __all__ = [
     "MenuSection",
     "MenuItem",
     "MenuEmbedding",
-    "MenuUpload"
+    "MenuUpload",
+    "Booking"
 ]

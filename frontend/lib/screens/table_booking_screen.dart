@@ -2,15 +2,43 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
+import '../models/chat_models.dart';
 
 class TableBookingScreen extends StatefulWidget {
   final String restaurantName;
   final String timeSlot;
+  final int numberOfGuests;
+
+  /// When true, the screen opens directly in the confirmed state
+  /// (voice agent already booked the table).
+  final bool isVoiceConfirmed;
+  final String? bookingId;
+  final String? bookingDate;
+
+  /// If non-empty, show alternative time-slot chips (test case 2).
+  final List<String> alternativeSlots;
+
+  /// If non-empty, show nearby restaurant cards (test case 3).
+  final List<NearbyRestaurant> nearbyRestaurants;
+
+  /// Called when user taps an alternative slot chip.
+  final void Function(String slot)? onAlternativeSlotSelected;
+
+  /// Called when user taps a nearby restaurant card.
+  final void Function(NearbyRestaurant restaurant)? onNearbyRestaurantSelected;
 
   const TableBookingScreen({
     super.key,
     required this.restaurantName,
     required this.timeSlot,
+    this.numberOfGuests = 2,
+    this.isVoiceConfirmed = false,
+    this.bookingId,
+    this.bookingDate,
+    this.alternativeSlots = const [],
+    this.nearbyRestaurants = const [],
+    this.onAlternativeSlotSelected,
+    this.onNearbyRestaurantSelected,
   });
 
   @override
@@ -19,7 +47,7 @@ class TableBookingScreen extends StatefulWidget {
 
 class _TableBookingScreenState extends State<TableBookingScreen> {
   late TextEditingController _timeCtrl;
-  int _guests = 2;
+  late int _guests;
   DateTime _selectedDate = DateTime.now();
   bool _confirmed = false;
   String? _bookingId;
@@ -27,7 +55,13 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
   @override
   void initState() {
     super.initState();
-    _timeCtrl = TextEditingController(text: widget.timeSlot);
+    _timeCtrl   = TextEditingController(text: widget.timeSlot);
+    _guests     = widget.numberOfGuests;
+    _confirmed  = widget.isVoiceConfirmed;
+    _bookingId  = widget.bookingId ??
+        (widget.isVoiceConfirmed
+            ? 'TBL${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}'
+            : null);
   }
 
   @override
@@ -49,7 +83,7 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
     }
     setState(() {
       _confirmed = true;
-      _bookingId = 'TBL${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+      _bookingId ??= 'TBL${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
     });
   }
 
@@ -87,6 +121,137 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
     );
   }
 
+  // ── Success State ─────────────────────────────────────────────────────────
+  Widget _buildSuccess() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          // Confirmed badge
+          Container(
+            padding: const EdgeInsets.all(28),
+            decoration: const BoxDecoration(
+              color: Color(0xFF1A3A2A),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.table_restaurant_rounded,
+                color: Color(0xFF2ECC71), size: 56),
+          )
+              .animate()
+              .scale(
+                  begin: const Offset(0.5, 0.5),
+                  end: const Offset(1.0, 1.0),
+                  curve: Curves.elasticOut,
+                  duration: 800.ms),
+          const SizedBox(height: 24),
+
+          Text('Table Booked! 🥂',
+              style: GoogleFonts.outfit(
+                  color: AppTheme.textPrimary,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w900)),
+          const SizedBox(height: 12),
+
+          // Booking summary card
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppTheme.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                  color: const Color(0xFF2ECC71).withValues(alpha: 0.3)),
+            ),
+            child: Column(
+              children: [
+                _bookingRow(Icons.restaurant_rounded,
+                    widget.restaurantName.isNotEmpty ? widget.restaurantName : 'Restaurant'),
+                const SizedBox(height: 12),
+                _bookingRow(Icons.access_time_rounded, _timeCtrl.text.isNotEmpty ? _timeCtrl.text : widget.timeSlot),
+                const SizedBox(height: 12),
+                _bookingRow(Icons.people_alt_rounded, '$_guests Guests'),
+                const SizedBox(height: 12),
+                _bookingRow(Icons.calendar_today_rounded,
+                    widget.bookingDate ?? '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}'),
+                const Divider(height: 28, color: Color(0xFF2C2C3E)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.confirmation_number_rounded,
+                        color: AppTheme.primary, size: 18),
+                    const SizedBox(width: 8),
+                    Text('Booking ID: $_bookingId',
+                        style: GoogleFonts.outfit(
+                            color: AppTheme.primary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15)),
+                  ],
+                ),
+              ],
+            ),
+          ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1, end: 0),
+
+          const SizedBox(height: 28),
+
+          // Voice confirmation badge
+          if (widget.isVoiceConfirmed)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.mic_rounded, color: AppTheme.primary, size: 18),
+                  const SizedBox(width: 8),
+                  Text('Reserved via Voice AI',
+                      style: GoogleFonts.outfit(
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13)),
+                ],
+              ),
+            ).animate().fadeIn(delay: 400.ms),
+
+          const SizedBox(height: 32),
+
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: Text('Done',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 16)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _bookingRow(IconData icon, String label) {
+    return Row(
+      children: [
+        Icon(icon, color: AppTheme.primary, size: 20),
+        const SizedBox(width: 12),
+        Text(label,
+            style: GoogleFonts.outfit(
+                color: AppTheme.textPrimary,
+                fontSize: 15,
+                fontWeight: FontWeight.w600)),
+      ],
+    );
+  }
+
+  // ── Form State ────────────────────────────────────────────────────────────
   Widget _buildForm() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -111,7 +276,8 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
                     color: AppTheme.primary.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Icon(Icons.restaurant_rounded, color: AppTheme.primary, size: 28),
+                  child: const Icon(Icons.restaurant_rounded,
+                      color: AppTheme.primary, size: 28),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -138,20 +304,37 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
           ).animate().fadeIn().slideY(begin: 0.1, end: 0),
           const SizedBox(height: 28),
 
+          // Alternative slots (test case 2)
+          if (widget.alternativeSlots.isNotEmpty) ...[
+            _sectionLabel('Available Time Slots'),
+            _buildSlotChips(),
+            const SizedBox(height: 24),
+          ],
+
+          // Nearby restaurants (test case 3)
+          if (widget.nearbyRestaurants.isNotEmpty) ...[
+            _sectionLabel('Nearby Restaurants'),
+            _buildNearbyRestaurants(),
+            const SizedBox(height: 24),
+          ],
+
           _sectionLabel('Date'),
           GestureDetector(
             onTap: _pickDate,
             child: _inputFieldBox(
               child: Row(
                 children: [
-                  const Icon(Icons.calendar_today_rounded, color: AppTheme.primary, size: 20),
+                  const Icon(Icons.calendar_today_rounded,
+                      color: AppTheme.primary, size: 20),
                   const SizedBox(width: 12),
                   Text(
                     '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                    style: GoogleFonts.outfit(fontSize: 16, color: AppTheme.textPrimary),
+                    style: GoogleFonts.outfit(
+                        fontSize: 16, color: AppTheme.textPrimary),
                   ),
                   const Spacer(),
-                  const Icon(Icons.chevron_right_rounded, color: AppTheme.textSecondary),
+                  const Icon(Icons.chevron_right_rounded,
+                      color: AppTheme.textSecondary),
                 ],
               ),
             ),
@@ -162,12 +345,14 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
           _inputFieldBox(
             child: TextField(
               controller: _timeCtrl,
-              style: GoogleFonts.outfit(fontSize: 16, color: AppTheme.textPrimary),
+              style: GoogleFonts.outfit(
+                  fontSize: 16, color: AppTheme.textPrimary),
               decoration: InputDecoration(
                 hintText: 'e.g. 6:45 PM',
                 hintStyle: GoogleFonts.outfit(color: AppTheme.textMuted),
                 border: InputBorder.none,
-                prefixIcon: const Icon(Icons.access_time_rounded, color: AppTheme.primary, size: 20),
+                prefixIcon: const Icon(Icons.access_time_rounded,
+                    color: AppTheme.primary, size: 20),
                 isDense: true,
               ),
             ),
@@ -178,10 +363,12 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
           _inputFieldBox(
             child: Row(
               children: [
-                const Icon(Icons.people_alt_rounded, color: AppTheme.primary, size: 20),
+                const Icon(Icons.people_alt_rounded,
+                    color: AppTheme.primary, size: 20),
                 const SizedBox(width: 12),
                 Text('$_guests Guests',
-                    style: GoogleFonts.outfit(fontSize: 16, color: AppTheme.textPrimary)),
+                    style: GoogleFonts.outfit(
+                        fontSize: 16, color: AppTheme.textPrimary)),
                 const Spacer(),
                 _GuestButton(
                   icon: Icons.remove_rounded,
@@ -205,7 +392,8 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -224,58 +412,101 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
     );
   }
 
-  Widget _buildSuccess() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(28),
-              decoration: const BoxDecoration(
-                color: Color(0xFF1A3A2A),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.table_restaurant_rounded,
-                  color: Color(0xFF2ECC71), size: 56),
-            ).animate().scale(
-                begin: const Offset(0.5, 0.5),
-                end: const Offset(1.0, 1.0),
-                curve: Curves.elasticOut,
-                duration: 800.ms),
-            const SizedBox(height: 24),
-            Text('Table Booked! 🥂',
-                style: GoogleFonts.outfit(
-                    color: AppTheme.textPrimary,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w900)),
-            const SizedBox(height: 12),
-            Text(
-              '${widget.restaurantName.isNotEmpty ? widget.restaurantName : "Restaurant"} • ${_timeCtrl.text} • $_guests Guests',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.outfit(
-                  color: AppTheme.textSecondary, fontSize: 14, height: 1.5),
+  // ── Slot chips ────────────────────────────────────────────────────────────
+  Widget _buildSlotChips() {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: widget.alternativeSlots.map((slot) {
+        return GestureDetector(
+          onTap: () {
+            setState(() => _timeCtrl.text = slot);
+            widget.onAlternativeSlotSelected?.call(slot);
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppTheme.primary.withValues(alpha: 0.4)),
             ),
-            const SizedBox(height: 8),
-            Text('Booking ID: $_bookingId',
-                style: GoogleFonts.outfit(
-                    color: AppTheme.primary, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 14),
-              ),
-              child: Text('Done',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.access_time_rounded,
+                    color: AppTheme.primary, size: 16),
+                const SizedBox(width: 6),
+                Text(slot,
+                    style: GoogleFonts.outfit(
+                        color: AppTheme.primary,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14)),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      }).toList(),
+    ).animate().fadeIn(delay: 100.ms);
+  }
+
+  // ── Nearby restaurants ────────────────────────────────────────────────────
+  Widget _buildNearbyRestaurants() {
+    return Column(
+      children: widget.nearbyRestaurants.map((r) {
+        return GestureDetector(
+          onTap: () => widget.onNearbyRestaurantSelected?.call(r),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppTheme.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.divider),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.storefront_rounded,
+                      color: AppTheme.primary, size: 22),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(r.name,
+                          style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textPrimary,
+                              fontSize: 15)),
+                      const SizedBox(height: 2),
+                      Text('${r.cuisine} • ${r.area}',
+                          style: GoogleFonts.outfit(
+                              color: AppTheme.textSecondary, fontSize: 12)),
+                    ],
+                  ),
+                ),
+                Row(
+                  children: [
+                    const Icon(Icons.star_rounded,
+                        color: Color(0xFFF39C12), size: 16),
+                    const SizedBox(width: 4),
+                    Text(r.rating.toStringAsFixed(1),
+                        style: GoogleFonts.outfit(
+                            color: AppTheme.textSecondary,
+                            fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ).animate().fadeIn(delay: 80.ms);
+      }).toList(),
     );
   }
 
