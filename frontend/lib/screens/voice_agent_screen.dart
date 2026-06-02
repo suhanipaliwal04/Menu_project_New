@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../core/theme.dart';
 import '../providers/voice_agent_provider.dart';
+import '../providers/dine_in_provider.dart';
 import '../services/voice_action_handler.dart';
 import 'results_screen.dart';
 import 'cart_screen.dart';
@@ -38,7 +39,6 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
       duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
 
-    // Init voice agent
     _vp = context.read<VoiceAgentProvider>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _vp.onActionTriggered = _handleActionFromProvider;
@@ -60,7 +60,6 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
     }
   }
 
-  // ── Entry Point: tap mic button ───────────────────────────────────────────
   Future<void> _handleMicTap() async {
     final provider = context.read<VoiceAgentProvider>();
     await provider.toggleListening();
@@ -68,41 +67,67 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
 
   Future<void> _handleAction(VoiceAction action, VoiceAgentProvider vp) async {
     if (!mounted) return;
+
     switch (action.type) {
       case VoiceActionType.search:
         Navigator.push(context,
             MaterialPageRoute(builder: (_) => const ResultsScreen()));
         break;
+
       case VoiceActionType.placeOrder:
         Navigator.push(context,
             MaterialPageRoute(builder: (_) => const CartScreen()));
         break;
+
       case VoiceActionType.bookTable:
+        // Navigate immediately — don't wait for TTS
+        final confirmed = action.params['confirm'] == true;
+        final dine = context.read<DineInProvider>();
+        final booking = dine.confirmedBooking;
+
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => TableBookingScreen(
-              restaurantName: vp.currentRestaurantName,
-              timeSlot: action.params['time'] as String? ?? '',
+              restaurantName:   action.params['restaurantName'] as String? ??
+                  vp.currentRestaurantName,
+              timeSlot:         action.params['time'] as String? ?? '',
+              numberOfGuests:   action.params['people'] as int? ?? 2,
+              isVoiceConfirmed: confirmed,
+              bookingId:        booking?.bookingId ??
+                  action.params['bookingId'] as String?,
+              bookingDate:      booking?.date ?? action.params['date'] as String?,
             ),
           ),
         );
         break;
+
       case VoiceActionType.scheduleTakeaway:
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => TakeawayScreen(
               restaurantName: vp.currentRestaurantName,
-              pickupTime: action.params['time'] as String? ?? '',
-              itemName: action.params['item'] as String? ?? '',
+              pickupTime:     action.params['time'] as String? ?? '',
+              itemName:       action.params['item'] as String? ?? '',
             ),
           ),
         );
         break;
+
       default:
         break;
     }
+  }
+
+  // ── Tapping a slot chip inside the conversation log ───────────────────────
+  Future<void> _onSlotTapped(String slot) async {
+    await _vp.processQueryAndGetAction('Book for $slot');
+  }
+
+  // ── Tapping a nearby restaurant card ─────────────────────────────────────
+  Future<void> _onNearbyRestaurantTapped(NearbyRestaurant r) async {
+    await _vp.processQueryAndGetAction('Book at ${r.name}');
   }
 
   @override
@@ -160,7 +185,6 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
             ),
           ),
           const Spacer(),
-          // TTS toggle
           Consumer<VoiceAgentProvider>(
             builder: (_, vp, __) => GestureDetector(
               onTap: vp.toggleVoiceReply,
@@ -173,8 +197,12 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  vp.voiceReplyEnabled ? Icons.volume_up_rounded : Icons.volume_off_rounded,
-                  color: vp.voiceReplyEnabled ? AppTheme.primary : Colors.white54,
+                  vp.voiceReplyEnabled
+                      ? Icons.volume_up_rounded
+                      : Icons.volume_off_rounded,
+                  color: vp.voiceReplyEnabled
+                      ? AppTheme.primary
+                      : Colors.white54,
                   size: 20,
                 ),
               ),
@@ -206,7 +234,7 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '"I want to eat something healthy"\n"Add tomato soup to cart"\n"Book me a table at 6:45 PM"',
+                  '"Book me a table"\n"I want something healthy"\n"Add tomato soup to cart"',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.outfit(
                     color: Colors.white30,
@@ -224,7 +252,22 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
           itemCount: vp.history.length,
           itemBuilder: (context, i) {
             final turn = vp.history[i];
-            return _buildBubble(turn);
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildBubble(turn),
+                // Inline slot chips
+                if (!turn.isUser &&
+                    turn.alternativeSlots != null &&
+                    turn.alternativeSlots!.isNotEmpty)
+                  _buildSlotChipsInline(turn.alternativeSlots!),
+                // Inline nearby restaurant cards
+                if (!turn.isUser &&
+                    turn.nearbyRestaurants != null &&
+                    turn.nearbyRestaurants!.isNotEmpty)
+                  _buildNearbyCardsInline(turn.nearbyRestaurants!),
+              ],
+            );
           },
         );
       },
@@ -236,7 +279,7 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.78,
@@ -258,13 +301,124 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
         child: Text(
           turn.text,
           style: GoogleFonts.outfit(
-            color: isUser ? Colors.white : Colors.white.withValues(alpha: 0.9),
+            color: isUser
+                ? Colors.white
+                : Colors.white.withValues(alpha: 0.9),
             fontSize: 14,
             height: 1.5,
           ),
         ),
       ),
     ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.15, end: 0);
+  }
+
+  // ── Inline slot chips in conversation ────────────────────────────────────
+  Widget _buildSlotChipsInline(List<String> slots) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 4, bottom: 12),
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: slots.map((slot) {
+            return GestureDetector(
+              onTap: () => _onSlotTapped(slot),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                      color: AppTheme.primary.withValues(alpha: 0.5)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.access_time_rounded,
+                        color: AppTheme.primary, size: 14),
+                    const SizedBox(width: 6),
+                    Text(slot,
+                        style: GoogleFonts.outfit(
+                            color: AppTheme.primary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13)),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    ).animate().fadeIn(delay: 200.ms);
+  }
+
+  // ── Inline nearby restaurant cards ───────────────────────────────────────
+  Widget _buildNearbyCardsInline(List<NearbyRestaurant> restaurants) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: restaurants.take(3).map((r) {
+          return GestureDetector(
+            onTap: () => _onNearbyRestaurantTapped(r),
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.12)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.storefront_rounded,
+                        color: AppTheme.primary, size: 18),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(r.name,
+                            style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13)),
+                        Text('${r.cuisine} • ${r.area}',
+                            style: GoogleFonts.outfit(
+                                color: Colors.white54, fontSize: 11)),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      const Icon(Icons.star_rounded,
+                          color: Color(0xFFF39C12), size: 14),
+                      const SizedBox(width: 3),
+                      Text(r.rating.toStringAsFixed(1),
+                          style: GoogleFonts.outfit(
+                              color: Colors.white60, fontSize: 12)),
+                    ],
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.arrow_forward_ios_rounded,
+                      color: Colors.white30, size: 12),
+                ],
+              ),
+            ),
+          ).animate().fadeIn(delay: 100.ms);
+        }).toList(),
+      ),
+    );
   }
 
   // ── Live transcript (while speaking) ─────────────────────────────────────
@@ -280,12 +434,15 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
           decoration: BoxDecoration(
             color: AppTheme.primary.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
+            border:
+                Border.all(color: AppTheme.primary.withValues(alpha: 0.3)),
           ),
           child: Text(
             vp.liveTranscript,
             style: GoogleFonts.outfit(
-                color: AppTheme.primary, fontSize: 14, fontStyle: FontStyle.italic),
+                color: AppTheme.primary,
+                fontSize: 14,
+                fontStyle: FontStyle.italic),
           ),
         ).animate().fadeIn(duration: 200.ms);
       },
@@ -309,11 +466,16 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
                   ),
                   child: const Icon(Icons.auto_awesome_rounded,
                       color: AppTheme.primary, size: 16),
-                ).animate(onPlay: (c) => c.repeat(reverse: true))
-                    .scale(begin: const Offset(0.9, 0.9), end: const Offset(1.1, 1.1), duration: 600.ms),
+                )
+                    .animate(onPlay: (c) => c.repeat(reverse: true))
+                    .scale(
+                        begin: const Offset(0.9, 0.9),
+                        end: const Offset(1.1, 1.1),
+                        duration: 600.ms),
                 const SizedBox(width: 12),
                 Text('Thinking...',
-                    style: GoogleFonts.outfit(color: Colors.white38, fontSize: 14)),
+                    style:
+                        GoogleFonts.outfit(color: Colors.white38, fontSize: 14)),
               ],
             ),
           );
@@ -323,7 +485,8 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: Text(
               vp.errorMessage!,
-              style: GoogleFonts.outfit(color: AppTheme.error, fontSize: 13),
+              style:
+                  GoogleFonts.outfit(color: AppTheme.error, fontSize: 13),
             ),
           );
         }
@@ -361,28 +524,26 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Wave rings behind orb
               Stack(
                 alignment: Alignment.center,
                 children: [
                   if (listening || speaking)
                     ...[1.4, 1.7, 2.0].map((scale) => AnimatedBuilder(
-                      animation: _orbController,
-                      builder: (_, __) => Transform.scale(
-                        scale: scale + _orbController.value * 0.15,
-                        child: Container(
-                          width: 72,
-                          height: 72,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: orbColor.withValues(
-                                alpha: (0.12 - (scale - 1.4) * 0.04)
-                                    .clamp(0.0, 1.0)),
+                          animation: _orbController,
+                          builder: (_, __) => Transform.scale(
+                            scale: scale + _orbController.value * 0.15,
+                            child: Container(
+                              width: 72,
+                              height: 72,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: orbColor.withValues(
+                                    alpha: (0.12 - (scale - 1.4) * 0.04)
+                                        .clamp(0.0, 1.0)),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    )),
-                  // Main mic button
+                        )),
                   GestureDetector(
                     onTap: thinking ? null : _handleMicTap,
                     child: AnimatedBuilder(
@@ -432,7 +593,6 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
                 ),
               ),
               const SizedBox(height: 16),
-              // Quick action chips
               if (!listening && !thinking && !speaking) _buildQuickChips(),
             ],
           ),
@@ -444,8 +604,8 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
   Widget _buildQuickChips() {
     final chips = [
       '🥗 Healthy food',
-      '🛒 View cart',
       '📋 Book table',
+      '🛒 View cart',
       '🥡 Takeaway',
     ];
     return Wrap(
@@ -456,18 +616,22 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
         return GestureDetector(
           onTap: () async {
             final vp = context.read<VoiceAgentProvider>();
-            await vp.processQueryAndGetAction(c.replaceAll(RegExp(r'[^\w\s]'), '').trim());
+            await vp.processQueryAndGetAction(
+                c.replaceAll(RegExp(r'[^\w\s]'), '').trim());
           },
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.07),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+              border:
+                  Border.all(color: Colors.white.withValues(alpha: 0.12)),
             ),
             child: Text(
               c,
-              style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13),
+              style:
+                  GoogleFonts.outfit(color: Colors.white70, fontSize: 13),
             ),
           ),
         );

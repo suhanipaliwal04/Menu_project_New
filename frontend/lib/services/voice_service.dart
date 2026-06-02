@@ -103,13 +103,23 @@ class VoiceService {
 
   Future<void> speak(String text) async {
     if (text.trim().isEmpty) return;
-    await _tts.stop();
-    _isSpeaking = true;
-    await _tts.speak(text);
+    try {
+      await _tts.stop();
+      _isSpeaking = true;
+      await _tts.speak(text);
+    } catch (e) {
+      // Chrome SpeechSynthesisErrorEvent — non-fatal, just log it
+      debugPrint('TTS speak error (non-fatal): $e');
+      _isSpeaking = false;
+    }
   }
 
   Future<void> stopSpeaking() async {
-    await _tts.stop();
+    try {
+      await _tts.stop();
+    } catch (e) {
+      debugPrint('TTS stop error (non-fatal): $e');
+    }
     _isSpeaking = false;
   }
 

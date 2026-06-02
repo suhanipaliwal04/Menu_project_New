@@ -3,10 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'core/theme.dart';
 import 'screens/home_screen.dart';
-import 'screens/browse_screen.dart';
 import 'providers/chat_provider.dart';
 import 'providers/browse_provider.dart';
 import 'providers/cart_provider.dart';
+import 'providers/dine_in_provider.dart';
+import 'providers/takeaway_provider.dart';
 import 'providers/voice_agent_provider.dart';
 import 'providers/admin_provider.dart';
 import 'providers/retailer_provider.dart';
@@ -34,9 +35,16 @@ class MenuIntelligenceApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CartProvider()),
         ChangeNotifierProvider(create: (_) => AdminProvider()),
         ChangeNotifierProvider(create: (_) => RetailerProvider()),
-        ChangeNotifierProxyProvider<CartProvider, VoiceAgentProvider>(
-          create: (ctx) => VoiceAgentProvider(ctx.read<CartProvider>()),
-          update: (_, cart, previous) => previous ?? VoiceAgentProvider(cart),
+        ChangeNotifierProvider(create: (_) => DineInProvider()),
+        ChangeNotifierProvider(create: (_) => TakeawayProvider()),
+        ChangeNotifierProxyProvider3<CartProvider, DineInProvider, TakeawayProvider, VoiceAgentProvider>(
+          create: (ctx) => VoiceAgentProvider(
+            ctx.read<CartProvider>(),
+            ctx.read<DineInProvider>(),
+            ctx.read<TakeawayProvider>(),
+          ),
+          update: (_, cart, dine, takeaway, previous) =>
+              previous ?? VoiceAgentProvider(cart, dine, takeaway),
         ),
       ],
       child: MaterialApp(
@@ -48,4 +56,3 @@ class MenuIntelligenceApp extends StatelessWidget {
     );
   }
 }
-

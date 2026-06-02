@@ -248,6 +248,44 @@ class ApiService {
       // Best-effort — don't crash if session is already expired
     }
   }
+
+  // ── Dine-In Booking ───────────────────────────────────────────────────────────
+
+  /// POST /dine/check-availability — Fast availability check (no LLM).
+  /// Returns availability status, alternative slots, and nearby restaurants.
+  Future<DineAvailabilityResponse> checkDineAvailability({
+    required String restaurantId,
+    required String restaurantName,
+    required String timeSlot,
+    required int partySize,
+  }) async {
+    final data = await _post(AppConstants.dineCheckEndpoint, {
+      'restaurant_id': restaurantId,
+      'restaurant_name': restaurantName,
+      'time_slot': timeSlot,
+      'party_size': partySize,
+    });
+    return DineAvailabilityResponse.fromJson(data as Map<String, dynamic>);
+  }
+
+  /// POST /dine/confirm-booking — Confirm a table reservation.
+  /// Returns full booking details with a unique booking ID.
+  Future<DineBookingConfirmation> confirmDineBooking({
+    required String restaurantId,
+    required String restaurantName,
+    required String timeSlot,
+    required int partySize,
+    String? dateStr,
+  }) async {
+    final data = await _post(AppConstants.dineConfirmEndpoint, {
+      'restaurant_id': restaurantId,
+      'restaurant_name': restaurantName,
+      'time_slot': timeSlot,
+      'party_size': partySize,
+      if (dateStr != null) 'date_str': dateStr,
+    });
+    return DineBookingConfirmation.fromJson(data as Map<String, dynamic>);
+  }
 }
 
 // ── Exception ────────────────────────────────────────────────────────────────────

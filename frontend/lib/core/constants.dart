@@ -19,6 +19,10 @@ class AppConstants {
   static const String voiceChatEndpoint     = '/voice/chat';
   static const String voiceSessionEndpoint  = '/voice/session';
 
+  // ── Dine-In Booking Endpoints ─────────────────────────────────────────────
+  static const String dineCheckEndpoint    = '/dine/check-availability';
+  static const String dineConfirmEndpoint  = '/dine/confirm-booking';
+
   // ── Timeouts ────────────────────────────────────────────────────────────────
   static const int connectTimeoutSeconds  = 15;
   static const int receiveTimeoutSeconds  = 60;  // RAG can take a moment
