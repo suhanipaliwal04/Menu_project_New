@@ -19,6 +19,11 @@ class ApiService {
   final String _base = AppConstants.baseUrl;
   final http.Client _client = http.Client();
 
+  // JWT token set after admin login
+  String? _authToken;
+
+  void setAuthToken(String? token) => _authToken = token;
+
   Duration get _timeout =>
       const Duration(seconds: AppConstants.receiveTimeoutSeconds);
 
@@ -29,7 +34,13 @@ class ApiService {
         'Accept': 'application/json',
       };
 
-  Future<dynamic> _get(String path, {Map<String, String?>? params}) async {
+  Map<String, String> get _authHeaders => {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        if (_authToken != null) 'Authorization': 'Bearer $_authToken',
+      };
+
+  Future<dynamic> _get(String path, {Map<String, String?>? params, bool auth = false}) async {
     final uri = Uri.parse('$_base$path').replace(
       queryParameters: params
           ?.map((k, v) => MapEntry(k, v))
@@ -40,16 +51,30 @@ class ApiService {
         return m;
       }),
     );
-    final response = await _client.get(uri, headers: _headers).timeout(_timeout);
+    final response = await _client.get(uri, headers: auth ? _authHeaders : _headers).timeout(_timeout);
     return _handle(response);
   }
 
-  Future<dynamic> _post(String path, Map<String, dynamic> body) async {
+  Future<dynamic> _post(String path, Map<String, dynamic> body, {bool auth = false}) async {
     final uri = Uri.parse('$_base$path');
     final response = await _client
-        .post(uri, headers: _headers, body: jsonEncode(body))
+        .post(uri, headers: auth ? _authHeaders : _headers, body: jsonEncode(body))
         .timeout(_timeout);
     return _handle(response);
+  }
+
+  Future<dynamic> _put(String path, Map<String, dynamic> body) async {
+    final uri = Uri.parse('$_base$path');
+    final response = await _client
+        .put(uri, headers: _authHeaders, body: jsonEncode(body))
+        .timeout(_timeout);
+    return _handle(response);
+  }
+
+  Future<void> _deleteReq(String path) async {
+    final uri = Uri.parse('$_base$path');
+    final response = await _client.delete(uri, headers: _authHeaders).timeout(_timeout);
+    _handle(response);
   }
 
   dynamic _handle(http.Response res) {
@@ -286,6 +311,61 @@ class ApiService {
     });
     return DineBookingConfirmation.fromJson(data as Map<String, dynamic>);
   }
+
+
+  // ── Admin Auth ────────────────────────────────────────────────────────────────
+
+  /// POST /auth/admin-login — Supabase sign-in, returns JWT access token.
+  Future<Map<String, dynamic>> adminLogin(String email, String password) async {
+    final data = await _post(AppConstants.adminLoginEndpoint, {
+      'email': email,
+      'password': password,
+    });
+    return data as Map<String, dynamic>;
+  }
+
+  // ── Admin Dashboard ───────────────────────────────────────────────────────────
+
+  /// GET /admin/dashboard/{restaurantId} — Live stats for a restaurant.
+  Future<Map<String, dynamic>> getAdminDashboard(String restaurantId) async {
+    final data = await _get(
+      '${AppConstants.adminEndpoint}/dashboard/$restaurantId',
+      auth: true,
+    );
+    return data as Map<String, dynamic>;
+  }
+
+  // ── Admin Menu Items ─────────────────────────────────────────────────────────
+
+  /// GET /admin/restaurants/{id}/items — All menu items for admin.
+  Future<List<dynamic>> getAdminMenuItems(String restaurantId) async {
+    final data = await _get(
+      '${AppConstants.adminEndpoint}/restaurants/$restaurantId/items',
+      auth: true,
+    );
+    return data as List<dynamic>;
+  }
+
+  /// PUT /admin/restaurants/{id}/items/{itemId} — Partial update.
+  Future<Map<String, dynamic>> updateAdminMenuItem(
+    String restaurantId,
+    String itemId,
+    Map<String, dynamic> updates,
+  ) async {
+    final data = await _put(
+      '${AppConstants.adminEndpoint}/restaurants/$restaurantId/items/$itemId',
+      updates,
+    );
+    return data as Map<String, dynamic>;
+  }
+
+  /// DELETE /admin/restaurants/{id}/items/{itemId}
+  Future<void> deleteAdminMenuItem(String restaurantId, String itemId) async {
+    await _deleteReq(
+      '${AppConstants.adminEndpoint}/restaurants/$restaurantId/items/$itemId',
+    );
+  }
+
 }
 
 // ── Exception ────────────────────────────────────────────────────────────────────
