@@ -1,6 +1,9 @@
 """
 Menu Intelligence System - FastAPI Application
 """
+from contextlib import asynccontextmanager
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -9,6 +12,24 @@ from pathlib import Path
 from app.core.config import settings
 from app.api.v1.api import api_router
 
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Pre-warm ML model and DB connection so the first request is fast."""
+    logger.info("[startup] Loading embedding model and warming up services...")
+    try:
+        from app.services.nlp.embedding_service import get_embedding_service
+        from app.services.nlp.rag_service import get_rag_service
+        get_embedding_service()   # loads SentenceTransformer into memory
+        get_rag_service()         # initialises QueryParser + caches Groq client
+        logger.info("[startup] Services ready ✓")
+    except Exception as e:
+        logger.warning(f"[startup] Pre-warm failed (non-fatal): {e}")
+    yield
+    # Shutdown: nothing to teardown for now
+
 # Create FastAPI app
 app = FastAPI(
     title=settings.APP_NAME,
@@ -16,7 +37,8 @@ app = FastAPI(
     description="AI-powered menu digitization and intelligent food discovery system",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
-    openapi_url="/api/openapi.json"
+    openapi_url="/api/openapi.json",
+    lifespan=lifespan,
 )
 
 # Configure CORS

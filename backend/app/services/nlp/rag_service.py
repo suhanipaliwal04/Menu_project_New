@@ -21,7 +21,7 @@ from typing import Dict, Any, List, Optional
 
 from app.core.config import settings
 from app.services.nlp.query_parser import get_query_parser
-from app.services.nlp.embedding_service import EmbeddingService
+from app.services.nlp.embedding_service import get_embedding_service
 
 logger = logging.getLogger(__name__)
 
@@ -74,14 +74,14 @@ class RAGService:
 
         restaurant_ids = [restaurant_id] if restaurant_id else None
 
-        with EmbeddingService() as svc:
-            items = svc.hybrid_search(
-                query=query,
-                filters=search_filters,
-                top_k=self.top_k,
-                restaurant_ids=restaurant_ids,
-                area_name=area_name or None,
-            )
+        svc = get_embedding_service()
+        items = svc.hybrid_search(
+            query=query,
+            filters=search_filters,
+            top_k=self.top_k,
+            restaurant_ids=restaurant_ids,
+            area_name=area_name or None,
+        )
 
         if not items:
             return {
