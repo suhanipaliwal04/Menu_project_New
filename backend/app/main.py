@@ -95,8 +95,8 @@ async def run_migration():
         "UPDATE restaurants SET has_dine_in = true WHERE has_dine_in IS NULL",
         "UPDATE restaurants SET has_takeaway = true WHERE has_takeaway IS NULL",
         "UPDATE restaurants SET is_open_manually = true WHERE is_open_manually IS NULL",
-        # Fix incorrect owner_id for Pranil Da Dhaba (typo: 61 should be 0)
-        "UPDATE restaurants SET owner_id = '799b1e7c-4388-4389-8542-49d40fec798' WHERE owner_id = '799b1e7c-4388-4389-8542-49d461fec798'",
+        # REVERT: Restore the correct owner_id (my previous fix was wrong)
+        "UPDATE restaurants SET owner_id = '799b1e7c-4388-4389-8542-49d461fec798' WHERE restaurant_name = 'Pranil Da Dhaba'",
     ]
     
     results = []
