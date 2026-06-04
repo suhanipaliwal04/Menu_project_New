@@ -20,12 +20,14 @@ class ConversationTurn {
   // Optional rich payload — used to render interactive cards
   final List<String>? alternativeSlots;
   final List<NearbyRestaurant>? nearbyRestaurants;
+  final List<ChatMenuItem>? suggestedItems;
 
   ConversationTurn({
     required this.isUser,
     required this.text,
     this.alternativeSlots,
     this.nearbyRestaurants,
+    this.suggestedItems,
   }) : time = DateTime.now();
 }
 
@@ -605,6 +607,7 @@ class VoiceAgentProvider extends ChangeNotifier {
   // ── AI backend query (food discovery, general) ───────────────────────────
   Future<VoiceAction> _handleAIQuery(String query) async {
     String aiReply;
+    List<ChatMenuItem> suggestedItems = [];
     try {
       if (_voiceSessionId != null) {
         final response = await ApiService().voiceChat(
@@ -614,6 +617,7 @@ class VoiceAgentProvider extends ChangeNotifier {
           restaurantId: _currentRestaurantId.isNotEmpty ? _currentRestaurantId : null,
         );
         aiReply = response.answer;
+        suggestedItems = response.items;
         _voiceSessionId = response.sessionId.isNotEmpty ? response.sessionId : _voiceSessionId;
       } else {
         final response = await ApiService().chat(
@@ -622,6 +626,7 @@ class VoiceAgentProvider extends ChangeNotifier {
           restaurantId: _currentRestaurantId.isNotEmpty ? _currentRestaurantId : null,
         );
         aiReply = response.answer;
+        suggestedItems = response.items;
       }
     } on ApiException catch (e) {
       aiReply = 'Sorry, I could not connect to the server. ${e.message}';
@@ -630,7 +635,7 @@ class VoiceAgentProvider extends ChangeNotifier {
     }
 
     _lastAiReply = aiReply;
-    _history.add(ConversationTurn(isUser: false, text: aiReply));
+    _history.add(ConversationTurn(isUser: false, text: aiReply, suggestedItems: suggestedItems.isNotEmpty ? suggestedItems : null));
 
     final action = _actionHandler.parse(userQuery: query, aiReply: aiReply);
 

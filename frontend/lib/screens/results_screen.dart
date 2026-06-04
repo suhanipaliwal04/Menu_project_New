@@ -8,6 +8,7 @@ import '../providers/voice_agent_provider.dart';
 import '../widgets/food_item_card.dart';
 import '../widgets/skeleton_card.dart';
 import '../widgets/typewriter_text.dart';
+import '../widgets/voice_fab.dart';
 
 class ResultsScreen extends StatelessWidget {
   const ResultsScreen({super.key});
@@ -28,9 +29,10 @@ class ResultsScreen extends StatelessWidget {
               provider.response != null) {
             return _buildResults(context, provider);
           }
-          return const SizedBox.shrink();
         },
       ),
+      floatingActionButton: const VoiceFab(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 

@@ -16,6 +16,7 @@ import 'voice_agent_screen.dart';
 import 'cart_screen.dart';
 import 'admin_login_screen.dart';
 import 'retailer_login_screen.dart';
+import '../widgets/voice_fab.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -29,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _areaCtrl = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
   int _carouselIndex = 0;
-  String _selectedTab = 'Order Online'; // Takeaway, Online, Dine In
+  String _selectedTab = 'Dine In'; // Takeaway, Dine In
   String _activePopularTab = 'Trending';
 
   @override
@@ -273,7 +274,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      floatingActionButton: _buildVoiceFab(),
+      floatingActionButton: const VoiceFab(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: CustomScrollView(
         slivers: [
@@ -483,7 +484,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildTypeSelector() {
     final List<Map<String, dynamic>> types = [
       {'name': 'Takeaway', 'icon': Icons.local_mall_rounded},
-      {'name': 'Order Online', 'icon': Icons.delivery_dining_rounded},
       {'name': 'Dine In', 'icon': Icons.restaurant_rounded},
     ];
 
@@ -497,7 +497,11 @@ class _HomeScreenState extends State<HomeScreen> {
           bool active = _selectedTab == name;
           return Expanded(
             child: GestureDetector(
-              onTap: () => setState(() => _selectedTab = name),
+              onTap: () {
+                setState(() => _selectedTab = name);
+                _queryCtrl.text = name;
+                _search();
+              },
               child: AnimatedContainer(
                 duration: 300.ms,
                 margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -852,91 +856,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildVoiceFab() {
-    return Consumer2<VoiceAgentProvider, CartProvider>(
-      builder: (context, vp, cart, _) {
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Cart badge button
-            if (cart.totalItems > 0)
-              GestureDetector(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CartScreen()),
-                ),
-                child: Container(
-                  margin: const EdgeInsets.only(right: 16, bottom: 8),
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surface,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppTheme.divider),
-                    boxShadow: [
-                      BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.15),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4)),
-                    ],
-                  ),
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      const Icon(Icons.shopping_bag_rounded,
-                          color: AppTheme.primary, size: 26),
-                      Positioned(
-                        top: -6,
-                        right: -6,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: AppTheme.error,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Text(
-                            '${cart.totalItems}',
-                            style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w900),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ).animate().scale(begin: const Offset(0.5, 0.5), end: const Offset(1, 1),
-                  curve: Curves.elasticOut, duration: 500.ms),
-
-            // Main voice mic FAB
-            GestureDetector(
-              onTap: _showVoiceSearch,
-              child: Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: const LinearGradient(
-                    colors: [AppTheme.primary, Color(0xFFE0873A)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.primary.withValues(alpha: 0.5),
-                      blurRadius: 20,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: const Icon(Icons.mic_rounded, color: Colors.white, size: 30),
-              )
-                  .animate(onPlay: (c) => c.repeat(reverse: true))
-                  .scaleXY(begin: 1.0, end: 1.06, duration: 1500.ms, curve: Curves.easeInOut),
-            ),
-          ],
-        );
-      },
-    );
-  }
 }

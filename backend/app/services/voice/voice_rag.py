@@ -46,7 +46,7 @@ _VOICE_SYSTEM_MSG = (
     "The user is speaking to you and your reply will be read aloud by text-to-speech, "
     "so it must sound natural when spoken. "
     "IMPORTANT RULES: "
-    "1. Write exactly 2-3 short sentences — no more. "
+    "1. Write exactly 1-2 short sentences — no more. "
     "2. NO bullet points, NO numbering, NO markdown formatting. "
     "3. Mention the restaurant name, item name, and price in a natural way. "
     "4. Sound warm and helpful, like a knowledgeable friend. "
@@ -195,7 +195,7 @@ class VoiceRAGService:
             f'Someone near {loc} asked via voice: "{query}"\n\n'
             f"Available menu items:\n{context}"
             f"{pref_block}\n\n"
-            "Write a warm, spoken-aloud recommendation in exactly 2-3 short sentences. "
+            "Write a warm, spoken-aloud recommendation in exactly 1-2 short sentences. "
             "Mention the best 1-2 items with restaurant name and price. "
             "No bullet points. No markdown. Sound natural."
         )
@@ -213,7 +213,7 @@ class VoiceRAGService:
             response = client.chat_completion(
                 model="Qwen/Qwen2.5-7B-Instruct",
                 messages=messages,
-                max_tokens=180,      # short — voice needs brevity
+                max_tokens=100,      # short — voice needs brevity
                 temperature=0.70,
             )
             answer = response.choices[0].message.content.strip()
