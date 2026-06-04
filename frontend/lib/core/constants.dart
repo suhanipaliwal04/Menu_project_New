@@ -4,9 +4,9 @@ class AppConstants {
   // Live Render deployment URL
   static const String _renderBase = 'https://eatbot-lifa.onrender.com/api/v1';
 
-  // static String get baseUrl => _renderBase;
+  static String get baseUrl => _renderBase;
   // For local dev, swap with:
-  static String get baseUrl => 'http://localhost:8000/api/v1';
+  // static String get baseUrl => 'http://localhost:8000/api/v1';
 
   // ── API Endpoints ────────────────────────────────────────────────────────────
   static const String chatEndpoint          = '/chat';
