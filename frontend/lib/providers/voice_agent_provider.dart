@@ -304,7 +304,15 @@ class VoiceAgentProvider extends ChangeNotifier {
     }
     // Collect `time` if still missing
     if (_pendingPeople != null && _pendingTime == null) {
-      final time = _actionHandler.extractTime(query);
+      String time = _actionHandler.extractTime(query);
+      if (time.isEmpty && _lastAiReply.contains('what time')) {
+        // user might have just said "7" or "8:30" without am/pm
+        final re = RegExp(r'^(\d{1,2}(?::\d{2})?)$');
+        final m = re.firstMatch(q.trim());
+        if (m != null) {
+          time = '${m.group(1)} PM';
+        }
+      }
       if (time.isNotEmpty) {
         _pendingTime = time;
         _pendingAction = VoiceAction(
@@ -485,7 +493,15 @@ class VoiceAgentProvider extends ChangeNotifier {
     }
 
     if (_pendingTakeawayRestaurant == null || _pendingTakeawayRestaurant!.isEmpty) {
-      if (_currentRestaurantName.isNotEmpty) {
+      String extracted = _actionHandler.extractRestaurantName(query);
+      
+      if (extracted.isEmpty && _lastAiReply.contains('From which restaurant?')) {
+        extracted = query.replaceAll(RegExp(r'\b(from|at)\b', caseSensitive: false), '').trim();
+      }
+
+      if (extracted.isNotEmpty) {
+        _pendingTakeawayRestaurant = extracted;
+      } else if (_currentRestaurantName.isNotEmpty) {
         _pendingTakeawayRestaurant = _currentRestaurantName;
       } else {
         return _localReply('From which restaurant?');
@@ -519,7 +535,12 @@ class VoiceAgentProvider extends ChangeNotifier {
 
     // ── Extract time if missing ───────────────────────────────────────────
     if (_pendingTakeawayTime == null) {
-      final time = _actionHandler.extractTime(query);
+      String time = _actionHandler.extractTime(query);
+      if (time.isEmpty && _lastAiReply.contains('what time')) {
+        final re = RegExp(r'^(\d{1,2}(?::\d{2})?)$');
+        final m = re.firstMatch(q.trim());
+        if (m != null) time = '${m.group(1)} PM';
+      }
       if (time.isNotEmpty) _pendingTakeawayTime = time;
     }
 
@@ -531,6 +552,17 @@ class VoiceAgentProvider extends ChangeNotifier {
     if (_pendingTakeawayPhone == null) {
       final extractedPhone = _actionHandler.extractPhone(query);
       if (extractedPhone.isNotEmpty) _pendingTakeawayPhone = extractedPhone;
+    }
+
+    // Extract item if missing
+    if (_pendingTakeawayItem == null || _pendingTakeawayItem!.isEmpty) {
+      String extractedItem = _actionHandler.extractItem(query);
+      if (extractedItem.isEmpty && _lastAiReply.contains('What would you like to order')) {
+        extractedItem = query.trim();
+      }
+      if (extractedItem.isNotEmpty) {
+        _pendingTakeawayItem = extractedItem;
+      }
     }
 
     // Still missing item? (Safety fallback)
