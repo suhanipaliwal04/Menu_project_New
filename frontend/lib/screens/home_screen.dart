@@ -420,75 +420,52 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppTheme.background,
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            // City Background Image
-            Image.network(
-              'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=1200', // A beautiful city skyline
-              fit: BoxFit.cover,
-            ),
-            // Dark gradient overlay so text remains readable
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    AppTheme.background.withValues(alpha: 0.3),
-                    AppTheme.background,
-                  ],
-                ),
-              ),
-            ),
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(
-                  children: [
-                    const Icon(Icons.location_on_rounded,
-                        color: AppTheme.primary, size: 22),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => _showLocationPicker(context),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
+        background: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                const Icon(Icons.location_on_rounded,
+                    color: AppTheme.primary, size: 22),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _showLocationPicker(context),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Row(
                           children: [
-                            Row(
-                              children: [
-                                Text(_selectedCity,
-                                    style: GoogleFonts.outfit(
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 18,
-                                        color: AppTheme.textPrimary)),
-                                const Icon(Icons.keyboard_arrow_down_rounded,
-                                    size: 18, color: AppTheme.textPrimary),
-                              ],
-                            ),
-                            Text('$_selectedArea, $_selectedCity',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                            Text(_selectedCity,
                                 style: GoogleFonts.outfit(
-                                    color: AppTheme.textSecondary, fontSize: 12)),
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 18,
+                                    color: AppTheme.textPrimary)),
+                            const Icon(Icons.keyboard_arrow_down_rounded,
+                                size: 18, color: AppTheme.textPrimary),
                           ],
                         ),
-                      ),
+                        Text('$_selectedArea, $_selectedCity',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.outfit(
+                                color: AppTheme.textSecondary, fontSize: 12)),
+                      ],
                     ),
-                    GestureDetector(
-                      onTap: () => _showPortalSheet(context),
-                      child: const CircleAvatar(
-                        backgroundColor: AppTheme.surfaceAlt,
-                        child: Icon(Icons.person_outline_rounded,
-                            color: AppTheme.textPrimary),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+                GestureDetector(
+                  onTap: () => _showPortalSheet(context),
+                  child: const CircleAvatar(
+                    backgroundColor: AppTheme.surfaceAlt,
+                    child: Icon(Icons.person_outline_rounded,
+                        color: AppTheme.textPrimary),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
