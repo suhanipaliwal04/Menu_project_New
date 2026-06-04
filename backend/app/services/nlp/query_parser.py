@@ -3,7 +3,7 @@ Query Parser — converts raw user text into structured search filters.
 
 Two-stage approach:
   1. Rule-based pass (fast, no API call): regex + keyword matching
-  2. LLM pass (Qwen via HuggingFace): fills in what rules miss for complex queries
+  2. LLM pass (Groq llama-3.1-8b-instant, ~200ms): fills in what rules miss for complex queries
 
 Output schema:
   {
@@ -134,16 +134,20 @@ def _rule_parse(query: str) -> Dict[str, Any]:
 
 def _llm_parse(query: str, rule_result: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Use Qwen to fill in filters that rules missed.
+    Use Groq (llama-3.1-8b-instant) to fill in filters that rules missed.
     Only called when at least one key filter is still None.
     Returns merged result (LLM overrides None-valued rule fields only).
+    Groq responds in ~200ms vs HuggingFace's ~5-8s.
     """
-    try:
-        from huggingface_hub import InferenceClient
-    except ImportError:
+    groq_key = getattr(settings, "GROQ_API_KEY", None)
+    if not groq_key:
+        logger.debug("QueryParser: No GROQ_API_KEY, skipping LLM parse.")
         return rule_result
 
-    if not getattr(settings, "HUGGINGFACE_API_KEY", None):
+    try:
+        from groq import Groq
+    except ImportError:
+        logger.warning("groq SDK not installed — skipping LLM parse.")
         return rule_result
 
     prompt = f"""You are a restaurant search query parser. Extract search filters from this query.
@@ -152,6 +156,7 @@ Query: "{query}"
 
 Return ONLY a JSON object (no extra text):
 {{
+  "is_veg": true/false/null,
   "max_price": integer or null,
   "min_price": integer or null,
   "max_calories": integer or null,
@@ -170,9 +175,9 @@ Rules:
 - semantic_query: remove filter words and negative phrases from the query"""
 
     try:
-        client   = InferenceClient(token=settings.HUGGINGFACE_API_KEY)
-        response = client.chat_completion(
-            model="Qwen/Qwen2.5-7B-Instruct",
+        client = Groq(api_key=groq_key)
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=300,
             temperature=0.1,
@@ -197,7 +202,7 @@ Rules:
         return merged
 
     except Exception as e:
-        logger.warning(f"QueryParser LLM pass failed: {e}. Using rule-based result.")
+        logger.warning(f"QueryParser Groq LLM pass failed: {e}. Using rule-based result.")
         return rule_result
 
 
