@@ -53,6 +53,7 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
     _orbController.dispose();
     _waveController.dispose();
     _vp.onActionTriggered = null;
+    _vp.stopEverything();
     super.dispose();
   }
 

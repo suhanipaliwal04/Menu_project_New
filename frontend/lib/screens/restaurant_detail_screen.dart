@@ -82,7 +82,26 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                   ],
                 ),
               ),
-              ...menuResponse.sections.map((section) => _buildMenuSection(section)),
+              if (menuResponse.sections.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.menu_book_rounded, size: 64, color: AppTheme.divider),
+                        const SizedBox(height: 16),
+                        Text('Menu coming soon!',
+                            style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textSecondary)),
+                        const SizedBox(height: 8),
+                        Text('This restaurant hasn\'t uploaded their menu yet.',
+                            style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                ...menuResponse.sections.map((section) => _buildMenuSection(section)),
               const SliverToBoxAdapter(child: SizedBox(height: 100)),
             ],
           );

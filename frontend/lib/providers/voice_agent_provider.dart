@@ -169,14 +169,43 @@ class VoiceAgentProvider extends ChangeNotifier {
     }
   }
 
+  void stopEverything() {
+    _voiceService.stopSpeaking();
+    _voiceService.stopListening();
+    if (_state == VoiceAgentState.listening || _state == VoiceAgentState.speaking) {
+      _setState(VoiceAgentState.idle);
+    }
+  }
+
   // ── Public API ────────────────────────────────────────────────────────────
   Future<VoiceAction> processQueryAndGetAction(String query) async {
     return await _processQuery(query);
   }
 
+  void speakAsync(String text) {
+    if (_voiceReplyEnabled) {
+      _setState(VoiceAgentState.speaking);
+      _voiceService.speak(text).then((_) {
+        if (_state == VoiceAgentState.speaking) {
+          _setState(VoiceAgentState.idle);
+        }
+      });
+    }
+  }
+
   // ── Core Processing Loop ──────────────────────────────────────────────────
   Future<VoiceAction> _processQuery(String query) async {
-    if (query.trim().isEmpty) return const VoiceAction(type: VoiceActionType.none);
+    final q = query.trim().toLowerCase();
+    if (q.isEmpty) return const VoiceAction(type: VoiceActionType.none);
+
+    // Stop command check
+    if (q == 'stop' || q == 'shut up' || q == 'cancel' || q == 'quiet' || q == 'stop talking') {
+      stopEverything();
+      _history.add(ConversationTurn(isUser: true, text: query));
+      _history.add(ConversationTurn(isUser: false, text: 'Okay, stopping.'));
+      notifyListeners();
+      return const VoiceAction(type: VoiceActionType.none);
+    }
 
     // Prevent double-processing the same STT result
     if (_isProcessing) {
@@ -629,8 +658,10 @@ class VoiceAgentProvider extends ChangeNotifier {
         suggestedItems = response.items;
       }
     } on ApiException catch (e) {
+      debugPrint('VoiceAgent: ApiException: ${e.message}');
       aiReply = 'Sorry, I could not connect to the server. ${e.message}';
-    } catch (_) {
+    } catch (e, stack) {
+      debugPrint('VoiceAgent: Unhandled error: $e\n$stack');
       aiReply = 'Sorry, something went wrong. Please try again.';
     }
 

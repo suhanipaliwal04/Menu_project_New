@@ -10,8 +10,25 @@ import '../widgets/skeleton_card.dart';
 import '../widgets/typewriter_text.dart';
 import '../widgets/voice_fab.dart';
 
-class ResultsScreen extends StatelessWidget {
+class ResultsScreen extends StatefulWidget {
   const ResultsScreen({super.key});
+
+  @override
+  State<ResultsScreen> createState() => _ResultsScreenState();
+}
+
+class _ResultsScreenState extends State<ResultsScreen> {
+  @override
+  void dispose() {
+    // Stop speaking when user leaves results page
+    // Using a microtask instead of context to avoid unmounted errors,
+    // or we can just access it immediately before super.dispose()
+    // However, context in dispose is not safe for provider if we do it post-frame.
+    // Instead we do it directly:
+    final provider = Provider.of<VoiceAgentProvider>(context, listen: false);
+    provider.stopEverything();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -162,7 +179,7 @@ class ResultsScreen extends StatelessWidget {
     // Auto-speak when this card first appears
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final vp = context.read<VoiceAgentProvider>();
-      if (vp.voiceReplyEnabled) vp.processQueryAndGetAction(answer);
+      if (vp.voiceReplyEnabled) vp.speakAsync(answer);
     });
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
