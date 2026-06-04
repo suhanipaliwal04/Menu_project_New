@@ -326,6 +326,11 @@ class VoiceActionHandler {
   String _extractName(String text) {
     final lower = text.toLowerCase();
     
+    // Ignore pure numbers or time strings
+    if (RegExp(r'^[\d\s:apm\.]+$', caseSensitive: false).hasMatch(lower)) {
+      return '';
+    }
+    
     final nameTriggers = [
       'my name is ', 'im ', "i'm ", 'i am ', 'name is ', 'this is ',
     ];
@@ -386,7 +391,7 @@ class VoiceActionHandler {
   /// Tries to extract a restaurant name from [text].
   String _extractRestaurantName(String text) {
     const triggers = [
-      'menu of ', 'show menu of ', 'open ', 'go to ', 'at ',
+      'menu of ', 'show menu of ', 'open ', 'go to ', 'at ', 'from ',
       "tell me the menu of ", 'what does ', 'book at ', 'book a table at ',
       'reserve at ', 'table at ', 'dine at ', 'eating at ',
       'people at ', 'guests at ', 'seats at ', 'person at ',
@@ -394,7 +399,7 @@ class VoiceActionHandler {
     for (final t in triggers) {
       if (text.contains(t)) {
         final after = text.substring(text.indexOf(t) + t.length);
-        return after.split(RegExp(r'\b(menu|restaurant|show|tell|and|for|at)\b')).first.trim();
+        return after.split(RegExp(r'\b(menu|restaurant|show|tell|and|for|at|by|ill|i\u0027ll)\b')).first.trim();
       }
     }
     return '';

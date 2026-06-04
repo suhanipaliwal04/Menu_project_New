@@ -219,6 +219,21 @@ class VoiceAgentProvider extends ChangeNotifier {
 
     try {
 
+    // ── Detect new intent from utterance ─────────────────────────────────
+    final quickAction = _actionHandler.parse(userQuery: query, aiReply: '');
+    debugPrint('VoiceAgent: parsed action = ${quickAction.type} params=${quickAction.params}');
+
+    // If we detect a strong NEW intent (like search, add to cart), abandon current flow
+    if (quickAction.type != VoiceActionType.none && _pendingAction != null) {
+      // Don't abandon if it's the SAME intent (just re-triggering)
+      if (quickAction.type != _pendingAction!.type) {
+        debugPrint('VoiceAgent: abandoning ${_pendingAction!.type} for new intent ${quickAction.type}');
+        _resetDineIn();
+        _resetTakeaway();
+        _pendingAction = null;
+      }
+    }
+
     // ── Branch: active dine-in booking dialogue ──────────────────────────
     if (_pendingAction != null && _pendingAction!.type == VoiceActionType.bookTable) {
       debugPrint('VoiceAgent: continuing dine-in turn | people=$_pendingPeople time=$_pendingTime');
@@ -231,14 +246,12 @@ class VoiceAgentProvider extends ChangeNotifier {
       return await _handleTakeawayTurn(query);
     }
 
-    // ── Branch: other pending actions (takeaway, order) ──────────────────
+    // ── Branch: other pending actions (order) ────────────────────────────
     if (_pendingAction != null) {
       return await _handleOtherPendingAction(query);
     }
 
-    // ── Branch: detect new bookTable intent from first utterance ─────────
-    final quickAction = _actionHandler.parse(userQuery: query, aiReply: '');
-    debugPrint('VoiceAgent: parsed action = ${quickAction.type} params=${quickAction.params}');
+    // ── Branch: detect new bookTable intent ──────────────────────────────
     if (quickAction.type == VoiceActionType.bookTable) {
       _pendingAction = quickAction;
       // Pre-populate from parsed params so _handleDineInTurn has full context
@@ -255,7 +268,7 @@ class VoiceAgentProvider extends ChangeNotifier {
       return await _handleDineInTurn(query);
     }
 
-    // ── Branch: detect new takeaway intent from first utterance ──────────
+    // ── Branch: detect new takeaway intent ───────────────────────────────
     if (quickAction.type == VoiceActionType.scheduleTakeaway) {
       _pendingAction = quickAction;
       _pendingTakeawayItem = quickAction.params['item'] as String?;
