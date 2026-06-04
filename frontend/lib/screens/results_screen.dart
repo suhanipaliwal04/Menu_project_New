@@ -8,9 +8,27 @@ import '../providers/voice_agent_provider.dart';
 import '../widgets/food_item_card.dart';
 import '../widgets/skeleton_card.dart';
 import '../widgets/typewriter_text.dart';
+import '../widgets/voice_fab.dart';
 
-class ResultsScreen extends StatelessWidget {
+class ResultsScreen extends StatefulWidget {
   const ResultsScreen({super.key});
+
+  @override
+  State<ResultsScreen> createState() => _ResultsScreenState();
+}
+
+class _ResultsScreenState extends State<ResultsScreen> {
+  @override
+  void dispose() {
+    // Stop speaking when user leaves results page
+    // Using a microtask instead of context to avoid unmounted errors,
+    // or we can just access it immediately before super.dispose()
+    // However, context in dispose is not safe for provider if we do it post-frame.
+    // Instead we do it directly:
+    final provider = Provider.of<VoiceAgentProvider>(context, listen: false);
+    provider.stopEverything();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +49,8 @@ class ResultsScreen extends StatelessWidget {
           return const SizedBox.shrink();
         },
       ),
+      floatingActionButton: const VoiceFab(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
@@ -159,7 +179,7 @@ class ResultsScreen extends StatelessWidget {
     // Auto-speak when this card first appears
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final vp = context.read<VoiceAgentProvider>();
-      if (vp.voiceReplyEnabled) vp.processQueryAndGetAction(answer);
+      if (vp.voiceReplyEnabled) vp.speakAsync(answer);
     });
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -340,7 +360,7 @@ class _SortMenu extends StatelessWidget {
         _popItem('relevance', '⭐ Relevance'),
         _popItem('price_asc', '₹ Price: Low to High'),
         _popItem('price_desc', '₹ Price: High to Low'),
-        _popItem('health', '♥ Health Score'),
+        _popItem('health', '⭐ Rating'),
       ],
     );
   }
@@ -364,7 +384,7 @@ class _LoadingViewState extends State<_LoadingView> {
   final List<String> _tips = [
     'Reading local menus...',
     'Analyzing ingredients...',
-    'Checking health scores...',
+    'Checking ratings...',
     'Finding the best matches...',
     'Calculating prices...',
   ];

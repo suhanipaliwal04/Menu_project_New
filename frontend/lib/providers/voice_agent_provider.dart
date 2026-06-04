@@ -20,12 +20,14 @@ class ConversationTurn {
   // Optional rich payload — used to render interactive cards
   final List<String>? alternativeSlots;
   final List<NearbyRestaurant>? nearbyRestaurants;
+  final List<ChatMenuItem>? suggestedItems;
 
   ConversationTurn({
     required this.isUser,
     required this.text,
     this.alternativeSlots,
     this.nearbyRestaurants,
+    this.suggestedItems,
   }) : time = DateTime.now();
 }
 
@@ -167,14 +169,43 @@ class VoiceAgentProvider extends ChangeNotifier {
     }
   }
 
+  void stopEverything() {
+    _voiceService.stopSpeaking();
+    _voiceService.stopListening();
+    if (_state == VoiceAgentState.listening || _state == VoiceAgentState.speaking) {
+      _setState(VoiceAgentState.idle);
+    }
+  }
+
   // ── Public API ────────────────────────────────────────────────────────────
   Future<VoiceAction> processQueryAndGetAction(String query) async {
     return await _processQuery(query);
   }
 
+  void speakAsync(String text) {
+    if (_voiceReplyEnabled) {
+      _setState(VoiceAgentState.speaking);
+      _voiceService.speak(text).then((_) {
+        if (_state == VoiceAgentState.speaking) {
+          _setState(VoiceAgentState.idle);
+        }
+      });
+    }
+  }
+
   // ── Core Processing Loop ──────────────────────────────────────────────────
   Future<VoiceAction> _processQuery(String query) async {
-    if (query.trim().isEmpty) return const VoiceAction(type: VoiceActionType.none);
+    final q = query.trim().toLowerCase();
+    if (q.isEmpty) return const VoiceAction(type: VoiceActionType.none);
+
+    // Stop command check
+    if (q == 'stop' || q == 'shut up' || q == 'cancel' || q == 'quiet' || q == 'stop talking') {
+      stopEverything();
+      _history.add(ConversationTurn(isUser: true, text: query));
+      _history.add(ConversationTurn(isUser: false, text: 'Okay, stopping.'));
+      notifyListeners();
+      return const VoiceAction(type: VoiceActionType.none);
+    }
 
     // Prevent double-processing the same STT result
     if (_isProcessing) {
@@ -188,6 +219,21 @@ class VoiceAgentProvider extends ChangeNotifier {
 
     try {
 
+    // ── Detect new intent from utterance ─────────────────────────────────
+    final quickAction = _actionHandler.parse(userQuery: query, aiReply: '');
+    debugPrint('VoiceAgent: parsed action = ${quickAction.type} params=${quickAction.params}');
+
+    // If we detect a strong NEW intent (like search, add to cart), abandon current flow
+    if (quickAction.type != VoiceActionType.none && _pendingAction != null) {
+      // Don't abandon if it's the SAME intent (just re-triggering)
+      if (quickAction.type != _pendingAction!.type) {
+        debugPrint('VoiceAgent: abandoning ${_pendingAction!.type} for new intent ${quickAction.type}');
+        _resetDineIn();
+        _resetTakeaway();
+        _pendingAction = null;
+      }
+    }
+
     // ── Branch: active dine-in booking dialogue ──────────────────────────
     if (_pendingAction != null && _pendingAction!.type == VoiceActionType.bookTable) {
       debugPrint('VoiceAgent: continuing dine-in turn | people=$_pendingPeople time=$_pendingTime');
@@ -200,14 +246,12 @@ class VoiceAgentProvider extends ChangeNotifier {
       return await _handleTakeawayTurn(query);
     }
 
-    // ── Branch: other pending actions (takeaway, order) ──────────────────
+    // ── Branch: other pending actions (order) ────────────────────────────
     if (_pendingAction != null) {
       return await _handleOtherPendingAction(query);
     }
 
-    // ── Branch: detect new bookTable intent from first utterance ─────────
-    final quickAction = _actionHandler.parse(userQuery: query, aiReply: '');
-    debugPrint('VoiceAgent: parsed action = ${quickAction.type} params=${quickAction.params}');
+    // ── Branch: detect new bookTable intent ──────────────────────────────
     if (quickAction.type == VoiceActionType.bookTable) {
       _pendingAction = quickAction;
       // Pre-populate from parsed params so _handleDineInTurn has full context
@@ -224,7 +268,7 @@ class VoiceAgentProvider extends ChangeNotifier {
       return await _handleDineInTurn(query);
     }
 
-    // ── Branch: detect new takeaway intent from first utterance ──────────
+    // ── Branch: detect new takeaway intent ───────────────────────────────
     if (quickAction.type == VoiceActionType.scheduleTakeaway) {
       _pendingAction = quickAction;
       _pendingTakeawayItem = quickAction.params['item'] as String?;
@@ -273,7 +317,15 @@ class VoiceAgentProvider extends ChangeNotifier {
     }
     // Collect `time` if still missing
     if (_pendingPeople != null && _pendingTime == null) {
-      final time = _actionHandler.extractTime(query);
+      String time = _actionHandler.extractTime(query);
+      if (time.isEmpty && _lastAiReply.contains('what time')) {
+        // user might have just said "7" or "8:30" without am/pm
+        final re = RegExp(r'^(\d{1,2}(?::\d{2})?)$');
+        final m = re.firstMatch(q.trim());
+        if (m != null) {
+          time = '${m.group(1)} PM';
+        }
+      }
       if (time.isNotEmpty) {
         _pendingTime = time;
         _pendingAction = VoiceAction(
@@ -453,9 +505,23 @@ class VoiceAgentProvider extends ChangeNotifier {
       _pendingTakeawayRestaurant = nearbyPick;
     }
 
-    final rname = _pendingTakeawayRestaurant?.isNotEmpty == true 
-        ? _pendingTakeawayRestaurant! 
-        : (_currentRestaurantName.isNotEmpty ? _currentRestaurantName : 'Pranil Da Dhaba');
+    if (_pendingTakeawayRestaurant == null || _pendingTakeawayRestaurant!.isEmpty) {
+      String extracted = _actionHandler.extractRestaurantName(query);
+      
+      if (extracted.isEmpty && _lastAiReply.contains('From which restaurant?')) {
+        extracted = query.replaceAll(RegExp(r'\b(from|at)\b', caseSensitive: false), '').trim();
+      }
+
+      if (extracted.isNotEmpty) {
+        _pendingTakeawayRestaurant = extracted;
+      } else if (_currentRestaurantName.isNotEmpty) {
+        _pendingTakeawayRestaurant = _currentRestaurantName;
+      } else {
+        return _localReply('From which restaurant?');
+      }
+    }
+
+    final rname = _pendingTakeawayRestaurant!;
 
     // ── PRE-CHECK: Does the restaurant offer takeaway? ────────────────────
     final capability = _takeawayProvider.checkRestaurantCapability(rname);
@@ -482,7 +548,12 @@ class VoiceAgentProvider extends ChangeNotifier {
 
     // ── Extract time if missing ───────────────────────────────────────────
     if (_pendingTakeawayTime == null) {
-      final time = _actionHandler.extractTime(query);
+      String time = _actionHandler.extractTime(query);
+      if (time.isEmpty && _lastAiReply.contains('what time')) {
+        final re = RegExp(r'^(\d{1,2}(?::\d{2})?)$');
+        final m = re.firstMatch(q.trim());
+        if (m != null) time = '${m.group(1)} PM';
+      }
       if (time.isNotEmpty) _pendingTakeawayTime = time;
     }
 
@@ -494,6 +565,17 @@ class VoiceAgentProvider extends ChangeNotifier {
     if (_pendingTakeawayPhone == null) {
       final extractedPhone = _actionHandler.extractPhone(query);
       if (extractedPhone.isNotEmpty) _pendingTakeawayPhone = extractedPhone;
+    }
+
+    // Extract item if missing
+    if (_pendingTakeawayItem == null || _pendingTakeawayItem!.isEmpty) {
+      String extractedItem = _actionHandler.extractItem(query);
+      if (extractedItem.isEmpty && _lastAiReply.contains('What would you like to order')) {
+        extractedItem = query.trim();
+      }
+      if (extractedItem.isNotEmpty) {
+        _pendingTakeawayItem = extractedItem;
+      }
     }
 
     // Still missing item? (Safety fallback)
@@ -605,6 +687,7 @@ class VoiceAgentProvider extends ChangeNotifier {
   // ── AI backend query (food discovery, general) ───────────────────────────
   Future<VoiceAction> _handleAIQuery(String query) async {
     String aiReply;
+    List<ChatMenuItem> suggestedItems = [];
     try {
       if (_voiceSessionId != null) {
         final response = await ApiService().voiceChat(
@@ -614,6 +697,7 @@ class VoiceAgentProvider extends ChangeNotifier {
           restaurantId: _currentRestaurantId.isNotEmpty ? _currentRestaurantId : null,
         );
         aiReply = response.answer;
+        suggestedItems = response.items;
         _voiceSessionId = response.sessionId.isNotEmpty ? response.sessionId : _voiceSessionId;
       } else {
         final response = await ApiService().chat(
@@ -622,15 +706,18 @@ class VoiceAgentProvider extends ChangeNotifier {
           restaurantId: _currentRestaurantId.isNotEmpty ? _currentRestaurantId : null,
         );
         aiReply = response.answer;
+        suggestedItems = response.items;
       }
     } on ApiException catch (e) {
+      debugPrint('VoiceAgent: ApiException: ${e.message}');
       aiReply = 'Sorry, I could not connect to the server. ${e.message}';
-    } catch (_) {
+    } catch (e, stack) {
+      debugPrint('VoiceAgent: Unhandled error: $e\n$stack');
       aiReply = 'Sorry, something went wrong. Please try again.';
     }
 
     _lastAiReply = aiReply;
-    _history.add(ConversationTurn(isUser: false, text: aiReply));
+    _history.add(ConversationTurn(isUser: false, text: aiReply, suggestedItems: suggestedItems.isNotEmpty ? suggestedItems : null));
 
     final action = _actionHandler.parse(userQuery: query, aiReply: aiReply);
 

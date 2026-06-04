@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 import '../core/theme.dart';
 import '../providers/voice_agent_provider.dart';
 import '../providers/dine_in_provider.dart';
+import '../providers/chat_provider.dart';
 import '../services/voice_action_handler.dart';
+import '../models/chat_models.dart';
 import 'results_screen.dart';
 import 'cart_screen.dart';
 import 'table_booking_screen.dart';
@@ -51,6 +53,7 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
     _orbController.dispose();
     _waveController.dispose();
     _vp.onActionTriggered = null;
+    _vp.stopEverything();
     super.dispose();
   }
 
@@ -70,6 +73,14 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
 
     switch (action.type) {
       case VoiceActionType.search:
+        final query = action.params['query'] as String?;
+        if (query != null && query.isNotEmpty) {
+          // Trigger the search in ChatProvider so ResultsScreen populates
+          context.read<ChatProvider>().search(
+            query: query,
+            areaName: vp.currentArea,
+          );
+        }
         Navigator.push(context,
             MaterialPageRoute(builder: (_) => const ResultsScreen()));
         break;
@@ -234,7 +245,7 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '"Book me a table"\n"I want something healthy"\n"Add tomato soup to cart"',
+                  '"Book me a table"\n"I want something healthy"\n"Show me trending places"',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.outfit(
                     color: Colors.white30,
@@ -266,6 +277,11 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
                     turn.nearbyRestaurants != null &&
                     turn.nearbyRestaurants!.isNotEmpty)
                   _buildNearbyCardsInline(turn.nearbyRestaurants!),
+                // Inline semantic search items
+                if (!turn.isUser &&
+                    turn.suggestedItems != null &&
+                    turn.suggestedItems!.isNotEmpty)
+                  _buildSuggestedItemsInline(turn.suggestedItems!),
               ],
             );
           },
@@ -414,6 +430,79 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
                       color: Colors.white30, size: 12),
                 ],
               ),
+            ),
+          ).animate().fadeIn(delay: 100.ms);
+        }).toList(),
+      ),
+    );
+  }
+
+  // ── Inline semantic search items ─────────────────────────────────────────
+  Widget _buildSuggestedItemsInline(List<ChatMenuItem> items) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: items.take(4).map((item) {
+          return Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    item.isVeg == true ? Icons.eco_rounded : Icons.restaurant_menu_rounded,
+                    color: item.isVeg == true ? Colors.greenAccent : Colors.redAccent, 
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item.itemName,
+                          style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13)),
+                      Text(item.restaurantName,
+                          style: GoogleFonts.outfit(
+                              color: Colors.white54, fontSize: 11)),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(item.priceDisplay,
+                        style: GoogleFonts.outfit(
+                            color: AppTheme.primary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13)),
+                    if (item.healthScore != null)
+                      Row(
+                        children: [
+                          const Icon(Icons.star_rounded, color: Color(0xFFF39C12), size: 10),
+                          const SizedBox(width: 2),
+                          Text('${item.healthScore}',
+                              style: GoogleFonts.outfit(
+                                  color: Colors.white60, fontSize: 10)),
+                        ],
+                      ),
+                  ],
+                ),
+              ],
             ),
           ).animate().fadeIn(delay: 100.ms);
         }).toList(),
@@ -605,7 +694,6 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
     final chips = [
       '🥗 Healthy food',
       '📋 Book table',
-      '🛒 View cart',
       '🥡 Takeaway',
     ];
     return Wrap(

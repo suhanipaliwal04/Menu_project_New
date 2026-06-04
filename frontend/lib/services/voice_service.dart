@@ -25,7 +25,7 @@ class VoiceService {
 
   Future<void> init() async {
     await _tts.setLanguage('en-IN');
-    await _tts.setSpeechRate(0.55); // Faster pace
+    await _tts.setSpeechRate(0.50); // Normal pace
     await _tts.setVolume(1.0);
     await _tts.setPitch(1.05);
     _tts.setStartHandler(() => _isSpeaking = true);

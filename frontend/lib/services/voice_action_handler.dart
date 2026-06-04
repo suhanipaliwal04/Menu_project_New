@@ -241,6 +241,12 @@ class VoiceActionHandler {
   /// Public wrapper — extracts a name.
   String extractName(String text) => _extractName(text);
 
+  /// Public wrapper — extracts an item from a raw utterance.
+  String extractItem(String text) => _extractItem(text);
+
+  /// Public wrapper — extracts a restaurant name from a raw utterance.
+  String extractRestaurantName(String text) => _extractRestaurantName(text);
+
   // ── Helpers ───────────────────────────────────────────────────────────────
 
 
@@ -320,6 +326,11 @@ class VoiceActionHandler {
   String _extractName(String text) {
     final lower = text.toLowerCase();
     
+    // Ignore pure numbers or time strings
+    if (RegExp(r'^[\d\s:apm\.]+$', caseSensitive: false).hasMatch(lower)) {
+      return '';
+    }
+    
     final nameTriggers = [
       'my name is ', 'im ', "i'm ", 'i am ', 'name is ', 'this is ',
     ];
@@ -355,9 +366,18 @@ class VoiceActionHandler {
         break;
       }
     }
+    
+    // Truncate before prepositions that usually indicate the restaurant or time
+    const cutOffWords = [' from ', ' at ', ' by ', ' i\'ll ', ' ill ', ' ill be '];
+    for (final cw in cutOffWords) {
+      if (result.contains(cw)) {
+        result = result.substring(0, result.indexOf(cw));
+      }
+    }
+    
     const stopWords = [
-      'in cart', 'to cart', 'for me', 'please', 'and', 'from',
-      'pranil da dhaba', 'with', 'payment', 'cash on delivery', 'cod'
+      'in cart', 'to cart', 'for me', 'please', 'and',
+      'with', 'payment', 'cash on delivery', 'cod'
     ];
     for (final sw in stopWords) {
       result = result.replaceAll(sw, '');
@@ -371,7 +391,7 @@ class VoiceActionHandler {
   /// Tries to extract a restaurant name from [text].
   String _extractRestaurantName(String text) {
     const triggers = [
-      'menu of ', 'show menu of ', 'open ', 'go to ', 'at ',
+      'menu of ', 'show menu of ', 'open ', 'go to ', 'at ', 'from ',
       "tell me the menu of ", 'what does ', 'book at ', 'book a table at ',
       'reserve at ', 'table at ', 'dine at ', 'eating at ',
       'people at ', 'guests at ', 'seats at ', 'person at ',
@@ -379,7 +399,7 @@ class VoiceActionHandler {
     for (final t in triggers) {
       if (text.contains(t)) {
         final after = text.substring(text.indexOf(t) + t.length);
-        return after.split(RegExp(r'\b(menu|restaurant|show|tell|and|for|at)\b')).first.trim();
+        return after.split(RegExp(r'\b(menu|restaurant|show|tell|and|for|at|by|ill|i\u0027ll)\b')).first.trim();
       }
     }
     return '';

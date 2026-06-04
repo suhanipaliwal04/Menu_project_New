@@ -148,14 +148,11 @@ Here are menu items from nearby restaurants:
 {context}
 {pref_block}
 
-Write a warm, helpful 3-5 sentence recommendation:
-- Mention {loc} to make it feel local and personal
-- Pick the 3-4 BEST matching items — skip anything clearly irrelevant
-- For each item, say its name, the restaurant it's from, and its price
-- Explain briefly WHY it matches (taste, health, price value, diet type)
-- Sound like a friend giving a genuine recommendation, not a search engine
-- No bullet points, no numbering — just natural flowing conversation
-- Do NOT invent items or prices not in the list above"""
+Write a very short 1-2 sentence recommendation:
+- Pick the 1-2 BEST matching items.
+- Mention the item name, restaurant, and price.
+- Be very brief and conversational. No long explanations.
+- No bullet points, no numbering."""
 
         try:
             client = self._get_groq_client()
@@ -168,7 +165,7 @@ Write a warm, helpful 3-5 sentence recommendation:
                     {"role": "system", "content": system_msg},
                     {"role": "user",   "content": prompt},
                 ],
-                max_tokens=350,
+                max_tokens=150,
                 temperature=0.75,
             )
             return response.choices[0].message.content.strip()

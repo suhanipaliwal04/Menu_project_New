@@ -15,7 +15,7 @@ class HealthBadge extends StatelessWidget {
   }
 
   String get _text {
-    if (score != null) return '♥ $score/10';
+    if (score != null) return '⭐ $score/10';
     if (label != null) return label![0].toUpperCase() + label!.substring(1);
     return '';
   }

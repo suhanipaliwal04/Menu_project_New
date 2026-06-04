@@ -13,7 +13,7 @@ pydantic-core==2.14.6
 
 # ─── Database ───────────────────────────────────────────────
 sqlalchemy==2.0.25
-psycopg2-binary==2.9.9
+psycopg[binary]>=3.1.18
 alembic==1.13.1
 pgvector==0.2.4
 
@@ -22,17 +22,17 @@ redis==5.0.1
 hiredis==2.3.2
 
 # ─── OCR & Image Processing ─────────────────────────────────
-paddleocr==2.7.0.3
-paddlepaddle==2.6.2
-opencv-python==4.6.0.66
-Pillow==10.2.0
+paddleocr>=2.7.0.3
+paddlepaddle>=2.6.2
+opencv-python>=4.8.0
+Pillow>=10.2.0
 
 # ─── NLP & ML ───────────────────────────────────────────────
 sentence-transformers==2.3.1
 transformers==4.37.2
-torch==2.1.2
-numpy==1.26.3
-scikit-learn==1.4.0
+torch>=2.2.0
+numpy>=1.26.3
+scikit-learn>=1.4.0
 
 # ─── LLM Integration ────────────────────────────────────────
 openai==1.10.0
