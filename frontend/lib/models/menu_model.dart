@@ -91,12 +91,16 @@ class RestaurantMenuInfo {
   final String restaurantName;
   final List<String>? cuisineType;
   final String? priceCategory;
+  final bool hasDineIn;
+  final bool hasTakeaway;
 
   const RestaurantMenuInfo({
     required this.restaurantId,
     required this.restaurantName,
     this.cuisineType,
     this.priceCategory,
+    this.hasDineIn = true,
+    this.hasTakeaway = true,
   });
 
   factory RestaurantMenuInfo.fromJson(Map<String, dynamic> json) =>
@@ -107,5 +111,7 @@ class RestaurantMenuInfo {
             ?.map((e) => e.toString())
             .toList(),
         priceCategory: json['price_category'],
+        hasDineIn: json['has_dine_in'] ?? true,
+        hasTakeaway: json['has_takeaway'] ?? true,
       );
 }

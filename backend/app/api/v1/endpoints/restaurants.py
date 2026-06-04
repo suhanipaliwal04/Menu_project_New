@@ -110,7 +110,9 @@ def get_restaurant_menu(restaurant_id: uuid.UUID, db: Session = Depends(get_db))
             "restaurant_id": restaurant.restaurant_id,
             "restaurant_name": restaurant.restaurant_name,
             "cuisine_type": restaurant.cuisine_type,
-            "price_category": restaurant.price_category
+            "price_category": restaurant.price_category,
+            "has_dine_in": getattr(restaurant, "has_dine_in", True),
+            "has_takeaway": getattr(restaurant, "has_takeaway", True)
         },
         "sections": []
     }

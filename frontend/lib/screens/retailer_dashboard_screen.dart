@@ -1989,6 +1989,11 @@ class _SettingsTabState extends State<_SettingsTab> {
       address: _addressCtrl.text.trim(),
       cuisineType: cuisines,
       priceCategory: _priceCategory,
+      hasDineIn: _hasDineIn,
+      hasTakeaway: _hasTakeaway,
+      isOpenManually: _isOpenManually,
+      openingTime: _formatTime(_openingTime),
+      closingTime: _formatTime(_closingTime),
     );
 
     if (mounted) {
@@ -2248,6 +2253,247 @@ class _SettingsTabState extends State<_SettingsTab> {
         ],
       ),
     );
+  }
+
+  Widget _buildOperationalSettings() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.divider),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.settings_suggest_rounded, color: AppTheme.primary, size: 22),
+              const SizedBox(width: 10),
+              Text(
+                'Operational Settings',
+                style: GoogleFonts.outfit(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Manage booking options, takeaway availability, and store hours.',
+            style: GoogleFonts.outfit(
+              fontSize: 12,
+              color: AppTheme.textSecondary,
+            ),
+          ),
+          const Divider(height: 30),
+          
+          // Dine-In Switch
+          _buildToggleOption(
+            title: 'Dine-In Bookings',
+            subtitle: 'Allow customers to reserve tables online',
+            icon: Icons.event_seat_rounded,
+            value: _hasDineIn,
+            onChanged: (val) => setState(() {
+              _hasDineIn = val;
+              _dirty = true;
+            }),
+            activeColor: AppTheme.primary,
+          ),
+          const SizedBox(height: 16),
+
+          // Takeaway Switch
+          _buildToggleOption(
+            title: 'Takeaway Orders',
+            subtitle: 'Enable online ordering for self-pickup',
+            icon: Icons.shopping_bag_rounded,
+            value: _hasTakeaway,
+            onChanged: (val) => setState(() {
+              _hasTakeaway = val;
+              _dirty = true;
+            }),
+            activeColor: AppTheme.primary,
+          ),
+          const SizedBox(height: 16),
+
+          // Open Manually Switch
+          _buildToggleOption(
+            title: 'Store Status',
+            subtitle: 'Force store status as open/closed (manual override)',
+            icon: Icons.store_rounded,
+            value: _isOpenManually,
+            onChanged: (val) => setState(() {
+              _isOpenManually = val;
+              _dirty = true;
+            }),
+            activeColor: AppTheme.success,
+          ),
+          const Divider(height: 30),
+
+          // Timing section
+          Text(
+            'Operational Hours',
+            style: GoogleFonts.outfit(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          
+          Row(
+            children: [
+              Expanded(
+                child: _buildTimePickerField(
+                  label: 'Opening Time',
+                  time: _openingTime,
+                  onTap: () => _selectTime(true),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildTimePickerField(
+                  label: 'Closing Time',
+                  time: _closingTime,
+                  onTap: () => _selectTime(false),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToggleOption({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required Color activeColor,
+  }) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: activeColor.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: activeColor, size: 20),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.outfit(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: GoogleFonts.outfit(
+                  fontSize: 11,
+                  color: AppTheme.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Switch.adaptive(
+          value: value,
+          onChanged: onChanged,
+          activeColor: activeColor,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimePickerField({
+    required String label,
+    required TimeOfDay? time,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceAlt,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTheme.divider),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.access_time_rounded, color: AppTheme.textSecondary, size: 18),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: GoogleFonts.outfit(
+                      fontSize: 10,
+                      color: AppTheme.textSecondary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    time != null ? time.format(context) : 'Not Set',
+                    style: GoogleFonts.outfit(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: time != null ? AppTheme.textPrimary : AppTheme.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _selectTime(bool isOpening) async {
+    final initialTime = (isOpening ? _openingTime : _closingTime) ?? const TimeOfDay(hour: 9, minute: 0);
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppTheme.primary,
+              onPrimary: Colors.white,
+              onSurface: AppTheme.textPrimary,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        if (isOpening) {
+          _openingTime = picked;
+        } else {
+          _closingTime = picked;
+        }
+        _dirty = true;
+      });
+    }
   }
 
   Widget _formField(
