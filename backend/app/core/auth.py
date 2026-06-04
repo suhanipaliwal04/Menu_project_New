@@ -44,74 +44,61 @@ async def get_current_user(
 
     token = credentials.credentials
 
-    try:
-        # Supabase JWTs are signed with HS256 using the project JWT secret.
-        # The JWKS endpoint (/auth/v1/keys) requires an apikey header which 
-        # PyJWKClient doesn't support easily, so we use HS256 directly.
-        jwt_secret = settings.SUPABASE_JWT_SECRET
-        
-        if jwt_secret:
-            # Primary: HS256 with Supabase JWT secret (correct approach)
-            payload = jwt.decode(
-                token,
-                jwt_secret,
-                algorithms=["HS256"],
-                audience="authenticated",
+    if not settings.SUPABASE_URL or not settings.SUPABASE_ANON_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Supabase is not configured on this server.",
+        )
+
+    # Let Supabase itself verify the token. This avoids all crypto algorithm
+    # issues (HS256 vs RS256 vs ES256) and missing public key problems.
+    user_url = f"{settings.SUPABASE_URL}/auth/v1/user"
+    
+    import httpx
+    async with httpx.AsyncClient() as client:
+        try:
+            resp = await client.get(
+                user_url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "apikey": settings.SUPABASE_ANON_KEY
+                }
             )
-        else:
-            # Fallback: JWKS with apikey header (if JWT secret not configured)
-            if not settings.SUPABASE_URL:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Neither SUPABASE_JWT_SECRET nor SUPABASE_URL is configured"
-                )
-            jwks_url = f"{settings.SUPABASE_URL}/auth/v1/keys"
-            jwks_client = jwt.PyJWKClient(
-                jwks_url,
-                headers={"apikey": settings.SUPABASE_ANON_KEY} if settings.SUPABASE_ANON_KEY else {},
-            )
-            try:
-                signing_key = jwks_client.get_signing_key_from_jwt(token)
-            except jwt.PyJWKClientError as e:
+            
+            if resp.status_code != 200:
+                detail = "Token is invalid or expired"
+                try:
+                    err_data = resp.json()
+                    detail = err_data.get("msg", detail)
+                except Exception:
+                    pass
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail=f"Unable to fetch signing key: {e}",
+                    detail=detail,
                     headers={"WWW-Authenticate": "Bearer"},
                 )
-            payload = jwt.decode(
-                token,
-                signing_key.key,
-                algorithms=["RS256", "ES256", "ES384", "RS384", "RS512", "ES512"],
-                audience="authenticated",
+                
+            user_data = resp.json()
+            user_id_str = user_data.get("id")
+            
+            if not user_id_str:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Token missing user 'id'",
+                )
+                
+            return uuid.UUID(user_id_str)
+            
+        except httpx.RequestError as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to verify token with Supabase: {str(e)}",
             )
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token has expired — please log in again",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    except jwt.InvalidTokenError as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid token: {e}",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    # The "sub" claim is the user's UUID in Supabase
-    user_id_str = payload.get("sub")
-    if not user_id_str:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token missing 'sub' claim",
-        )
-
-    try:
-        return uuid.UUID(user_id_str)
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid user ID in token",
-        )
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid user ID format in token response",
+            )
 
 
 async def get_optional_user(
