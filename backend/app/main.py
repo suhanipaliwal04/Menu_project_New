@@ -80,6 +80,49 @@ async def health_check():
     }
 
 
+@app.get("/run-migration")
+async def run_migration():
+    """TEMPORARY: Run DB migration to add operational columns. DELETE after use."""
+    from app.core.database import SessionLocal
+    from sqlalchemy import text
+    
+    sqls = [
+        "ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS has_dine_in BOOLEAN DEFAULT true",
+        "ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS has_takeaway BOOLEAN DEFAULT true",
+        "ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS is_open_manually BOOLEAN DEFAULT true",
+        "ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS opening_time TIME",
+        "ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS closing_time TIME",
+        "UPDATE restaurants SET has_dine_in = true WHERE has_dine_in IS NULL",
+        "UPDATE restaurants SET has_takeaway = true WHERE has_takeaway IS NULL",
+        "UPDATE restaurants SET is_open_manually = true WHERE is_open_manually IS NULL",
+    ]
+    
+    results = []
+    db = SessionLocal()
+    try:
+        for sql in sqls:
+            try:
+                db.execute(text(sql))
+                db.commit()
+                results.append({"sql": sql[:60], "status": "OK"})
+            except Exception as e:
+                db.rollback()
+                results.append({"sql": sql[:60], "status": f"ERROR: {str(e)}"})
+        
+        # Verify
+        rows = db.execute(text(
+            "SELECT restaurant_name, owner_id, has_dine_in, has_takeaway, is_open_manually FROM restaurants"
+        )).fetchall()
+        restaurants = [
+            {"name": r[0], "owner_id": str(r[1]), "has_dine_in": r[2], "has_takeaway": r[3], "is_open_manually": r[4]}
+            for r in rows
+        ]
+    finally:
+        db.close()
+    
+    return {"migrations": results, "restaurants": restaurants}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
