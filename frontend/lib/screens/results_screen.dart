@@ -29,6 +29,7 @@ class ResultsScreen extends StatelessWidget {
               provider.response != null) {
             return _buildResults(context, provider);
           }
+          return const SizedBox.shrink();
         },
       ),
       floatingActionButton: const VoiceFab(),
