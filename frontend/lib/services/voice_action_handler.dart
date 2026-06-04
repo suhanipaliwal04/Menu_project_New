@@ -241,6 +241,12 @@ class VoiceActionHandler {
   /// Public wrapper — extracts a name.
   String extractName(String text) => _extractName(text);
 
+  /// Public wrapper — extracts an item from a raw utterance.
+  String extractItem(String text) => _extractItem(text);
+
+  /// Public wrapper — extracts a restaurant name from a raw utterance.
+  String extractRestaurantName(String text) => _extractRestaurantName(text);
+
   // ── Helpers ───────────────────────────────────────────────────────────────
 
 
