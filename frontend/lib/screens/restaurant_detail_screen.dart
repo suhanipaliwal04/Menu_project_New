@@ -54,15 +54,17 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
 
           return Scaffold(
             backgroundColor: AppTheme.background,
-            floatingActionButton: FloatingActionButton.extended(
-              onPressed: () => _showBookingModal(context, restaurant),
-              backgroundColor: AppTheme.primary,
-              icon: const Icon(Icons.event_seat_rounded, color: Colors.white),
-              label: Text('Book a Table', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
-            ),
+            floatingActionButton: restaurant.hasDineIn
+                ? FloatingActionButton.extended(
+                    onPressed: () => _showBookingModal(context, restaurant),
+                    backgroundColor: AppTheme.primary,
+                    icon: const Icon(Icons.event_seat_rounded, color: Colors.white),
+                    label: Text('Book a Table', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
+                  )
+                : null,
             body: CustomScrollView(
               slivers: [
-                _buildAppBar(context, restaurant.restaurantName),
+                _buildAppBar(restaurant.restaurantName),
                 SliverToBoxAdapter(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,7 +234,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
     );
   }
 
-  Widget _buildAppBar(BuildContext context, String name) {
+  Widget _buildAppBar(String name) {
     return SliverAppBar(
       expandedHeight: 220,
       pinned: true,
