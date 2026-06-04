@@ -54,12 +54,12 @@ def list_restaurants(
         query = query.filter(Restaurant.cuisine_type.contains([cuisine]))
 
     if order_type == "Dine In" or order_type == "dine_in":
-        query = query.filter(Restaurant.has_dine_in == True)
+        query = query.filter(Restaurant.has_dine_in.is_not(False))
     elif order_type == "Takeaway" or order_type == "takeaway":
-        query = query.filter(Restaurant.has_takeaway == True)
+        query = query.filter(Restaurant.has_takeaway.is_not(False))
     
-    # Must be open manually
-    query = query.filter(Restaurant.is_open_manually == True)
+    # Must be open manually (handle NULL as open)
+    query = query.filter(Restaurant.is_open_manually.is_not(False))
     
     restaurants = query.offset(skip).limit(limit).all()
     
