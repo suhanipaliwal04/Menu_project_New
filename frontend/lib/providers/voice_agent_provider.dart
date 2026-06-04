@@ -484,9 +484,15 @@ class VoiceAgentProvider extends ChangeNotifier {
       _pendingTakeawayRestaurant = nearbyPick;
     }
 
-    final rname = _pendingTakeawayRestaurant?.isNotEmpty == true 
-        ? _pendingTakeawayRestaurant! 
-        : (_currentRestaurantName.isNotEmpty ? _currentRestaurantName : 'Pranil Da Dhaba');
+    if (_pendingTakeawayRestaurant == null || _pendingTakeawayRestaurant!.isEmpty) {
+      if (_currentRestaurantName.isNotEmpty) {
+        _pendingTakeawayRestaurant = _currentRestaurantName;
+      } else {
+        return _localReply('From which restaurant?');
+      }
+    }
+
+    final rname = _pendingTakeawayRestaurant!;
 
     // ── PRE-CHECK: Does the restaurant offer takeaway? ────────────────────
     final capability = _takeawayProvider.checkRestaurantCapability(rname);

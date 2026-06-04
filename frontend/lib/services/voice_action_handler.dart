@@ -355,9 +355,18 @@ class VoiceActionHandler {
         break;
       }
     }
+    
+    // Truncate before prepositions that usually indicate the restaurant or time
+    const cutOffWords = [' from ', ' at ', ' by ', ' i\'ll ', ' ill ', ' ill be '];
+    for (final cw in cutOffWords) {
+      if (result.contains(cw)) {
+        result = result.substring(0, result.indexOf(cw));
+      }
+    }
+    
     const stopWords = [
-      'in cart', 'to cart', 'for me', 'please', 'and', 'from',
-      'pranil da dhaba', 'with', 'payment', 'cash on delivery', 'cod'
+      'in cart', 'to cart', 'for me', 'please', 'and',
+      'with', 'payment', 'cash on delivery', 'cod'
     ];
     for (final sw in stopWords) {
       result = result.replaceAll(sw, '');

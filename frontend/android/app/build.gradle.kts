@@ -8,6 +8,7 @@ android {
     // This 'namespace' is now required in modern Gradle
     namespace = "com.example.menu_intelligence" 
     compileSdk = flutter.compileSdkVersion
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

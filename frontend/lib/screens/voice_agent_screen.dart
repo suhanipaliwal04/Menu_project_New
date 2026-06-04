@@ -245,7 +245,7 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '"Book me a table"\n"I want something healthy"\n"Add tomato soup to cart"',
+                  '"Book me a table"\n"I want something healthy"\n"Show me trending places"',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.outfit(
                     color: Colors.white30,
@@ -493,7 +493,7 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
                     if (item.healthScore != null)
                       Row(
                         children: [
-                          const Icon(Icons.favorite_rounded, color: Colors.pinkAccent, size: 10),
+                          const Icon(Icons.star_rounded, color: Color(0xFFF39C12), size: 10),
                           const SizedBox(width: 2),
                           Text('${item.healthScore}',
                               style: GoogleFonts.outfit(
@@ -694,7 +694,6 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
     final chips = [
       '🥗 Healthy food',
       '📋 Book table',
-      '🛒 View cart',
       '🥡 Takeaway',
     ];
     return Wrap(

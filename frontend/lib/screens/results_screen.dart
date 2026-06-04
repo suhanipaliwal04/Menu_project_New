@@ -360,7 +360,7 @@ class _SortMenu extends StatelessWidget {
         _popItem('relevance', '⭐ Relevance'),
         _popItem('price_asc', '₹ Price: Low to High'),
         _popItem('price_desc', '₹ Price: High to Low'),
-        _popItem('health', '♥ Health Score'),
+        _popItem('health', '⭐ Rating'),
       ],
     );
   }
@@ -384,7 +384,7 @@ class _LoadingViewState extends State<_LoadingView> {
   final List<String> _tips = [
     'Reading local menus...',
     'Analyzing ingredients...',
-    'Checking health scores...',
+    'Checking ratings...',
     'Finding the best matches...',
     'Calculating prices...',
   ];

@@ -16,6 +16,7 @@ import 'results_screen.dart';
 import 'restaurant_detail_screen.dart';
 import 'voice_agent_screen.dart';
 import 'cart_screen.dart';
+import 'category_results_screen.dart';
 import 'admin_login_screen.dart';
 import 'retailer_login_screen.dart';
 import '../widgets/voice_fab.dart';
@@ -581,37 +582,38 @@ class _HomeScreenState extends State<HomeScreen> {
         children: types.map((t) {
           String name = t['name'];
           IconData icon = t['icon'];
-          bool active = _selectedTab == name;
           return Expanded(
             child: GestureDetector(
               onTap: () {
-                setState(() => _selectedTab = name);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CategoryResultsScreen(categoryName: name),
+                  ),
+                );
               },
               child: AnimatedContainer(
                 duration: 300.ms,
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: active ? AppTheme.primary : AppTheme.surfaceAlt,
+                  color: AppTheme.surfaceAlt,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                      color: active
-                          ? AppTheme.primary
-                          : AppTheme.divider),
+                  border: Border.all(color: AppTheme.divider),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(icon, 
                       size: 20, 
-                      color: active ? Colors.white : AppTheme.textSecondary),
+                      color: AppTheme.textSecondary),
                     const SizedBox(height: 4),
                     Text(
                       name,
                       style: GoogleFonts.outfit(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: active ? Colors.white : AppTheme.textSecondary,
+                        color: AppTheme.textSecondary,
                       ),
                     ),
                   ],
