@@ -350,6 +350,27 @@ class _OverviewTab extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.outfit(
                     color: AppTheme.textSecondary, fontSize: 13)),
+            // Debug: show actual error if present
+            Consumer<RetailerProvider>(
+              builder: (_, p, __) => p.errorMessage != null
+                  ? Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.red.withValues(alpha: 0.4)),
+                        ),
+                        child: Text(
+                          'Debug: ${p.errorMessage}',
+                          style: GoogleFonts.outfit(color: Colors.red, fontSize: 11),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
           ],
         ),
       ),

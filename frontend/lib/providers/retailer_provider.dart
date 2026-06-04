@@ -148,8 +148,14 @@ class RetailerProvider extends ChangeNotifier {
         _myRestaurant = await _api.getRestaurant(restaurantId);
         notifyListeners();
       }
-    } catch (_) {
-      // No restaurant yet or token expired — not fatal
+    } on ApiException catch (e) {
+      // Surface auth errors so we can debug them
+      _errorMessage = 'Auth check failed (${e.statusCode}): ${e.message}';
+      notifyListeners();
+    } catch (e) {
+      // Surface all errors for debugging
+      _errorMessage = 'Session error: $e';
+      notifyListeners();
     }
   }
 
