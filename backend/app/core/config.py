@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     SUPABASE_URL: Optional[str] = None
     SUPABASE_ANON_KEY: Optional[str] = None
     SUPABASE_SERVICE_KEY: Optional[str] = None
+    SUPABASE_JWT_SECRET: Optional[str] = None  # From Supabase Dashboard → Settings → API → JWT Secret
     
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"

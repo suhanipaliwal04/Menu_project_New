@@ -45,32 +45,45 @@ async def get_current_user(
     token = credentials.credentials
 
     try:
-        # Initialize JWKS client using Supabase URL
-        if not settings.SUPABASE_URL:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="SUPABASE_URL is not configured for JWKS verification"
-            )
-            
-        jwks_url = f"{settings.SUPABASE_URL}/auth/v1/keys"
-        jwks_client = jwt.PyJWKClient(jwks_url)
+        # Supabase JWTs are signed with HS256 using the project JWT secret.
+        # The JWKS endpoint (/auth/v1/keys) requires an apikey header which 
+        # PyJWKClient doesn't support easily, so we use HS256 directly.
+        jwt_secret = settings.SUPABASE_JWT_SECRET
         
-        # Get signing key from the token header (kid)
-        try:
-            signing_key = jwks_client.get_signing_key_from_jwt(token)
-        except jwt.PyJWKClientError as e:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=f"Unable to fetch signing key: {e}",
-                headers={"WWW-Authenticate": "Bearer"},
+        if jwt_secret:
+            # Primary: HS256 with Supabase JWT secret (correct approach)
+            payload = jwt.decode(
+                token,
+                jwt_secret,
+                algorithms=["HS256"],
+                audience="authenticated",
             )
-
-        payload = jwt.decode(
-            token,
-            signing_key.key,
-            algorithms=["RS256", "ES256", "ES384", "RS384", "RS512", "ES512"], # Allow ECC and RSA
-            audience="authenticated",
-        )
+        else:
+            # Fallback: JWKS with apikey header (if JWT secret not configured)
+            if not settings.SUPABASE_URL:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Neither SUPABASE_JWT_SECRET nor SUPABASE_URL is configured"
+                )
+            jwks_url = f"{settings.SUPABASE_URL}/auth/v1/keys"
+            jwks_client = jwt.PyJWKClient(
+                jwks_url,
+                headers={"apikey": settings.SUPABASE_ANON_KEY} if settings.SUPABASE_ANON_KEY else {},
+            )
+            try:
+                signing_key = jwks_client.get_signing_key_from_jwt(token)
+            except jwt.PyJWKClientError as e:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail=f"Unable to fetch signing key: {e}",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+            payload = jwt.decode(
+                token,
+                signing_key.key,
+                algorithms=["RS256", "ES256", "ES384", "RS384", "RS512", "ES512"],
+                audience="authenticated",
+            )
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
