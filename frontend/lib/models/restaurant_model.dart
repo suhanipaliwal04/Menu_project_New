@@ -7,6 +7,11 @@ class RestaurantModel {
   final String? address;
   final String? phone;
   final bool isActive;
+  final bool hasDineIn;
+  final bool hasTakeaway;
+  final bool isOpenManually;
+  final String? openingTime;
+  final String? closingTime;
 
   const RestaurantModel({
     required this.restaurantId,
@@ -17,6 +22,11 @@ class RestaurantModel {
     this.address,
     this.phone,
     this.isActive = true,
+    this.hasDineIn = true,
+    this.hasTakeaway = true,
+    this.isOpenManually = true,
+    this.openingTime,
+    this.closingTime,
   });
 
   factory RestaurantModel.fromJson(Map<String, dynamic> json) =>
@@ -31,6 +41,11 @@ class RestaurantModel {
         address: json['address'],
         phone: json['phone'],
         isActive: json['is_active'] ?? true,
+        hasDineIn: json['has_dine_in'] ?? true,
+        hasTakeaway: json['has_takeaway'] ?? true,
+        isOpenManually: json['is_open_manually'] ?? true,
+        openingTime: json['opening_time'],
+        closingTime: json['closing_time'],
       );
 
   String get cuisineDisplay =>

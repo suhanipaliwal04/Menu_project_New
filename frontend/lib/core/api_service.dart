@@ -149,15 +149,43 @@ class ApiService {
     String? areaId,
     String? city,
     String? cuisine,
+    String? orderType,
   }) async {
-    final data = await _get(AppConstants.restaurantsEndpoint, params: {
-      'area_id': areaId,
-      'city': city,
-      'cuisine': cuisine,
-    }) as List<dynamic>;
-    return data
-        .map((e) => RestaurantModel.fromJson(e as Map<String, dynamic>))
-        .toList();
+    final params = <String, String>{};
+    if (areaId != null) params['area_id'] = areaId;
+    if (city != null) params['city'] = city;
+    if (cuisine != null) params['cuisine'] = cuisine;
+    if (orderType != null) params['order_type'] = orderType;
+
+    final data = await _get(AppConstants.restaurantsEndpoint, params: params)
+        as List<dynamic>;
+    return data.map((e) => RestaurantModel.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  // ── Bookings (REST API) ───────────────────────────────────────────────────────
+
+  /// POST /bookings/
+  Future<Map<String, dynamic>> createBooking({
+    required String restaurantId,
+    required int partySize,
+    required String timeSlot,
+  }) async {
+    return await _post('/bookings/', {
+      'restaurant_id': restaurantId,
+      'party_size': partySize,
+      'time_slot': timeSlot,
+    }) as Map<String, dynamic>;
+  }
+
+  /// GET /bookings/admin/restaurants/{id}/bookings
+  Future<List<Map<String, dynamic>>> getAdminBookings(String restaurantId) async {
+    final data = await _get('/bookings/admin/restaurants/$restaurantId/bookings') as List<dynamic>;
+    return data.cast<Map<String, dynamic>>();
+  }
+
+  /// PUT /bookings/admin/bookings/{id}
+  Future<Map<String, dynamic>> updateBookingStatus(String bookingId, String status) async {
+    return await _put('/bookings/admin/bookings/$bookingId', {'status': status}) as Map<String, dynamic>;
   }
 
   /// GET /restaurants/{id} — single restaurant by ID
@@ -324,6 +352,12 @@ class ApiService {
     return data as Map<String, dynamic>;
   }
 
+  /// GET /auth/me — Returns logged-in user's info + restaurant_id (if any).
+  Future<Map<String, dynamic>> getMe() async {
+    final data = await _get('/auth/me', auth: true);
+    return data as Map<String, dynamic>;
+  }
+
   // ── Admin Dashboard ───────────────────────────────────────────────────────────
 
   /// GET /admin/dashboard/{restaurantId} — Live stats for a restaurant.
@@ -337,13 +371,42 @@ class ApiService {
 
   // ── Admin Menu Items ─────────────────────────────────────────────────────────
 
-  /// GET /admin/restaurants/{id}/items — All menu items for admin.
-  Future<List<dynamic>> getAdminMenuItems(String restaurantId) async {
+  /// GET /admin/restaurants/{id}/items — All menu items for admin (with optional filters).
+  Future<List<dynamic>> getAdminMenuItems(
+    String restaurantId, {
+    String? sectionName,
+    bool? isVeg,
+  }) async {
     final data = await _get(
       '${AppConstants.adminEndpoint}/restaurants/$restaurantId/items',
+      params: {
+        if (sectionName != null) 'section_name': sectionName,
+        if (isVeg != null) 'is_veg': isVeg.toString(),
+      },
       auth: true,
     );
     return data as List<dynamic>;
+  }
+
+  /// GET /admin/restaurants/{id}/sections — All sections with item counts.
+  Future<List<dynamic>> getAdminSections(String restaurantId) async {
+    final data = await _get(
+      '${AppConstants.adminEndpoint}/restaurants/$restaurantId/sections',
+      auth: true,
+    );
+    return data as List<dynamic>;
+  }
+
+  /// POST /admin/restaurants/{id}/items — Manually add a single item (no OCR).
+  Future<Map<String, dynamic>> addAdminMenuItem(
+    String restaurantId,
+    Map<String, dynamic> itemData,
+  ) async {
+    final uri = Uri.parse('$_base${AppConstants.adminEndpoint}/restaurants/$restaurantId/items');
+    final response = await _client
+        .post(uri, headers: _authHeaders, body: jsonEncode(itemData))
+        .timeout(_timeout);
+    return _handle(response) as Map<String, dynamic>;
   }
 
   /// PUT /admin/restaurants/{id}/items/{itemId} — Partial update.
@@ -364,6 +427,56 @@ class ApiService {
     await _deleteReq(
       '${AppConstants.adminEndpoint}/restaurants/$restaurantId/items/$itemId',
     );
+  }
+
+  /// POST /admin/restaurants/{id}/menu/upload — Upload menu image with replace/append mode.
+  Future<Map<String, dynamic>> adminUploadMenuImage({
+    required File imageFile,
+    required String restaurantId,
+    String mode = 'replace',
+  }) async {
+    final uri = Uri.parse(
+        '$_base${AppConstants.adminEndpoint}/restaurants/$restaurantId/menu/upload');
+    final request = http.MultipartRequest('POST', uri);
+    request.headers.addAll(_authHeaders..remove('Content-Type'));
+    request.fields['mode'] = mode;
+
+    final ext = imageFile.path.split('.').last.toLowerCase();
+    final contentType = ext == 'pdf'
+        ? MediaType('application', 'pdf')
+        : MediaType('image', ext == 'jpg' ? 'jpeg' : ext);
+
+    request.files.add(await http.MultipartFile.fromPath(
+      'file',
+      imageFile.path,
+      contentType: contentType,
+    ));
+
+    final streamedResponse =
+        await request.send().timeout(const Duration(minutes: 5));
+    final response = await http.Response.fromStream(streamedResponse);
+    return _handle(response) as Map<String, dynamic>;
+  }
+
+  /// DELETE /admin/restaurants/{id}/menu/clear — Wipe all menu data.
+  Future<Map<String, dynamic>> clearAdminMenu(String restaurantId) async {
+    final uri = Uri.parse(
+        '$_base${AppConstants.adminEndpoint}/restaurants/$restaurantId/menu/clear');
+    final response =
+        await _client.delete(uri, headers: _authHeaders).timeout(_timeout);
+    return _handle(response) as Map<String, dynamic>;
+  }
+
+  /// PUT /restaurants/{id} — Update restaurant profile (name, phone, address, etc.)
+  Future<Map<String, dynamic>> updateRestaurant(
+    String restaurantId,
+    Map<String, dynamic> updates,
+  ) async {
+    final data = await _put(
+      '${AppConstants.restaurantsEndpoint}/$restaurantId',
+      updates,
+    );
+    return data as Map<String, dynamic>;
   }
 
 }

@@ -71,7 +71,7 @@ class BrowseProvider extends ChangeNotifier {
   }
 
   /// Fetches all restaurants — used by home screen "Popular Near You" section.
-  Future<void> loadRestaurants({String? city, String? cuisine}) async {
+  Future<void> loadRestaurants({String? city, String? cuisine, String? orderType}) async {
     if (_restaurantsState == BrowseState.loading) return;
     _restaurantsState = BrowseState.loading;
     notifyListeners();
@@ -80,6 +80,7 @@ class BrowseProvider extends ChangeNotifier {
       _restaurants = await ApiService().getRestaurants(
         city: city,
         cuisine: cuisine,
+        orderType: orderType,
       );
       _restaurantsState = BrowseState.success;
     } on ApiException catch (e) {

@@ -175,29 +175,11 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
               ),
 
               const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(child: Divider(color: AppTheme.divider)),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Text('Demo credentials', style: GoogleFonts.outfit(color: AppTheme.textMuted, fontSize: 12)),
-                  ),
-                  Expanded(child: Divider(color: AppTheme.divider)),
-                ],
-              ).animate().fadeIn(delay: 700.ms),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppTheme.primary.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
-                ),
-                child: Text(
-                  'Use any email & password to login',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontSize: 12),
-                ),
+              Text(
+                'Sign in with your registered restaurant account.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.outfit(
+                    fontSize: 12, color: AppTheme.textMuted),
               ).animate().fadeIn(delay: 700.ms),
             ],
           ),

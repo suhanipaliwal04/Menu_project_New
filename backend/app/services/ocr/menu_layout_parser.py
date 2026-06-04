@@ -331,3 +331,54 @@ def parse_menu(ocr_result: List) -> List[Dict[str, Any]]:
     return menu_items
 
 
+def parse_menu_from_text(raw_text: str) -> List[Dict[str, Any]]:
+    """
+    Parse plain text (from Google Vision or similar) into menu item records.
+
+    Handles common patterns:
+      - "Item Name  150"
+      - "Item Name ₹150"
+      - "Item Name.....150"
+      - "Item Name - 150"
+
+    Returns:
+        List of dicts: { "item": str, "price": float }
+    """
+    if not raw_text:
+        return []
+
+    # Regex: item text, optional separators (dots/dashes/spaces), then price
+    _LINE_RE = re.compile(
+        r'^(?P<name>[A-Za-z][A-Za-z0-9 &\',\-\(\)/]+?)'   # item name
+        r'(?:\s*[.\-\s]+\s*)'                               # separator
+        r'(?:[₹$]?\s*)'                                     # optional currency
+        r'(?P<price>\d{2,5}(?:\.\d{1,2})?)\s*(?:/-)?$',    # price
+        re.UNICODE
+    )
+
+    menu_items: List[Dict[str, Any]] = []
+
+    for raw_line in raw_text.splitlines():
+        line = raw_line.strip()
+        if not line or len(line) < 3:
+            continue
+
+        m = _LINE_RE.match(line)
+        if m:
+            name = _clean_name(m.group("name"))
+            price = float(m.group("price"))
+            if len(name) >= MIN_ITEM_LEN and not _is_garbled(name) and price > 0:
+                menu_items.append({"item": name, "price": price})
+            continue
+
+        # Fallback: try to split on the last price-like token in the line
+        tokens = line.split()
+        if len(tokens) >= 2:
+            last = tokens[-1]
+            p = _parse_price(last)
+            if p is not None:
+                name = _clean_name(" ".join(tokens[:-1]))
+                if len(name) >= MIN_ITEM_LEN and not _is_garbled(name):
+                    menu_items.append({"item": name, "price": p})
+
+    return menu_items

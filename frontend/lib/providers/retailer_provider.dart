@@ -1,17 +1,25 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../core/api_service.dart';
 import '../models/area_model.dart';
 import '../models/restaurant_model.dart';
-import '../models/upload_models.dart';
-import '../models/create_models.dart';
+import '../models/admin_models.dart';
 
 enum RetailerState { idle, loading, success, error }
 
 /// Holds the state for the Restaurant Owner / Retailer portal.
+/// Uses flutter_secure_storage to persist JWT across app restarts.
 class RetailerProvider extends ChangeNotifier {
   final ApiService _api = ApiService();
+  static const _storage = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
+  static const _tokenKey = 'retailer_jwt';
+  static const _userIdKey = 'retailer_user_id';
+  static const _restaurantIdKey = 'retailer_restaurant_id';
 
+  // ── State ──────────────────────────────────────────────────────────────────
   RetailerState _state = RetailerState.idle;
   RetailerState get state => _state;
 
@@ -21,72 +29,152 @@ class RetailerProvider extends ChangeNotifier {
   bool _isLoggedIn = false;
   bool get isLoggedIn => _isLoggedIn;
 
-  // The restaurant this owner manages (set after setup)
+  String? _userId;
+  String? get userId => _userId;
+
+  // Restaurant this owner manages
   RestaurantModel? _myRestaurant;
   RestaurantModel? get myRestaurant => _myRestaurant;
 
-  // Areas fetched from backend (for the dropdown)
+  // Areas for dropdowns
   List<AreaModel> _areas = [];
   List<AreaModel> get areas => _areas;
 
-  // Upload tracking
+  // Dashboard stats
+  DashboardStats? _dashboardStats;
+  DashboardStats? get dashboardStats => _dashboardStats;
+
+  // Menu items
+  List<AdminMenuItem> _menuItems = [];
+  List<AdminMenuItem> get menuItems => List.unmodifiable(_menuItems);
+
+  // Sections (for filter dropdown)
+  List<MenuSectionInfo> _sections = [];
+  List<MenuSectionInfo> get sections => List.unmodifiable(_sections);
+
+  // Active filters
+  String? _sectionFilter;
+  String? get sectionFilter => _sectionFilter;
+  bool? _vegFilter;
+  bool? get vegFilter => _vegFilter;
+
+  // Upload state
   bool _isUploading = false;
   bool get isUploading => _isUploading;
+  String? _uploadMode = 'replace'; // 'replace' | 'append'
+  String? get uploadMode => _uploadMode;
+  Map<String, dynamic>? _lastUploadResult;
+  Map<String, dynamic>? get lastUploadResult => _lastUploadResult;
 
-  bool _isProcessing = false;
-  bool get isProcessing => _isProcessing;
+  // ── App Init — restore session from secure storage ─────────────────────────
 
-  UploadStatus? _lastUploadStatus;
-  UploadStatus? get lastUploadStatus => _lastUploadStatus;
+  /// Call this once from main.dart or RetailerLoginScreen.initState()
+  /// to restore a saved JWT session without re-logging in.
+  Future<void> init() async {
+    final token = await _storage.read(key: _tokenKey);
+    final userId = await _storage.read(key: _userIdKey);
+    final restaurantId = await _storage.read(key: _restaurantIdKey);
 
-  List<UploadHistoryItem> _uploadHistory = [];
-  List<UploadHistoryItem> get uploadHistory => List.unmodifiable(_uploadHistory);
+    if (token == null || userId == null) return;
 
-  // ── Auth ─────────────────────────────────────────────────────────────────
+    _api.setAuthToken(token);
+    _userId = userId;
+    _isLoggedIn = true;
+    notifyListeners();
 
-  /// Simple credential-based login for restaurant owners.
-  /// A real backend would validate against a `retailers` table.
+    // Re-fetch restaurant data in background
+    if (restaurantId != null) {
+      try {
+        final r = await _api.getRestaurant(restaurantId);
+        _myRestaurant = r;
+        notifyListeners();
+      } catch (_) {
+        // Token may be expired — clear it
+        await _clearSession();
+      }
+    } else {
+      // Token exists but no restaurant yet — try /auth/me
+      await _fetchMe();
+    }
+  }
+
+  // ── Auth ───────────────────────────────────────────────────────────────────
+
   Future<bool> login(String email, String password) async {
     _setState(RetailerState.loading);
     _errorMessage = null;
 
-    // Simulate a short network call
-    await Future.delayed(const Duration(milliseconds: 800));
+    try {
+      final data = await _api.adminLogin(email, password);
+      final token = data['access_token'] as String;
+      final userId = data['user_id'] as String;
 
-    // For now, accept any non-empty credentials — backend auth comes later
-    if (email.trim().isNotEmpty && password.trim().isNotEmpty) {
+      // Store JWT securely
+      await _storage.write(key: _tokenKey, value: token);
+      await _storage.write(key: _userIdKey, value: userId);
+
+      _api.setAuthToken(token);
+      _userId = userId;
       _isLoggedIn = true;
+
+      // Fetch user's restaurant (if any)
+      await _fetchMe();
+
       _setState(RetailerState.success);
       return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.message;
+      _setState(RetailerState.error);
+      return false;
+    } catch (e) {
+      _errorMessage = 'Login failed. Check your connection.';
+      _setState(RetailerState.error);
+      return false;
     }
-
-    _errorMessage = 'Invalid credentials. Please try again.';
-    _setState(RetailerState.error);
-    return false;
   }
 
-  void logout() {
-    _isLoggedIn = false;
-    _myRestaurant = null;
-    _uploadHistory.clear();
+  Future<void> logout() async {
+    await _clearSession();
     _setState(RetailerState.idle);
   }
 
-  // ── Setup ────────────────────────────────────────────────────────────────
-
-  /// Fetch areas from the backend (for the area dropdown).
-  Future<void> fetchAreas() async {
-    if (_areas.isNotEmpty) return; // already loaded
-    _setState(RetailerState.loading);
+  Future<void> _fetchMe() async {
     try {
-      _areas = await _api.getAreas();
-      _setState(RetailerState.success);
+      final me = await _api.getMe();
+      final restaurantId = me['restaurant_id'] as String?;
+      if (restaurantId != null) {
+        await _storage.write(key: _restaurantIdKey, value: restaurantId);
+        _myRestaurant = await _api.getRestaurant(restaurantId);
+        notifyListeners();
+      }
     } catch (_) {
-      _setState(RetailerState.idle);
+      // No restaurant yet or token expired — not fatal
     }
   }
 
-  /// Create a new restaurant profile for this owner.
+  Future<void> _clearSession() async {
+    await _storage.deleteAll();
+    _api.setAuthToken(null);
+    _isLoggedIn = false;
+    _userId = null;
+    _myRestaurant = null;
+    _dashboardStats = null;
+    _menuItems = [];
+    _sections = [];
+    _uploadHistory = [];
+    _areas = [];
+  }
+
+  // ── Setup — create restaurant ──────────────────────────────────────────────
+
+  Future<void> fetchAreas() async {
+    if (_areas.isNotEmpty) return;
+    try {
+      _areas = await _api.getAreas();
+      notifyListeners();
+    } catch (_) {}
+  }
+
   Future<bool> setupRestaurant({
     required String name,
     required String areaId,
@@ -98,15 +186,20 @@ class RetailerProvider extends ChangeNotifier {
     _setState(RetailerState.loading);
     _errorMessage = null;
     try {
-      final req = CreateRestaurantRequest(
-        restaurantName: name,
-        areaId: areaId,
-        priceCategory: priceCategory,
-        cuisineType: cuisines,
-        address: address,
-        phone: phone,
+      _myRestaurant = await _api.createRestaurant(
+        CreateRestaurantRequest(
+          restaurantName: name,
+          areaId: areaId,
+          priceCategory: priceCategory,
+          cuisineType: cuisines,
+          address: address,
+          phone: phone,
+        ),
       );
-      _myRestaurant = await _api.createRestaurant(req);
+      if (_myRestaurant != null) {
+        await _storage.write(
+            key: _restaurantIdKey, value: _myRestaurant!.restaurantId);
+      }
       _setState(RetailerState.success);
       return true;
     } on ApiException catch (e) {
@@ -114,124 +207,279 @@ class RetailerProvider extends ChangeNotifier {
       _setState(RetailerState.error);
       return false;
     } catch (_) {
-      _errorMessage = 'Failed to create restaurant. Try again.';
+      _errorMessage = 'Failed to create restaurant.';
       _setState(RetailerState.error);
       return false;
     }
   }
 
-  // ── Menu Upload ───────────────────────────────────────────────────────────
+  // ── Dashboard Stats ────────────────────────────────────────────────────────
 
-  Future<bool> uploadMenu(File imageFile) async {
-    final rest = _myRestaurant;
-    if (rest == null) return false;
+  Future<void> fetchDashboard() async {
+    final id = _myRestaurant?.restaurantId;
+    if (id == null) return;
+    try {
+      final data = await _api.getAdminDashboard(id);
+      _dashboardStats = DashboardStats.fromJson(data);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('fetchDashboard error: $e');
+    }
+  }
 
-    // Find the area for this restaurant
-    final area = _areas.firstWhere(
-      (a) => a.areaId == rest.areaId,
-      orElse: () => const AreaModel(
-          areaId: '', areaName: 'Unknown', city: 'Unknown'),
-    );
+  // ── Menu Items CRUD ────────────────────────────────────────────────────────
+
+  Future<void> fetchMenuItems({String? sectionName, bool? isVeg}) async {
+    final id = _myRestaurant?.restaurantId;
+    if (id == null) return;
+    try {
+      final raw = await _api.getAdminMenuItems(
+        id,
+        sectionName: sectionName,
+        isVeg: isVeg,
+      );
+      _menuItems = raw
+          .map((e) => AdminMenuItem.fromJson(e as Map<String, dynamic>))
+          .toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('fetchMenuItems error: $e');
+    }
+  }
+
+  Future<void> fetchSections() async {
+    final id = _myRestaurant?.restaurantId;
+    if (id == null) return;
+    try {
+      final raw = await _api.getAdminSections(id);
+      _sections = raw
+          .map((e) => MenuSectionInfo.fromJson(e as Map<String, dynamic>))
+          .toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('fetchSections error: $e');
+    }
+  }
+
+  void setFilter({String? section, bool? isVeg, bool clearAll = false}) {
+    if (clearAll) {
+      _sectionFilter = null;
+      _vegFilter = null;
+    } else {
+      _sectionFilter = section;
+      _vegFilter = isVeg;
+    }
+    fetchMenuItems(sectionName: _sectionFilter, isVeg: _vegFilter);
+  }
+
+  Future<bool> addMenuItem({
+    required String itemName,
+    required String sectionName,
+    required double price,
+    required bool isVeg,
+    String? description,
+    int? calories,
+  }) async {
+    final id = _myRestaurant?.restaurantId;
+    if (id == null) return false;
+    try {
+      final data = await _api.addAdminMenuItem(id, {
+        'item_name': itemName,
+        'section_name': sectionName,
+        'price': price,
+        'is_veg': isVeg,
+        if (description != null && description.isNotEmpty)
+          'description': description,
+        if (calories != null) 'calories': calories,
+      });
+      // Prepend to local list
+      _menuItems.insert(0, AdminMenuItem.fromJson(data));
+      notifyListeners();
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.message;
+      notifyListeners();
+      return false;
+    } catch (_) {
+      _errorMessage = 'Failed to add item.';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> updateMenuItem(String itemId, Map<String, dynamic> updates) async {
+    final id = _myRestaurant?.restaurantId;
+    if (id == null) return false;
+    try {
+      final data = await _api.updateAdminMenuItem(id, itemId, updates);
+      final updated = AdminMenuItem.fromJson(data);
+      final idx = _menuItems.indexWhere((i) => i.itemId == itemId);
+      if (idx != -1) _menuItems[idx] = updated;
+      notifyListeners();
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.message;
+      notifyListeners();
+      return false;
+    } catch (_) {
+      _errorMessage = 'Update failed.';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteMenuItem(String itemId) async {
+    final id = _myRestaurant?.restaurantId;
+    if (id == null) return false;
+    try {
+      await _api.deleteAdminMenuItem(id, itemId);
+      _menuItems.removeWhere((i) => i.itemId == itemId);
+      notifyListeners();
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.message;
+      notifyListeners();
+      return false;
+    } catch (_) {
+      _errorMessage = 'Delete failed.';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // ── Menu Upload ────────────────────────────────────────────────────────────
+
+  void setUploadMode(String mode) {
+    _uploadMode = mode;
+    notifyListeners();
+  }
+
+  Future<bool> uploadMenuImage(File imageFile) async {
+    final id = _myRestaurant?.restaurantId;
+    if (id == null) return false;
 
     _isUploading = true;
+    _lastUploadResult = null;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final result = await _api.uploadMenu(
+      final result = await _api.adminUploadMenuImage(
         imageFile: imageFile,
-        areaName: area.areaName,
-        city: area.city,
-        restaurantName: rest.restaurantName,
+        restaurantId: id,
+        mode: _uploadMode ?? 'replace',
       );
-
+      _lastUploadResult = result;
       _isUploading = false;
-      _isProcessing = true;
-      notifyListeners();
 
-      await _pollStatus(result.uploadId);
+      // Add to history
+      _uploadHistory.insert(0, UploadHistoryItem(
+        uploadId: result['upload_id']?.toString() ?? '',
+        timestamp: DateTime.now(),
+        itemsExtracted: result['items_count'] as int? ?? 0,
+        status: result['status'] == 'completed' ? 'Completed' : 'Failed',
+        mode: _uploadMode ?? 'replace',
+      ));
+
+      // Refresh items list
+      await fetchMenuItems();
+      notifyListeners();
       return true;
     } on ApiException catch (e) {
       _isUploading = false;
       _errorMessage = e.message;
       notifyListeners();
       return false;
-    } catch (_) {
+    } catch (e) {
       _isUploading = false;
-      _errorMessage = 'Upload failed. Check your connection.';
+      _errorMessage = 'Upload failed: ${e.toString()}';
       notifyListeners();
       return false;
     }
   }
 
-  Future<void> _pollStatus(String uploadId) async {
+  Future<bool> clearAllMenuData() async {
+    final id = _myRestaurant?.restaurantId;
+    if (id == null) return false;
     try {
-      final st = await _api.getUploadStatus(uploadId);
-      _lastUploadStatus = st;
+      await _api.clearAdminMenu(id);
+      _menuItems = [];
+      _sections = [];
+      _dashboardStats = null;
       notifyListeners();
-
-      if (st.isCompleted) {
-        _isProcessing = false;
-        _uploadHistory.insert(0, UploadHistoryItem(
-          uploadId: uploadId,
-          timestamp: DateTime.now(),
-          itemsExtracted: st.itemsCount ?? 0,
-          status: 'Completed',
-        ));
-        notifyListeners();
-      } else if (st.isFailed) {
-        _isProcessing = false;
-        _errorMessage = st.errorMessage ?? 'OCR Processing failed.';
-        _uploadHistory.insert(0, UploadHistoryItem(
-          uploadId: uploadId,
-          timestamp: DateTime.now(),
-          itemsExtracted: 0,
-          status: 'Failed',
-        ));
-        notifyListeners();
-      } else {
-        await Future.delayed(const Duration(seconds: 2));
-        await _pollStatus(uploadId);
-      }
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.message;
+      notifyListeners();
+      return false;
     } catch (_) {
-      _isProcessing = false;
-      _errorMessage = 'Connection lost during processing.';
+      _errorMessage = 'Failed to clear menu.';
       notifyListeners();
+      return false;
     }
   }
+
+  // ── Restaurant Settings ────────────────────────────────────────────────────
+
+  Future<bool> updateRestaurant({
+    String? name,
+    String? phone,
+    String? address,
+    List<String>? cuisineType,
+    String? priceCategory,
+  }) async {
+    final id = _myRestaurant?.restaurantId;
+    if (id == null) return false;
+
+    final updates = <String, dynamic>{
+      if (name != null && name.isNotEmpty) 'restaurant_name': name,
+      if (phone != null) 'phone': phone,
+      if (address != null) 'address': address,
+      if (cuisineType != null) 'cuisine_type': cuisineType,
+      if (priceCategory != null) 'price_category': priceCategory,
+    };
+
+    if (updates.isEmpty) return true;
+
+    try {
+      final data = await _api.updateRestaurant(id, updates);
+      _myRestaurant = RestaurantModel.fromJson(data);
+      notifyListeners();
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.message;
+      notifyListeners();
+      return false;
+    } catch (_) {
+      _errorMessage = 'Failed to update restaurant.';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // ── Upload History ─────────────────────────────────────────────────────────
+
+  List<UploadHistoryItem> _uploadHistory = [];
+  List<UploadHistoryItem> get uploadHistory => List.unmodifiable(_uploadHistory);
+
+  // ── Misc ───────────────────────────────────────────────────────────────────
 
   void clearError() {
     _errorMessage = null;
     notifyListeners();
   }
 
-  /// Allow the owner to re-register (clears current restaurant profile).
   void resetRestaurant() {
     _myRestaurant = null;
-    _lastUploadStatus = null;
-    _errorMessage = null;
+    _dashboardStats = null;
+    _menuItems = [];
+    _sections = [];
+    _storage.delete(key: _restaurantIdKey);
     _setState(RetailerState.idle);
   }
-
-  // ── Helper ────────────────────────────────────────────────────────────────
 
   void _setState(RetailerState s) {
     _state = s;
     notifyListeners();
   }
-}
-
-/// Publicly accessible upload history record.
-class UploadHistoryItem {
-  final String uploadId;
-  final DateTime timestamp;
-  final int itemsExtracted;
-  final String status;
-
-  const UploadHistoryItem({
-    required this.uploadId,
-    required this.timestamp,
-    required this.itemsExtracted,
-    required this.status,
-  });
 }

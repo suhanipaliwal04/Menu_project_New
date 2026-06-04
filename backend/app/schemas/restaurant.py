@@ -2,7 +2,7 @@
 Pydantic schemas for Restaurant entities.
 """
 import uuid
-from datetime import datetime
+from datetime import datetime, time
 from typing import List, Optional
 from pydantic import BaseModel
 
@@ -30,6 +30,11 @@ class RestaurantUpdate(BaseModel):
     address: Optional[str] = None
     phone: Optional[str] = None
     is_active: Optional[bool] = None
+    has_dine_in: Optional[bool] = None
+    has_takeaway: Optional[bool] = None
+    is_open_manually: Optional[bool] = None
+    opening_time: Optional[time] = None
+    closing_time: Optional[time] = None
 
 
 class RestaurantResponse(RestaurantBase):
@@ -40,6 +45,11 @@ class RestaurantResponse(RestaurantBase):
     is_active: bool
     area_name: Optional[str] = None
     city: Optional[str] = None
+    has_dine_in: bool = True
+    has_takeaway: bool = True
+    is_open_manually: bool = True
+    opening_time: Optional[time] = None
+    closing_time: Optional[time] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

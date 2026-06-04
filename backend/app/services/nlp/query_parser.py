@@ -209,11 +209,12 @@ Rules:
 class QueryParser:
     """
     Parse a natural language query into structured search filters.
-    Uses fast rules first, then optionally calls Qwen for complex queries.
+    Uses fast rules first, then optionally calls Groq llama-3.1-8b-instant (~200ms)
+    for complex/colloquial queries that rule-based parsing misses.
     """
 
     def __init__(self, use_llm: bool = True):
-        self.use_llm = use_llm and bool(getattr(settings, "HUGGINGFACE_API_KEY", None))
+        self.use_llm = use_llm and bool(getattr(settings, "GROQ_API_KEY", None))
 
     def parse(self, query: str) -> Dict[str, Any]:
         """

@@ -28,7 +28,7 @@ from app.models.area import Area
 from app.models.menu import MenuSection, MenuItem
 from app.models.upload import MenuUpload
 from app.models.embedding import MenuEmbedding
-from app.schemas.admin import DashboardStats, MenuItemSummary, MenuItemUpdate
+from app.schemas.admin import DashboardStats, MenuItemSummary, MenuItemUpdate, MenuSectionSummary, MenuItemCreate
 
 logger = logging.getLogger(__name__)
 
@@ -235,6 +235,146 @@ def delete_menu_item(
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# SECTIONS LIST (for filter dropdowns)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@router.get(
+    "/restaurants/{restaurant_id}/sections",
+    response_model=List[MenuSectionSummary],
+)
+def list_menu_sections(
+    restaurant_id: uuid.UUID,
+    current_user: uuid.UUID = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Return all sections for a restaurant with their item counts.
+    Used to populate the section filter dropdown in the admin menu items tab.
+    """
+    _verify_ownership(restaurant_id, current_user, db)
+
+    sections = db.query(MenuSection).filter(
+        MenuSection.restaurant_id == restaurant_id
+    ).order_by(MenuSection.display_order, MenuSection.section_name).all()
+
+    return [
+        MenuSectionSummary(
+            section_id=sec.section_id,
+            section_name=sec.section_name,
+            item_count=len(sec.menu_items),
+        )
+        for sec in sections
+    ]
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MANUAL ITEM ADD
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@router.post(
+    "/restaurants/{restaurant_id}/items",
+    response_model=MenuItemSummary,
+    status_code=201,
+)
+def add_menu_item(
+    restaurant_id: uuid.UUID,
+    item_data: MenuItemCreate,
+    current_user: uuid.UUID = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Manually add a single menu item (no OCR required).
+
+    Creates the section if it doesn't already exist, inserts the item,
+    and generates a semantic embedding for it in the background.
+    """
+    restaurant = _verify_ownership(restaurant_id, current_user, db)
+
+    # Get-or-create section
+    section = db.query(MenuSection).filter(
+        MenuSection.restaurant_id == restaurant_id,
+        MenuSection.section_name == item_data.section_name,
+    ).first()
+
+    if not section:
+        section = MenuSection(
+            restaurant_id=restaurant_id,
+            section_name=item_data.section_name,
+        )
+        db.add(section)
+        db.commit()
+        db.refresh(section)
+
+    # Health scoring
+    try:
+        from app.services.health.health_scorer import get_health_scorer
+        hs = get_health_scorer().calculate_score(
+            item_name=item_data.item_name,
+            description=item_data.description or "",
+            is_veg=item_data.is_veg,
+        )
+        h_label = get_health_scorer().get_health_label(hs)
+    except Exception:
+        hs, h_label = None, None
+
+    menu_item = MenuItem(
+        section_id=section.section_id,
+        item_name=item_data.item_name,
+        description=item_data.description,
+        price=item_data.price,
+        is_veg=item_data.is_veg,
+        calories=item_data.calories,
+        tags=item_data.tags,
+        health_score=hs,
+        health_label=h_label,
+    )
+    db.add(menu_item)
+    db.commit()
+    db.refresh(menu_item)
+
+    # Generate embedding asynchronously (best-effort, non-blocking)
+    try:
+        from app.services.nlp.embedding_service import get_embedding_service
+        from app.models.embedding import MenuEmbedding
+        text = f"{menu_item.item_name}"
+        if menu_item.description:
+            text += f" - {menu_item.description}"
+        text += f" [{item_data.section_name}]"
+
+        svc = get_embedding_service()
+        emb = svc.generate_embeddings([text])[0]
+        db.add(MenuEmbedding(
+            item_id=menu_item.item_id,
+            embedding=emb.tolist(),
+            extra_metadata={
+                "item_name": menu_item.item_name,
+                "section_name": item_data.section_name,
+                "restaurant_name": restaurant.restaurant_name,
+                "price": float(menu_item.price),
+                "is_veg": menu_item.is_veg,
+            },
+        ))
+        db.commit()
+    except Exception as e:
+        logger.warning(f"[ManualAdd] Embedding generation failed (non-fatal): {e}")
+        db.rollback()
+
+    return MenuItemSummary(
+        item_id=menu_item.item_id,
+        item_name=menu_item.item_name,
+        section_name=item_data.section_name,
+        price=float(menu_item.price),
+        is_veg=menu_item.is_veg,
+        is_available=menu_item.is_available,
+        description=menu_item.description,
+        calories=menu_item.calories,
+        health_score=menu_item.health_score,
+        health_label=menu_item.health_label,
+        tags=menu_item.tags,
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # MENU UPLOAD (with replace / append mode)
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -294,25 +434,30 @@ async def admin_upload_menu(
         db.add(upload)
         db.commit()
 
-        # ── Step 1: OCR ─────────────────────────────────────────────────────
-        from app.services.ocr.ocr_engine import get_ocr_engine
+        # ── Step 1: OCR — routes to Google Vision (cloud) or PaddleOCR (local) ──
+        if settings.OCR_ENGINE == "google_vision" and settings.GOOGLE_VISION_API_KEY:
+            # ── Cloud path: lightweight REST call, works on Render free tier ──
+            from app.services.ocr.google_vision_ocr import extract_text_google_vision
+            raw_text = extract_text_google_vision(str(file_path), settings.GOOGLE_VISION_API_KEY)
+            # Parse raw text into structured items using the text-based parser
+            from app.services.ocr.menu_layout_parser import parse_menu_from_text
+            parsed_items = parse_menu_from_text(raw_text)
+        else:
+            # ── Local path: PaddleOCR (requires heavy dependencies) ─────────
+            from app.services.ocr.ocr_engine import get_ocr_engine
+            import cv2
+            img = cv2.imread(str(file_path))
+            if img is None:
+                raise ValueError(f"Could not read image: {file_path}")
+            ocr_engine = get_ocr_engine()
+            raw_ocr_result = ocr_engine.ocr.ocr(img)
+            from app.services.ocr.menu_layout_parser import parse_menu
+            parsed_items = parse_menu(raw_ocr_result)
 
-        ocr_engine = get_ocr_engine()
-
-        import cv2
-        img = cv2.imread(str(file_path))
-        if img is None:
-            raise ValueError(f"Could not read image: {file_path}")
-
-        raw_ocr_result = ocr_engine.ocr.ocr(img)
-        upload.ocr_result = {"status": "ocr_completed"}
+        upload.ocr_result = {"status": "ocr_completed", "engine": settings.OCR_ENGINE}
         db.commit()
 
-        # ── Step 2: Layout parsing ──────────────────────────────────────────
-        from app.services.ocr.menu_layout_parser import parse_menu
-
-        parsed_items = parse_menu(raw_ocr_result)
-        logger.info(f"[Admin Upload] Layout parser extracted {len(parsed_items)} items")
+        logger.info(f"[Admin Upload] OCR extracted {len(parsed_items)} items")
 
         if not parsed_items:
             upload.ocr_status = "completed"

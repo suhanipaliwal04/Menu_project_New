@@ -40,7 +40,8 @@ class _HomeScreenState extends State<HomeScreen> {
       // This silent ping runs in background so the server is ready
       // by the time the user makes their first real request.
       ApiService().healthCheck().catchError((_) => false);
-      context.read<BrowseProvider>().loadRestaurants();
+      context.read<BrowseProvider>().loadRestaurants(orderType: _selectedTab);
+      context.read<CartProvider>().setOrderType(_selectedTab);
     });
   }
 
@@ -497,7 +498,11 @@ class _HomeScreenState extends State<HomeScreen> {
           bool active = _selectedTab == name;
           return Expanded(
             child: GestureDetector(
-              onTap: () => setState(() => _selectedTab = name),
+              onTap: () {
+                setState(() => _selectedTab = name);
+                context.read<BrowseProvider>().loadRestaurants(orderType: name);
+                context.read<CartProvider>().setOrderType(name);
+              },
               child: AnimatedContainer(
                 duration: 300.ms,
                 margin: const EdgeInsets.symmetric(horizontal: 4),

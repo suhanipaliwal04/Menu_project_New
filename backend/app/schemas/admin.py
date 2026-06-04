@@ -4,7 +4,7 @@ Pydantic schemas for the Admin Dashboard endpoints.
 import uuid
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class DashboardStats(BaseModel):
@@ -50,4 +50,25 @@ class MenuItemUpdate(BaseModel):
     is_available: Optional[bool] = None
     calories: Optional[int] = None
     spice_level: Optional[str] = None
+    tags: Optional[List[str]] = None
+
+
+class MenuSectionSummary(BaseModel):
+    """Lightweight section record for dropdowns in the admin UI."""
+    section_id: uuid.UUID
+    section_name: str
+    item_count: int = 0
+
+    class Config:
+        from_attributes = True
+
+
+class MenuItemCreate(BaseModel):
+    """Schema for POST /admin/restaurants/{id}/items — manually add one item."""
+    item_name: str = Field(..., min_length=1, max_length=255)
+    section_name: str = Field(..., min_length=1, max_length=255)
+    price: float = Field(..., ge=0)
+    is_veg: bool = True
+    description: Optional[str] = None
+    calories: Optional[int] = None
     tags: Optional[List[str]] = None

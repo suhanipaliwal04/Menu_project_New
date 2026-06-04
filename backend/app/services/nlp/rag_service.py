@@ -2,9 +2,9 @@
 RAG Service — orchestrates the full Retrieval-Augmented Generation pipeline.
 
 Flow:
-  1. QueryParser  → extract filters + clean semantic query
+  1. QueryParser  → extract filters + clean semantic query (rules + Groq fallback)
   2. EmbeddingService.hybrid_search(area_name=...) → items from ALL restaurants in the area
-  3. Qwen (HuggingFace) → generate natural language response comparing across restaurants
+  3. Groq llama-3.1-8b-instant → generate natural language response comparing across restaurants
 
 Usage:
     svc = RAGService()
@@ -16,7 +16,6 @@ Usage:
 from __future__ import annotations
 
 import logging
-import re
 from typing import Dict, Any, List, Optional
 
 from app.core.config import settings
@@ -107,7 +106,7 @@ class RAGService:
                          items:      List[Dict[str, Any]],
                          area_name:  str,
                          soft_hints: Optional[Dict[str, Any]] = None) -> str:
-        """Qwen selects 3-4 best items from candidates and writes a human response."""
+        """Groq selects 3-4 best items from candidates and writes a human response."""
 
         soft_hints = soft_hints or {}
 

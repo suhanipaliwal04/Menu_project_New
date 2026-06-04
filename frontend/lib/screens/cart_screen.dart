@@ -148,6 +148,9 @@ class CartScreen extends StatelessWidget {
                   fontWeight: FontWeight.w800, fontSize: 16, color: AppTheme.textPrimary)),
           const SizedBox(height: 12),
           ...PaymentMethod.values.map((method) {
+            if (cart.orderType.toLowerCase() == 'takeaway' && method != PaymentMethod.cashOnDelivery) {
+              return const SizedBox.shrink();
+            }
             final selected = cart.paymentMethod == method;
             return GestureDetector(
               onTap: () => cart.setPaymentMethod(method),

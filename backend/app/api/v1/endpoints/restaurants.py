@@ -34,11 +34,14 @@ def list_restaurants(
     area_id: uuid.UUID | None = None,
     city: str | None = None,
     cuisine: str | None = None,
+    order_type: str | None = None,
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db)
 ):
-    """List restaurants with filters"""
+    """List restaurants with filters (including order_type and open status)"""
+    from datetime import datetime
+    
     query = db.query(Restaurant).filter(Restaurant.is_active == True)
     
     if area_id:
@@ -49,9 +52,34 @@ def list_restaurants(
     
     if cuisine:
         query = query.filter(Restaurant.cuisine_type.contains([cuisine]))
+
+    if order_type == "Dine In" or order_type == "dine_in":
+        query = query.filter(Restaurant.has_dine_in == True)
+    elif order_type == "Takeaway" or order_type == "takeaway":
+        query = query.filter(Restaurant.has_takeaway == True)
+    
+    # Must be open manually
+    query = query.filter(Restaurant.is_open_manually == True)
     
     restaurants = query.offset(skip).limit(limit).all()
-    return [_restaurant_with_area(r, r.area) for r in restaurants]
+    
+    # Filter by time if opening_time/closing_time are set
+    current_time = datetime.now().time()
+    open_restaurants = []
+    
+    for r in restaurants:
+        if r.opening_time and r.closing_time:
+            # Handle cases where closing time is past midnight (e.g., 10 AM to 2 AM)
+            if r.opening_time <= r.closing_time:
+                if r.opening_time <= current_time <= r.closing_time:
+                    open_restaurants.append(r)
+            else:
+                if current_time >= r.opening_time or current_time <= r.closing_time:
+                    open_restaurants.append(r)
+        else:
+            open_restaurants.append(r)
+            
+    return [_restaurant_with_area(r, r.area) for r in open_restaurants]
 
 
 @router.get("/{restaurant_id}", response_model=RestaurantResponse)
@@ -240,7 +268,13 @@ def _restaurant_with_area(restaurant: Restaurant, area) -> dict:
         "area_id": restaurant.area_id,
         "owner_id": restaurant.owner_id,
         "is_active": restaurant.is_active,
+        "has_dine_in": getattr(restaurant, "has_dine_in", True),
+        "has_takeaway": getattr(restaurant, "has_takeaway", True),
+        "is_open_manually": getattr(restaurant, "is_open_manually", True),
+        "opening_time": getattr(restaurant, "opening_time", None),
+        "closing_time": getattr(restaurant, "closing_time", None),
         "area_name": area.area_name if area else None,
+
         "city": area.city if area else None,
         "created_at": restaurant.created_at,
         "updated_at": restaurant.updated_at,

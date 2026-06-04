@@ -45,13 +45,23 @@ class CartProvider extends ChangeNotifier {
   PaymentMethod _paymentMethod = PaymentMethod.cashOnDelivery;
   bool _orderPlaced = false;
   String? _lastOrderId;
+  String _orderType = 'Takeaway';
 
   List<CartItem> get items => List.unmodifiable(_items);
   PaymentMethod get paymentMethod => _paymentMethod;
   bool get orderPlaced => _orderPlaced;
   String? get lastOrderId => _lastOrderId;
+  String get orderType => _orderType;
   int get totalItems => _items.fold(0, (sum, i) => sum + i.quantity);
   double get totalPrice => _items.fold(0, (sum, i) => sum + i.price * i.quantity);
+
+  void setOrderType(String type) {
+    _orderType = type;
+    if (type.toLowerCase() == 'takeaway') {
+      _paymentMethod = PaymentMethod.cashOnDelivery;
+    }
+    notifyListeners();
+  }
 
   // ── Cart Operations ───────────────────────────────────────────────────────
 
