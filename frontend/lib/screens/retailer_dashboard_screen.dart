@@ -2074,8 +2074,6 @@ class _SettingsTabState extends State<_SettingsTab> {
                 Icons.restaurant_menu_rounded),
             const SizedBox(height: 14),
             _priceSelector(),
-            const SizedBox(height: 24),
-            _buildOperationalSettings(),
             const SizedBox(height: 20),
 
             // Save button
