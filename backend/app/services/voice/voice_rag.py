@@ -71,7 +71,7 @@ class VoiceRAGService:
         self.top_k  = top_k
         self.parser = get_query_parser()
         self._store = get_session_store()
-        self._hf_client = None
+        self._groq_client = None
 
     # ── Public API ─────────────────────────────────────────────────────────────
 
@@ -206,14 +206,14 @@ class VoiceRAGService:
         messages.append({"role": "user", "content": user_prompt})
 
         try:
-            client = self._get_hf_client()
+            client = self._get_groq_client()
             if client is None:
                 return self._fallback_answer(query, items, loc)
 
-            response = client.chat_completion(
-                model="Qwen/Qwen2.5-7B-Instruct",
+            response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
                 messages=messages,
-                max_tokens=100,      # short — voice needs brevity
+                max_completion_tokens=100,      # short — voice needs brevity
                 temperature=0.70,
             )
             answer = response.choices[0].message.content.strip()
@@ -248,21 +248,21 @@ class VoiceRAGService:
             "Both look like great options for what you're looking for!"
         )
 
-    # ── HuggingFace client ────────────────────────────────────────────────────
+    # ── Groq client ────────────────────────────────────────────────────────────
 
-    def _get_hf_client(self):
-        if self._hf_client is not None:
-            return self._hf_client
-        hf_key = getattr(settings, "HUGGINGFACE_API_KEY", None)
-        if not hf_key:
-            logger.warning("VoiceRAG: HUGGINGFACE_API_KEY not set — using fallback answers.")
+    def _get_groq_client(self):
+        if hasattr(self, "_groq_client") and self._groq_client is not None:
+            return self._groq_client
+        groq_key = getattr(settings, "GROQ_API_KEY", None)
+        if not groq_key:
+            logger.warning("VoiceRAG: GROQ_API_KEY not set — using fallback answers.")
             return None
         try:
-            from huggingface_hub import InferenceClient
-            self._hf_client = InferenceClient(token=hf_key)
-            return self._hf_client
+            from groq import Groq
+            self._groq_client = Groq(api_key=groq_key)
+            return self._groq_client
         except ImportError:
-            logger.warning("VoiceRAG: huggingface_hub package not installed.")
+            logger.warning("VoiceRAG: groq SDK not installed.")
             return None
 
 
