@@ -54,17 +54,15 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
 
           return Scaffold(
             backgroundColor: AppTheme.background,
-            floatingActionButton: restaurant.hasDineIn
-                ? FloatingActionButton.extended(
-                    onPressed: () => _showBookingModal(context, restaurant),
-                    backgroundColor: AppTheme.primary,
-                    icon: const Icon(Icons.event_seat_rounded, color: Colors.white),
-                    label: Text('Book a Table', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
-                  )
-                : null,
+            floatingActionButton: FloatingActionButton.extended(
+              onPressed: () => _showBookingModal(context, restaurant),
+              backgroundColor: AppTheme.primary,
+              icon: const Icon(Icons.event_seat_rounded, color: Colors.white),
+              label: Text('Book a Table', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
+            ),
             body: CustomScrollView(
               slivers: [
-                _buildAppBar(restaurant.restaurantName),
+                _buildAppBar(context, restaurant.restaurantName),
                 SliverToBoxAdapter(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,7 +120,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
     );
   }
 
-  void _showBookingModal(BuildContext context, RestaurantModel restaurant) {
+  void _showBookingModal(BuildContext context, RestaurantMenuInfo restaurant) {
     int partySize = 2;
     String selectedTime = '7:00 PM';
     final times = ['6:00 PM', '6:30 PM', '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM'];
@@ -233,13 +231,8 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
       ),
     );
   }
-          );
-        },
-      ),
-    );
-  }
 
-  Widget _buildAppBar(String name) {
+  Widget _buildAppBar(BuildContext context, String name) {
     return SliverAppBar(
       expandedHeight: 220,
       pinned: true,

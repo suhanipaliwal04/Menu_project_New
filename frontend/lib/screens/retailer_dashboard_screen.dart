@@ -9,6 +9,7 @@ import '../core/theme.dart';
 import '../providers/retailer_provider.dart';
 import '../models/admin_models.dart';
 import '../models/area_model.dart';
+import '../core/api_service.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN SCREEN
@@ -2074,6 +2075,8 @@ class _SettingsTabState extends State<_SettingsTab> {
                 Icons.restaurant_menu_rounded),
             const SizedBox(height: 14),
             _priceSelector(),
+            const SizedBox(height: 24),
+            _buildOperationalSettings(),
             const SizedBox(height: 20),
 
             // Save button
