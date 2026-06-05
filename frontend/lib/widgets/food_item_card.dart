@@ -3,6 +3,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
 import '../models/chat_models.dart';
+import '../providers/cart_provider.dart';
+import 'package:provider/provider.dart';
 import 'health_badge.dart';
 import 'veg_indicator.dart';
 
@@ -104,7 +106,7 @@ class FoodItemCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    _buildImagePlaceholder(),
+                    _buildImagePlaceholder(context),
                   ],
                 ),
               ),
@@ -118,7 +120,7 @@ class FoodItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildImagePlaceholder() {
+  Widget _buildImagePlaceholder(BuildContext context) {
     return Stack(
       alignment: Alignment.bottomCenter,
       clipBehavior: Clip.none,
@@ -138,21 +140,40 @@ class FoodItemCard extends StatelessWidget {
         ),
         Positioned(
           bottom: -10,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppTheme.divider),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                )
-              ],
+          child: GestureDetector(
+            onTap: () {
+              if (item.restaurantId != null) {
+                context.read<CartProvider>().addItem(
+                  id: '${item.restaurantId}_${item.itemName}',
+                  name: item.itemName,
+                  price: double.tryParse(item.priceDisplay.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0,
+                  restaurantName: item.restaurantName,
+                  restaurantId: item.restaurantId!,
+                );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${item.itemName} added to cart!'),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppTheme.divider),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  )
+                ],
+              ),
+              child: Text('ADD', style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.w800, fontSize: 13)),
             ),
-            child: Text('ADD', style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.w800, fontSize: 13)),
           ),
         ),
       ],
