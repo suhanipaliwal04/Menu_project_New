@@ -63,11 +63,56 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
             floatingActionButton: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
-                mainAxisAlignment: restaurant.hasDineIn ? MainAxisAlignment.spaceBetween : MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const VoiceFab(),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const VoiceFab(),
+                      const SizedBox(width: 16),
+                      Consumer<CartProvider>(
+                        builder: (context, cart, _) {
+                          return FloatingActionButton(
+                            heroTag: 'cart_fab',
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const CartScreen()),
+                              );
+                            },
+                            backgroundColor: AppTheme.surfaceAlt,
+                            elevation: 4,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              clipBehavior: Clip.none,
+                              children: [
+                                const Icon(Icons.shopping_bag_outlined, color: AppTheme.textPrimary, size: 26),
+                                if (cart.items.isNotEmpty)
+                                  Positioned(
+                                    right: -8,
+                                    top: -8,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(5),
+                                      decoration: const BoxDecoration(
+                                        color: AppTheme.primary,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Text(
+                                        '${cart.items.length}',
+                                        style: GoogleFonts.outfit(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                   if (restaurant.hasDineIn)
                     FloatingActionButton.extended(
+                      heroTag: 'book_table_fab',
                       onPressed: () => _showBookingModal(context, restaurant),
                       backgroundColor: AppTheme.primary,
                       icon: const Icon(Icons.event_seat_rounded, color: Colors.white),
@@ -223,43 +268,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
           ),
         ),
       ),
-      actions: [
-        Consumer<CartProvider>(
-          builder: (context, cart, _) {
-            return Stack(
-              alignment: Alignment.center,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.shopping_bag_outlined, color: AppTheme.textPrimary, size: 28),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const CartScreen()),
-                    );
-                  },
-                ),
-                if (cart.items.isNotEmpty)
-                  Positioned(
-                    right: 8,
-                    top: 8,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: AppTheme.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        '${cart.items.length}',
-                        style: GoogleFonts.outfit(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-              ],
-            );
-          },
-        ),
-        const SizedBox(width: 8),
-      ],
+      actions: [],
     );
   }
 

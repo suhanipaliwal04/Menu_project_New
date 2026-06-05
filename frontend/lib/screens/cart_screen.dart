@@ -67,14 +67,9 @@ class _CartScreenState extends State<CartScreen> {
                 child: ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    _buildOrderTypeToggle(cart),
                     ...cart.items.map((item) => _buildCartItem(context, item, cart)),
                     const SizedBox(height: 24),
-                    if (cart.orderType.toLowerCase() == 'takeaway') ...[
-                      _buildTakeawayDetails(),
-                      const SizedBox(height: 24),
-                    ],
-                    _buildPaymentSelector(cart),
+                    _buildTakeawayDetails(),
                     const SizedBox(height: 24),
                     _buildOrderSummary(cart),
                   ],
@@ -376,7 +371,6 @@ class _CartScreenState extends State<CartScreen> {
                   fontWeight: FontWeight.w800, fontSize: 16, color: AppTheme.textPrimary)),
           const SizedBox(height: 12),
           _summaryRow('Subtotal', '₹${cart.totalPrice.toStringAsFixed(0)}'),
-          _summaryRow('Delivery', 'FREE'),
           _summaryRow('Taxes', '₹${(cart.totalPrice * 0.05).toStringAsFixed(0)}'),
           const Divider(height: 24, color: AppTheme.divider),
           _summaryRow(
@@ -422,13 +416,11 @@ class _CartScreenState extends State<CartScreen> {
         height: 56,
         child: ElevatedButton(
           onPressed: () {
-            if (cart.orderType.toLowerCase() == 'takeaway') {
-              if (_nameCtrl.text.isEmpty || _phoneCtrl.text.isEmpty || _selectedTimeSlot == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please fill all Takeaway details')),
-                );
-                return;
-              }
+            if (_nameCtrl.text.isEmpty || _phoneCtrl.text.isEmpty || _selectedTimeSlot == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Please fill all Takeaway details')),
+              );
+              return;
             }
             cart.placeOrder(
               customerName: _nameCtrl.text.trim(),
@@ -447,7 +439,7 @@ class _CartScreenState extends State<CartScreen> {
               const Icon(Icons.shopping_bag_rounded),
               const SizedBox(width: 10),
               Text(
-                'Place Order • ${cart.paymentMethod.label}',
+                'Place Order',
                 style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 15),
               ),
             ],
