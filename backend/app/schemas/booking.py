@@ -6,6 +6,8 @@ from pydantic import BaseModel
 class BookingBase(BaseModel):
     party_size: int
     time_slot: str
+    customer_name: Optional[str] = None
+    customer_phone: Optional[str] = None
 
 class BookingCreate(BookingBase):
     restaurant_id: uuid.UUID

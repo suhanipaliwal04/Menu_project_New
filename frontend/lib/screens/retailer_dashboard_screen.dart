@@ -9,6 +9,7 @@ import '../core/theme.dart';
 import '../providers/retailer_provider.dart';
 import '../models/admin_models.dart';
 import '../models/area_model.dart';
+import '../models/restaurant_model.dart';
 import '../core/api_service.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -234,18 +235,29 @@ class _RetailerDashboardScreenState extends State<RetailerDashboardScreen>
                     fontWeight: FontWeight.w700, fontSize: 12),
                 unselectedLabelStyle:
                     GoogleFonts.outfit(fontSize: 12),
-                tabs: _tabs
-                    .map((t) => Tab(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(t.icon, size: 15),
-                              const SizedBox(width: 5),
-                              Text(t.label),
-                            ],
+                tabs: _tabs.map((t) {
+                  return Tab(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(t.icon, size: 15),
+                        const SizedBox(width: 5),
+                        Text(t.label),
+                        if (t.label == 'Bookings' && (p.dashboardStats?.pendingBookings ?? 0) > 0) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(color: AppTheme.error, borderRadius: BorderRadius.circular(10)),
+                            child: Text(
+                              '${p.dashboardStats!.pendingBookings}',
+                              style: GoogleFonts.outfit(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                            ),
                           ),
-                        ))
-                    .toList(),
+                        ]
+                      ],
+                    ),
+                  );
+                }).toList(),
               ),
             ),
           ),
@@ -305,6 +317,21 @@ class _OverviewTab extends StatelessWidget {
                   Expanded(child: _statCard('Uploads', '${s.totalUploads}',
                       Icons.cloud_upload_rounded, const Color(0xFF9B59B6))),
                 ]),
+                const SizedBox(height: 10),
+                Row(children: [
+                  Expanded(child: _statCard('Total Bookings', '${s.totalBookings}',
+                      Icons.book_online_rounded, const Color(0xFFE67E22))),
+                  const SizedBox(width: 10),
+                  Expanded(child: _statCard('Pending Bookings', '${s.pendingBookings}',
+                      Icons.pending_actions_rounded, const Color(0xFFE74C3C))),
+                ]),
+                const SizedBox(height: 20),
+
+                // Quick Controls
+                _sectionLabel('Quick Controls'),
+                const SizedBox(height: 10),
+                _buildQuickControls(context, p, r),
+
                 const SizedBox(height: 20),
 
                 // Veg breakdown
@@ -427,6 +454,62 @@ class _OverviewTab extends StatelessWidget {
         ],
       ),
     ).animate().fadeIn().slideY(begin: 0.1, end: 0);
+  }
+
+  Widget _buildQuickControls(BuildContext context, RetailerProvider p, RestaurantModel r) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.divider),
+      ),
+      child: Column(
+        children: [
+          _buildQuickToggle(
+            'Accepting Dine-In',
+            r.hasDineIn,
+            AppTheme.primary,
+            (val) => p.updateRestaurant(hasDineIn: val),
+          ),
+          const Divider(height: 24),
+          _buildQuickToggle(
+            'Accepting Takeaway',
+            r.hasTakeaway,
+            AppTheme.primary,
+            (val) => p.updateRestaurant(hasTakeaway: val),
+          ),
+          const Divider(height: 24),
+          _buildQuickToggle(
+            'Store Open (Manual)',
+            r.isOpenManually,
+            AppTheme.success,
+            (val) => p.updateRestaurant(isOpenManually: val),
+          ),
+        ],
+      ),
+    ).animate().fadeIn().slideY(begin: 0.08, end: 0);
+  }
+
+  Widget _buildQuickToggle(String label, bool value, Color activeColor, ValueChanged<bool> onChanged) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.outfit(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.textPrimary,
+          ),
+        ),
+        Switch.adaptive(
+          value: value,
+          onChanged: onChanged,
+          activeColor: activeColor,
+        ),
+      ],
+    );
   }
 
   Widget _sectionLabel(String label) {
@@ -2800,52 +2883,35 @@ class _BookingsTab extends StatefulWidget {
 }
 
 class _BookingsTabState extends State<_BookingsTab> {
-  late Future<List<Map<String, dynamic>>> _bookingsFuture;
-
   @override
   void initState() {
     super.initState();
-    _fetchBookings();
-  }
-
-  void _fetchBookings() {
-    final p = context.read<RetailerProvider>();
-    if (p.myRestaurant == null) {
-      _bookingsFuture = Future.value([]);
-      return;
-    }
-    _bookingsFuture = ApiService().getAdminBookings(p.myRestaurant!.restaurantId);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<RetailerProvider>().fetchBookings();
+    });
   }
 
   Future<void> _updateStatus(String bookingId, String status) async {
-    try {
-      await ApiService().updateBookingStatus(bookingId, status);
-      setState(() {
-        _fetchBookings();
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Booking $status', style: GoogleFonts.outfit()), backgroundColor: AppTheme.success));
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e', style: GoogleFonts.outfit()), backgroundColor: AppTheme.error));
+    final success = await context.read<RetailerProvider>().updateBookingStatus(bookingId, status);
+    if (mounted) {
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Booking $status', style: GoogleFonts.outfit()),
+            backgroundColor: AppTheme.success));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Failed to update status', style: GoogleFonts.outfit()),
+            backgroundColor: AppTheme.error));
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: _bookingsFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text('Error loading bookings', style: GoogleFonts.outfit(color: AppTheme.error)));
-        }
-
-        final bookings = snapshot.data ?? [];
+    return Consumer<RetailerProvider>(
+      builder: (context, provider, _) {
+        final bookings = provider.bookings;
+        
         if (bookings.isEmpty) {
           return Center(
             child: Column(
@@ -2866,8 +2932,8 @@ class _BookingsTabState extends State<_BookingsTab> {
           itemCount: bookings.length,
           itemBuilder: (ctx, i) {
             final b = bookings[i];
-            final status = b['status'];
-            final color = status == 'ACCEPTED' ? AppTheme.success : (status == 'REJECTED' ? AppTheme.error : AppTheme.primary);
+            final status = b.status;
+            final color = status == 'CONFIRMED' ? AppTheme.success : (status == 'REJECTED' ? AppTheme.error : AppTheme.primary);
             
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
@@ -2883,7 +2949,7 @@ class _BookingsTabState extends State<_BookingsTab> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Booking #${b['id'].toString().substring(0, 8)}', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                      Text('Booking #${b.bookingId.substring(0, 8)}', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
@@ -2896,20 +2962,38 @@ class _BookingsTabState extends State<_BookingsTab> {
                     children: [
                       const Icon(Icons.person_outline_rounded, size: 16, color: AppTheme.textSecondary),
                       const SizedBox(width: 8),
-                      Text('Party of ${b['party_size']}', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textPrimary)),
+                      Text('Party of ${b.partySize}', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textPrimary)),
                       const SizedBox(width: 24),
                       const Icon(Icons.access_time_rounded, size: 16, color: AppTheme.textSecondary),
                       const SizedBox(width: 8),
-                      Text('${b['time_slot']}', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textPrimary)),
+                      Text(b.timeSlot, style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textPrimary)),
                     ],
                   ),
+                  if (b.customerName != null || b.customerPhone != null) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        if (b.customerName != null) ...[
+                          const Icon(Icons.badge_outlined, size: 16, color: AppTheme.textSecondary),
+                          const SizedBox(width: 8),
+                          Text(b.customerName!, style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
+                          const SizedBox(width: 16),
+                        ],
+                        if (b.customerPhone != null) ...[
+                          const Icon(Icons.phone_outlined, size: 16, color: AppTheme.textSecondary),
+                          const SizedBox(width: 8),
+                          Text(b.customerPhone!, style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
+                        ],
+                      ],
+                    ),
+                  ],
                   if (status == 'PENDING') ...[
                     const SizedBox(height: 16),
                     Row(
                       children: [
                         Expanded(
                           child: OutlinedButton(
-                            onPressed: () => _updateStatus(b['id'], 'REJECTED'),
+                            onPressed: () => _updateStatus(b.bookingId, 'REJECTED'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppTheme.error,
                               side: const BorderSide(color: AppTheme.error),
@@ -2921,13 +3005,13 @@ class _BookingsTabState extends State<_BookingsTab> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: () => _updateStatus(b['id'], 'ACCEPTED'),
+                            onPressed: () => _updateStatus(b.bookingId, 'CONFIRMED'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.success,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               elevation: 0,
                             ),
-                            child: Text('Accept', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
+                            child: Text('Confirm', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
                           ),
                         ),
                       ],

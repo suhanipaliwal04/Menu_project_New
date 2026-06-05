@@ -92,11 +92,11 @@ async def run_migration():
         "ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS is_open_manually BOOLEAN DEFAULT true",
         "ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS opening_time TIME",
         "ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS closing_time TIME",
+        "ALTER TABLE bookings ADD COLUMN IF NOT EXISTS customer_name VARCHAR(100)",
+        "ALTER TABLE bookings ADD COLUMN IF NOT EXISTS customer_phone VARCHAR(20)",
         "UPDATE restaurants SET has_dine_in = true WHERE has_dine_in IS NULL",
         "UPDATE restaurants SET has_takeaway = true WHERE has_takeaway IS NULL",
         "UPDATE restaurants SET is_open_manually = true WHERE is_open_manually IS NULL",
-        # REVERT: Restore the correct owner_id (my previous fix was wrong)
-        "UPDATE restaurants SET owner_id = '799b1e7c-4388-4389-8542-49d461fec798' WHERE restaurant_name = 'Pranil Da Dhaba'",
     ]
     
     results = []

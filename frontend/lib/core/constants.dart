@@ -1,34 +1,33 @@
-
 class AppConstants {
   // ── API ─────────────────────────────────────────────────────────────────────
   // We are using localhost to prove the code works with the JWT secret!
-  // static const String _renderBase = 'http://127.0.0.1:8000/api/v1';
-  static const String _renderBase = 'https://eatbot-lifa.onrender.com/api/v1';
-  
+  static const String _renderBase = 'http://127.0.0.1:8000/api/v1';
+  // static const String _renderBase = 'https://eatbot-lifa.onrender.com/api/v1';
+
   static String get baseUrl => _renderBase;
 
   // ── API Endpoints ────────────────────────────────────────────────────────────
-  static const String chatEndpoint          = '/chat';
-  static const String areasEndpoint         = '/areas';
-  static const String restaurantsEndpoint   = '/restaurants';
-  static const String menusUploadEndpoint   = '/menus/upload';
-  static const String menusUploadsEndpoint  = '/menus/uploads';
+  static const String chatEndpoint = '/chat';
+  static const String areasEndpoint = '/areas';
+  static const String restaurantsEndpoint = '/restaurants';
+  static const String menusUploadEndpoint = '/menus/upload';
+  static const String menusUploadsEndpoint = '/menus/uploads';
 
   // ── Voice AI Endpoints ───────────────────────────────────────────────────────
-  static const String voiceChatEndpoint     = '/voice/chat';
-  static const String voiceSessionEndpoint  = '/voice/session';
+  static const String voiceChatEndpoint = '/voice/chat';
+  static const String voiceSessionEndpoint = '/voice/session';
 
   // ── Dine-In Booking Endpoints ─────────────────────────────────────────────
-  static const String dineCheckEndpoint    = '/dine/check-availability';
-  static const String dineConfirmEndpoint  = '/dine/confirm-booking';
+  static const String dineCheckEndpoint = '/dine/check-availability';
+  static const String dineConfirmEndpoint = '/dine/confirm-booking';
 
   // ── Admin Endpoints ──────────────────────────────────────────────────────────
-  static const String adminLoginEndpoint   = '/auth/admin-login';
-  static const String adminEndpoint        = '/admin';
+  static const String adminLoginEndpoint = '/auth/admin-login';
+  static const String adminEndpoint = '/admin';
 
   // ── Timeouts ────────────────────────────────────────────────────────────────
-  static const int connectTimeoutSeconds  = 15;
-  static const int receiveTimeoutSeconds  = 60;  // RAG can take a moment
+  static const int connectTimeoutSeconds = 15;
+  static const int receiveTimeoutSeconds = 60; // RAG can take a moment
 
   // ── UI Constants ─────────────────────────────────────────────────────────────
   static const List<Map<String, String>> quickChips = [
