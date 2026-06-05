@@ -534,6 +534,8 @@ class ApiService {
       updates,
     );
     return data as Map<String, dynamic>;
+  }
+
   // ── Takeaway Orders ──────────────────────────────────────────────────────────
 
   /// POST /orders/takeaway

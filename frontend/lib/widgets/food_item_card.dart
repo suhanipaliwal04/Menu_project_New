@@ -106,7 +106,7 @@ class FoodItemCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    _buildImagePlaceholder(),
+                    _buildImagePlaceholder(context),
                   ],
                 ),
               ),
@@ -120,7 +120,7 @@ class FoodItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildImagePlaceholder() {
+  Widget _buildImagePlaceholder(BuildContext context) {
     return Stack(
       alignment: Alignment.bottomCenter,
       clipBehavior: Clip.none,
@@ -144,7 +144,7 @@ class FoodItemCard extends StatelessWidget {
             onTap: () {
               if (item.restaurantId != null) {
                 context.read<CartProvider>().addItem(
-                  id: item.itemId ?? DateTime.now().millisecondsSinceEpoch.toString(),
+                  id: '${item.restaurantId}_${item.itemName}',
                   name: item.itemName,
                   price: double.tryParse(item.priceDisplay.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0,
                   restaurantName: item.restaurantName,
