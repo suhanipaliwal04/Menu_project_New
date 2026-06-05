@@ -272,28 +272,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
           ),
         ),
       ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: CircleAvatar(
-            backgroundColor: Colors.white,
-            child: IconButton(
-              icon: const Icon(Icons.share_outlined, color: AppTheme.textPrimary),
-              onPressed: () {},
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: CircleAvatar(
-            backgroundColor: Colors.white,
-            child: IconButton(
-              icon: const Icon(Icons.favorite_border_rounded, color: AppTheme.textPrimary),
-              onPressed: () {},
-            ),
-          ),
-        ),
-      ],
+      actions: [],
     );
   }
 

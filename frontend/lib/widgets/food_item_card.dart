@@ -108,7 +108,6 @@ class FoodItemCard extends StatelessWidget {
                   ],
                 ),
               ),
-              _buildBottomBar(),
             ],
           ),
         ),
@@ -160,21 +159,4 @@ class FoodItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: const BoxDecoration(
-        color: AppTheme.background,
-        border: Border(top: BorderSide(color: AppTheme.divider)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.flash_on_rounded, color: Colors.amber.shade700, size: 14),
-          const SizedBox(width: 6),
-          Text('Express Delivery available', 
-            style: GoogleFonts.outfit(fontSize: 11, color: AppTheme.textSecondary, fontWeight: FontWeight.w600)),
-        ],
-      ),
-    );
-  }
 }

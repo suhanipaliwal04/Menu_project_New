@@ -135,6 +135,31 @@ class _ResultsScreenState extends State<ResultsScreen> {
                         fontSize: 12, color: AppTheme.textSecondary)),
             ],
           ),
+          actions: [
+            Consumer<VoiceAgentProvider>(
+              builder: (context, vp, _) => IconButton(
+                icon: Icon(
+                  vp.voiceReplyEnabled
+                      ? Icons.volume_up_rounded
+                      : Icons.volume_off_rounded,
+                  color: vp.voiceReplyEnabled
+                      ? AppTheme.primary
+                      : AppTheme.textSecondary,
+                ),
+                onPressed: () {
+                  vp.toggleVoiceReply();
+                  if (vp.voiceReplyEnabled) {
+                    final response = context.read<ChatProvider>().response;
+                    if (response != null && response.answer.isNotEmpty) {
+                      vp.speakAsync(response.answer);
+                    }
+                  }
+                },
+                tooltip: vp.voiceReplyEnabled ? 'Mute AI Voice' : 'Unmute AI Voice',
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
         ),
         SliverToBoxAdapter(
           child: _buildAnswerCard(context, response.answer),
