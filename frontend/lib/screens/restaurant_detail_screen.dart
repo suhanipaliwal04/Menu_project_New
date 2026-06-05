@@ -20,6 +20,7 @@ class RestaurantDetailScreen extends StatefulWidget {
 
 class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
   final TextEditingController _menuSearchCtrl = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -87,6 +88,11 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                               borderSide: const BorderSide(color: AppTheme.divider),
                             ),
                           ),
+                          onChanged: (value) {
+                            setState(() {
+                              _searchQuery = value.toLowerCase();
+                            });
+                          },
                         ),
                       ),
                       const Divider(height: 32),
@@ -112,7 +118,39 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                     ),
                   )
                 else
-                  ...menuResponse.sections.map((section) => _buildMenuSection(section)),
+                  ...(() {
+                    if (_searchQuery.isEmpty) {
+                      return menuResponse.sections.map((section) => _buildMenuSection(section));
+                    }
+                    final filteredSections = <MenuSectionModel>[];
+                    for (final section in menuResponse.sections) {
+                      final filteredItems = section.items.where((item) {
+                        return item.itemName.toLowerCase().contains(_searchQuery) ||
+                            (item.description?.toLowerCase().contains(_searchQuery) ?? false);
+                      }).toList();
+                      if (filteredItems.isNotEmpty) {
+                        filteredSections.add(
+                          MenuSectionModel(
+                            sectionId: section.sectionId,
+                            sectionName: section.sectionName,
+                            items: filteredItems,
+                          ),
+                        );
+                      }
+                    }
+                    if (filteredSections.isEmpty) {
+                      return [
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Center(
+                            child: Text('No matching items found.',
+                                style: GoogleFonts.outfit(fontSize: 16, color: AppTheme.textSecondary)),
+                          ),
+                        )
+                      ];
+                    }
+                    return filteredSections.map((section) => _buildMenuSection(section));
+                  })(),
                 const SliverToBoxAdapter(child: SizedBox(height: 100)),
               ],
             ),
@@ -319,26 +357,6 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppTheme.surfaceAlt,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.divider),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.timer_outlined, size: 20, color: AppTheme.primary),
-                const SizedBox(width: 8),
-                Text('30-35 mins', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 13)),
-                const SizedBox(width: 20),
-                const Icon(Icons.delivery_dining_rounded, size: 20, color: AppTheme.primary),
-                const SizedBox(width: 8),
-                Text('FREE DELIVERY', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 13)),
-              ],
-            ),
           ),
         ],
       ),
