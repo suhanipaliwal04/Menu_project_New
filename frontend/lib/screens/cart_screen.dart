@@ -67,6 +67,7 @@ class _CartScreenState extends State<CartScreen> {
                 child: ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
+                    _buildOrderTypeToggle(cart),
                     ...cart.items.map((item) => _buildCartItem(context, item, cart)),
                     const SizedBox(height: 24),
                     if (cart.orderType.toLowerCase() == 'takeaway') ...[
@@ -83,6 +84,58 @@ class _CartScreenState extends State<CartScreen> {
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildOrderTypeToggle(CartProvider cart) {
+    final isDelivery = cart.orderType.toLowerCase() == 'delivery';
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceAlt,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => cart.setOrderType('Delivery'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: isDelivery ? AppTheme.primary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
+                  child: Text('Delivery',
+                      style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold,
+                          color: isDelivery ? Colors.white : AppTheme.textSecondary)),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => cart.setOrderType('Takeaway'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: !isDelivery ? AppTheme.primary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
+                  child: Text('Takeaway',
+                      style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold,
+                          color: !isDelivery ? Colors.white : AppTheme.textSecondary)),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
