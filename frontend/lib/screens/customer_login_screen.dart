@@ -89,7 +89,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
               // Form
               TextField(
                 controller: _emailCtrl,
-                style: const TextStyle(color: Colors.white),
+                style: GoogleFonts.outfit(color: AppTheme.textPrimary),
                 decoration: InputDecoration(
                   labelText: 'Email',
                   prefixIcon: const Icon(Icons.email_outlined, color: Colors.grey),
@@ -102,7 +102,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
               TextField(
                 controller: _passCtrl,
                 obscureText: true,
-                style: const TextStyle(color: Colors.white),
+                style: GoogleFonts.outfit(color: AppTheme.textPrimary),
                 decoration: InputDecoration(
                   labelText: 'Password',
                   prefixIcon: const Icon(Icons.lock_outline, color: Colors.grey),
