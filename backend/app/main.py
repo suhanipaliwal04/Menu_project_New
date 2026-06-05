@@ -94,6 +94,7 @@ async def run_migration():
         "ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS closing_time TIME",
         "ALTER TABLE bookings ADD COLUMN IF NOT EXISTS customer_name VARCHAR(100)",
         "ALTER TABLE bookings ADD COLUMN IF NOT EXISTS customer_phone VARCHAR(20)",
+        "ALTER TABLE bookings ADD COLUMN IF NOT EXISTS booking_date VARCHAR(50)",
         "UPDATE restaurants SET has_dine_in = true WHERE has_dine_in IS NULL",
         "UPDATE restaurants SET has_takeaway = true WHERE has_takeaway IS NULL",
         "UPDATE restaurants SET is_open_manually = true WHERE is_open_manually IS NULL",

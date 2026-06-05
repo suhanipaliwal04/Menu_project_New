@@ -430,8 +430,8 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
       itemCount: _slots.length,
       itemBuilder: (context, index) {
         final slot = _slots[index];
-        final time = slot['time'] as String;
-        final available = slot['status'] == 'available';
+        final time = slot['time_slot'] as String;
+        final available = slot['available'] == true;
 
         final isSelected = _selectedTime == time;
 
