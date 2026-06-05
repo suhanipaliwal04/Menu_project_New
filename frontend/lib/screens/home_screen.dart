@@ -65,12 +65,12 @@ class _HomeScreenState extends State<HomeScreen> {
       'image': 'assets/images/poster_2.png',
       'quote': "\"Spicy & vegan under ₹1000?\"\nJust ask me!",
       'align': Alignment.bottomLeft,
-      'font': GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 24, fontWeight: FontWeight.w900, height: 1.1),
+      'font': GoogleFonts.outfit(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, height: 1.1),
     },
     {
       'image': 'assets/images/poster_3.png',
       'quote': "Healthy, cheesy, or sweet?\nLet AI find your perfect meal.",
-      'align': Alignment.center,
+      'align': Alignment.bottomRight,
       'font': GoogleFonts.outfit(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800, height: 1.2),
     },
   ];
@@ -324,38 +324,45 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Center(child: CircularProgressIndicator()),
                   );
                 }
-                if (provider.areas.isEmpty) {
-                  return const SizedBox(
-                    height: 200,
-                    child: Center(child: Text('No areas found.')),
-                  );
-                }
+                final bool useFallback = provider.areas.isEmpty || provider.areasState == BrowseState.error;
+                final List<Map<String, String>> fallbackAreas = [
+                  {'id': '1', 'name': 'Sitabuldi', 'city': 'Nagpur'},
+                  {'id': '2', 'name': 'Dharampeth', 'city': 'Nagpur'},
+                  {'id': '3', 'name': 'VR Mall', 'city': 'Nagpur'},
+                  {'id': '4', 'name': 'Sadar', 'city': 'Nagpur'},
+                  {'id': '5', 'name': 'Itwari', 'city': 'Nagpur'},
+                ];
+                
+                final int itemCount = useFallback ? fallbackAreas.length : provider.areas.length;
+
                 return SizedBox(
                   height: 300,
                   child: ListView.separated(
-                    itemCount: provider.areas.length,
+                    itemCount: itemCount,
                     separatorBuilder: (context, index) => const Divider(color: AppTheme.divider, height: 1),
                     itemBuilder: (context, index) {
-                      final area = provider.areas[index];
+                      final String areaName = useFallback ? fallbackAreas[index]['name']! : provider.areas[index].areaName;
+                      final String cityName = useFallback ? fallbackAreas[index]['city']! : provider.areas[index].city;
+                      
                       return ListTile(
                         leading: Container(
                           padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: AppTheme.primaryGlow,
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.location_on_rounded, color: AppTheme.primary, size: 20),
                         ),
-                        title: Text(area.areaName, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16)),
-                        subtitle: Text(area.city, style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary)),
+                        title: Text(areaName, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16)),
+                        subtitle: Text(cityName, style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary)),
                         onTap: () {
                           setState(() {
-                            _selectedArea = area.areaName;
-                            _selectedCity = area.city;
+                            _selectedArea = areaName;
+                            _selectedCity = cityName;
                           });
                           Navigator.pop(ctx);
                           // Refresh restaurants based on city
-                          provider.loadRestaurants(city: area.city);
+                          provider.loadRestaurants(city: cityName);
                         },
                       );
                     },
@@ -583,35 +590,42 @@ class _HomeScreenState extends State<HomeScreen> {
         children: types.map((t) {
           String name = t['name'];
           IconData icon = t['icon'];
+          bool active = _selectedTab == name;
           return Expanded(
             child: GestureDetector(
               onTap: () {
                 setState(() => _selectedTab = name);
                 context.read<BrowseProvider>().loadRestaurants(orderType: name);
                 context.read<CartProvider>().setOrderType(name);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CategoryResultsScreen(categoryName: name),
+                  ),
+                );
               },
               child: AnimatedContainer(
                 duration: 300.ms,
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: AppTheme.surfaceAlt,
+                  color: active ? AppTheme.primary : AppTheme.surfaceAlt,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.divider),
+                  border: Border.all(color: active ? AppTheme.primary : AppTheme.divider),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(icon, 
                       size: 20, 
-                      color: AppTheme.textSecondary),
+                      color: active ? Colors.white : AppTheme.textSecondary),
                     const SizedBox(height: 4),
                     Text(
                       name,
                       style: GoogleFonts.outfit(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: AppTheme.textSecondary,
+                        color: active ? Colors.white : AppTheme.textSecondary,
                       ),
                     ),
                   ],

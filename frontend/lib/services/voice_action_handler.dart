@@ -359,7 +359,7 @@ class VoiceActionHandler {
       'add ', 'put ', 'order ', 'get me ', 'bring me ', 'want ', 'a ',
       'of ', 'takeaway of ', 'takeaway ',
     ];
-    String result = text;
+    String result = text.toLowerCase();
     for (final t in triggers) {
       if (result.contains(t)) {
         result = result.substring(result.indexOf(t) + t.length);
@@ -368,7 +368,7 @@ class VoiceActionHandler {
     }
     
     // Truncate before prepositions that usually indicate the restaurant or time
-    const cutOffWords = [' from ', ' at ', ' by ', ' i\'ll ', ' ill ', ' ill be '];
+    const cutOffWords = [' from ', ' at ', ' by ', ' i\'ll ', ' ill ', ' ill be ', ' reaching ', ' reach '];
     for (final cw in cutOffWords) {
       if (result.contains(cw)) {
         result = result.substring(0, result.indexOf(cw));

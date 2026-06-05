@@ -277,6 +277,15 @@ class VoiceAgentProvider extends ChangeNotifier {
       return await _handleTakeawayTurn(query);
     }
 
+    // ── Intercept Search/Navigation before sending to backend ──────────────
+    if (quickAction.type == VoiceActionType.search || 
+        quickAction.type == VoiceActionType.placeOrder || 
+        quickAction.type == VoiceActionType.openRestaurant) {
+      _setState(VoiceAgentState.idle);
+      onActionTriggered?.call(quickAction);
+      return quickAction;
+    }
+
     // ── Default: send to AI backend ───────────────────────────────────────
     return await _handleAIQuery(query);
   } catch (e, stack) {
@@ -499,6 +508,21 @@ class VoiceAgentProvider extends ChangeNotifier {
       return _localReply('Okay, takeaway cancelled.', action: const VoiceAction(type: VoiceActionType.none));
     }
 
+    // ── Extract item FIRST ────────────────────────────────────────────────
+    if (_pendingTakeawayItem == null || _pendingTakeawayItem!.isEmpty) {
+      String extractedItem = _actionHandler.extractItem(query);
+      if (extractedItem.isEmpty && _lastAiReply.contains('What would you like to order')) {
+        extractedItem = query.trim();
+      }
+      if (extractedItem.isNotEmpty) {
+        _pendingTakeawayItem = extractedItem;
+      }
+    }
+
+    if (_pendingTakeawayItem == null || _pendingTakeawayItem!.isEmpty) {
+      return _localReply('What would you like to order for takeaway?');
+    }
+
     // Check if user picked a nearby restaurant from Test Case 2 fallback
     final nearbyPick = _extractNearbyRestaurantForTakeaway(query);
     if (nearbyPick != null) {
@@ -565,22 +589,6 @@ class VoiceAgentProvider extends ChangeNotifier {
     if (_pendingTakeawayPhone == null) {
       final extractedPhone = _actionHandler.extractPhone(query);
       if (extractedPhone.isNotEmpty) _pendingTakeawayPhone = extractedPhone;
-    }
-
-    // Extract item if missing
-    if (_pendingTakeawayItem == null || _pendingTakeawayItem!.isEmpty) {
-      String extractedItem = _actionHandler.extractItem(query);
-      if (extractedItem.isEmpty && _lastAiReply.contains('What would you like to order')) {
-        extractedItem = query.trim();
-      }
-      if (extractedItem.isNotEmpty) {
-        _pendingTakeawayItem = extractedItem;
-      }
-    }
-
-    // Still missing item? (Safety fallback)
-    if (_pendingTakeawayItem == null || _pendingTakeawayItem!.isEmpty) {
-      return _localReply('What would you like to order for takeaway?');
     }
 
     // Missing time?

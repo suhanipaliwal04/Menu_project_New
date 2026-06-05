@@ -84,7 +84,7 @@ class VoiceService {
         }
       },
       listenFor: const Duration(seconds: 30),
-      pauseFor: const Duration(seconds: 3),
+      pauseFor: const Duration(seconds: 5),
       partialResults: true,
       localeId: 'en_IN',
     );
