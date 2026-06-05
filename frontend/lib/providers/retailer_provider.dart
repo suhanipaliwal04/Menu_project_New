@@ -103,7 +103,7 @@ class RetailerProvider extends ChangeNotifier {
       }
     } else {
       // Token exists but no restaurant yet — try /auth/me
-      await _fetchMe();
+      await fetchMe();
     }
   }
 
@@ -127,7 +127,7 @@ class RetailerProvider extends ChangeNotifier {
       _isLoggedIn = true;
 
       // Fetch user's restaurant (if any)
-      await _fetchMe();
+      await fetchMe();
 
       _setState(RetailerState.success);
       return true;
@@ -147,7 +147,7 @@ class RetailerProvider extends ChangeNotifier {
     _setState(RetailerState.idle);
   }
 
-  Future<void> _fetchMe() async {
+  Future<void> fetchMe() async {
     try {
       final me = await _api.getMe();
       final restaurantId = me['restaurant_id'] as String?;

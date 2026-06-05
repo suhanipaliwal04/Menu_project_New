@@ -217,6 +217,9 @@ def get_me(
         Restaurant.owner_id == current_user
     ).first()
 
+    with open("debug.log", "a") as f:
+        f.write(f"GET ME CALLED! current_user: {current_user}, restaurant: {restaurant.restaurant_id if restaurant else None}\n")
+
     return UserInfo(
         user_id=current_user,
         restaurant_id=restaurant.restaurant_id if restaurant else None,

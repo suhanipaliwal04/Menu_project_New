@@ -70,7 +70,7 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
       if (!mounted) return;
 
       if (success) {
-        await context.read<RetailerProvider>().init();
+        await context.read<RetailerProvider>().fetchMe();
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
