@@ -247,6 +247,7 @@ class _CartScreenState extends State<CartScreen> {
             keyboardType: TextInputType.phone,
             decoration: InputDecoration(
               labelText: 'Phone Number',
+              prefixText: '+91 ',
               labelStyle: GoogleFonts.outfit(color: AppTheme.textSecondary),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -415,18 +416,23 @@ class _CartScreenState extends State<CartScreen> {
         width: double.infinity,
         height: 56,
         child: ElevatedButton(
-          onPressed: () {
-            if (_nameCtrl.text.isEmpty || _phoneCtrl.text.isEmpty || _selectedTimeSlot == null) {
+          onPressed: () async {
+            if (_nameCtrl.text.trim().isEmpty || _phoneCtrl.text.trim().isEmpty || _selectedTimeSlot == null) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Please fill all Takeaway details')),
               );
               return;
             }
-            cart.placeOrder(
+            final success = await cart.placeOrder(
               customerName: _nameCtrl.text.trim(),
               customerPhone: _phoneCtrl.text.trim(),
               timeSlot: _selectedTimeSlot,
             );
+            if (!success && context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Failed to place order. Please try again later.')),
+              );
+            }
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppTheme.primary,

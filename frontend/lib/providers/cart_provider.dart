@@ -154,15 +154,15 @@ class CartProvider extends ChangeNotifier {
 
   // ── Order Flow ────────────────────────────────────────────────────────────
 
-  Future<void> placeOrder({String? customerName, String? customerPhone, String? timeSlot}) async {
-    if (_items.isEmpty) return;
+  Future<bool> placeOrder({String? customerName, String? customerPhone, String? timeSlot}) async {
+    if (_items.isEmpty) return false;
     
     if (_orderType.toLowerCase() == 'takeaway') {
       try {
         final res = await ApiService().createTakeawayOrder(
           restaurantId: _items.first.restaurantId,
-          customerName: customerName ?? 'Guest',
-          customerPhone: customerPhone ?? 'Unknown',
+          customerName: (customerName == null || customerName.trim().isEmpty) ? 'Guest' : customerName,
+          customerPhone: (customerPhone == null || customerPhone.trim().isEmpty) ? 'Unknown' : customerPhone,
           timeSlot: timeSlot ?? 'ASAP',
           totalAmount: totalPrice * 1.05,
           items: _items.map((i) => {
@@ -172,20 +172,22 @@ class CartProvider extends ChangeNotifier {
           }).toList(),
         );
         _lastOrderId = res['order_id'] ?? 'ORD${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+        _orderPlaced = true;
+        notifyListeners();
+        return true;
       } catch (e) {
         debugPrint('Failed to place order: $e');
-        _lastOrderId = 'ORD${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+        return false;
       }
     } else {
       _lastOrderId = 'ORD${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+      _orderPlaced = true;
+      notifyListeners();
+      return true;
     }
-
-    _orderPlaced = true;
-    notifyListeners();
   }
 
   void resetOrder() {
-    _items.clear();
     _orderPlaced = false;
     _lastOrderId = null;
     _paymentMethod = PaymentMethod.cashOnDelivery;
