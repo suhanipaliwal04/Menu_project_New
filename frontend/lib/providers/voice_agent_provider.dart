@@ -114,7 +114,13 @@ class VoiceAgentProvider extends ChangeNotifier {
   // ── Toggle TTS ────────────────────────────────────────────────────────────
   void toggleVoiceReply() {
     _voiceReplyEnabled = !_voiceReplyEnabled;
-    if (!_voiceReplyEnabled) _voiceService.stopSpeaking();
+    if (!_voiceReplyEnabled) {
+      _voiceService.stopSpeaking();
+    } else {
+      if (_history.isNotEmpty && !_history.last.isUser) {
+        speakAsync(_history.last.text);
+      }
+    }
     notifyListeners();
   }
 

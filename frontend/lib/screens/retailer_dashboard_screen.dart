@@ -3097,3 +3097,159 @@ class _BookingsTabState extends State<_BookingsTab> {
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TAB 6 — TAKEAWAY ORDERS
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _TakeawayTab extends StatefulWidget {
+  const _TakeawayTab();
+
+  @override
+  State<_TakeawayTab> createState() => _TakeawayTabState();
+}
+
+class _TakeawayTabState extends State<_TakeawayTab> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<RetailerProvider>().fetchTakeawayOrders();
+    });
+  }
+
+  Future<void> _updateStatus(String orderId, String status) async {
+    final success = await context.read<RetailerProvider>().updateTakeawayOrderStatus(orderId, status);
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Takeaway Order status updated to $status')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<RetailerProvider>(
+      builder: (context, p, _) {
+        if (p.myRestaurant == null) {
+          return const Center(child: Text('Please setup your restaurant first.'));
+        }
+
+        final orders = p.takeawayOrders;
+        if (orders.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.shopping_bag_outlined, size: 64, color: AppTheme.textMuted),
+                const SizedBox(height: 16),
+                Text('No Takeaway Orders yet', style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontSize: 16)),
+              ],
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+          itemCount: orders.length,
+          itemBuilder: (ctx, i) {
+            final o = orders[i];
+            final status = o.status;
+            final color = status == 'CONFIRMED' ? AppTheme.success : (status == 'REJECTED' ? AppTheme.error : AppTheme.primary);
+            
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.divider),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Order #${o.orderId.substring(0, 8)}', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+                        child: Text(status, style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: color)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Icon(Icons.access_time_rounded, size: 16, color: AppTheme.textSecondary),
+                      const SizedBox(width: 8),
+                      Text(o.timeSlot, style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textPrimary)),
+                      const Spacer(),
+                      Text('₹${o.totalAmount.toStringAsFixed(0)}', style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.primary)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.person_outline_rounded, size: 16, color: AppTheme.textSecondary),
+                      const SizedBox(width: 8),
+                      Text(o.customerName, style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
+                      const SizedBox(width: 16),
+                      const Icon(Icons.phone_outlined, size: 16, color: AppTheme.textSecondary),
+                      const SizedBox(width: 8),
+                      Text(o.customerPhone, style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text('Items:', style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                  const SizedBox(height: 4),
+                  ...o.items.map((item) => Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('${item.quantity}x ${item.itemName}', style: GoogleFonts.outfit(fontSize: 13, color: AppTheme.textSecondary)),
+                        Text('₹${item.price.toStringAsFixed(0)}', style: GoogleFonts.outfit(fontSize: 13, color: AppTheme.textSecondary)),
+                      ],
+                    ),
+                  )),
+                  if (status == 'PENDING') ...[
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => _updateStatus(o.orderId, 'REJECTED'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppTheme.error,
+                              side: const BorderSide(color: AppTheme.error),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                            child: Text('Reject', style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => _updateStatus(o.orderId, 'CONFIRMED'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.success,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              elevation: 0,
+                            ),
+                            child: Text('Confirm', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
