@@ -7,6 +7,7 @@ import '../providers/admin_provider.dart';
 import 'admin_areas_screen.dart';
 import 'admin_restaurants_screen.dart';
 import 'admin_menu_items_screen.dart';
+import 'admin_approvals_screen.dart';
 import 'upload_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
@@ -233,6 +234,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   color: const Color(0xFF9B59B6),
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UploadScreen())),
                   delay: 500,
+                ),
+                const SizedBox(height: 12),
+                _buildModuleCard(
+                  context: context,
+                  title: 'Pending Approvals',
+                  subtitle: 'Approve new restaurant registrations',
+                  icon: Icons.verified_user_rounded,
+                  color: const Color(0xFFE74C3C),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminApprovalsScreen())),
+                  delay: 550,
                 ),
                 const SizedBox(height: 24),
               ],

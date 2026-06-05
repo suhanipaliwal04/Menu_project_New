@@ -89,9 +89,8 @@ class RAGService:
                 "filters_used": filters,
             }
 
-        # 3. LLM re-ranks and generates human response (with soft hints)
-        soft_hints = {k: filters.get(k) for k in self.SOFT_FILTER_KEYS}
-        answer = self._generate_answer(query, items, area_name, soft_hints=soft_hints)
+        # 3. LLM re-ranks and generates human response
+        answer = self._generate_answer(query, items, area_name, filters=filters)
 
         return {
             "answer":       answer,
@@ -105,10 +104,10 @@ class RAGService:
                          query:      str,
                          items:      List[Dict[str, Any]],
                          area_name:  str,
-                         soft_hints: Optional[Dict[str, Any]] = None) -> str:
+                         filters:    Optional[Dict[str, Any]] = None) -> str:
         """Groq selects 3-4 best items from candidates and writes a human response."""
 
-        soft_hints = soft_hints or {}
+        filters = filters or {}
 
         # Format items: "ItemName @ RestaurantName — Category — ₹Price — Veg — Cal — Health"
         item_lines = []
@@ -125,20 +124,33 @@ class RAGService:
 
         loc = area_name or "your area"
 
-        # Soft preference hints for the LLM
+        # Explicit constraints for the LLM
         hint_lines = []
-        if soft_hints.get("section_name"):
-            hint_lines.append(f"- Prefer {soft_hints['section_name']} items")
-        if soft_hints.get("min_health_score"):
-            hint_lines.append(f"- Prefer health score >= {soft_hints['min_health_score']}/10")
-        if soft_hints.get("max_calories"):
-            hint_lines.append(f"- Prefer items <= {soft_hints['max_calories']} kcal")
-        pref_block = ("\nUser preferences:\n" + "\n".join(hint_lines)) if hint_lines else ""
+        if filters.get("is_veg") is not None:
+            diet = "Pure Veg" if filters["is_veg"] else "Non-Veg"
+            hint_lines.append(f"- MUST be {diet} items")
+        if filters.get("max_price") is not None:
+            hint_lines.append(f"- MUST be strictly under ₹{filters['max_price']}")
+        if filters.get("min_price") is not None:
+            hint_lines.append(f"- MUST be strictly over ₹{filters['min_price']}")
+        if filters.get("section_name"):
+            hint_lines.append(f"- Prefer {filters['section_name']} items")
+        if filters.get("min_health_score"):
+            hint_lines.append(f"- Prefer health score >= {filters['min_health_score']}/10")
+        if filters.get("max_calories"):
+            hint_lines.append(f"- Prefer items <= {filters['max_calories']} kcal")
+        if filters.get("exclude_keywords"):
+            hint_lines.append(f"- MUST EXCLUDE items containing: {', '.join(filters['exclude_keywords'])}")
+
+        pref_block = ("\nUser strict constraints & preferences:\n" + "\n".join(hint_lines)) if hint_lines else ""
 
         system_msg = (
             "You are a friendly, local food guide. You help people discover great food "
             "at restaurants near them. Speak warmly and naturally, like a knowledgeable "
-            "friend who knows all the best spots. Never sound robotic."
+            "friend who knows all the best spots. Never sound robotic. "
+            "CRITICAL: Do NOT contradict the user's constraints in your response. "
+            "For example, if the user asks for items OVER ₹200, do not say 'Here are dishes under 200'. "
+            "Rely strictly on the provided 'User strict constraints & preferences' block."
         )
 
         prompt = f"""Someone near {loc} is looking for food and asked:
@@ -149,7 +161,7 @@ Here are menu items from nearby restaurants:
 {pref_block}
 
 Write a very short 1-2 sentence recommendation:
-- Pick the 1-2 BEST matching items.
+- Pick the 1-2 BEST matching items that satisfy the user strict constraints.
 - Mention the item name, restaurant, and price.
 - Be very brief and conversational. No long explanations.
 - No bullet points, no numbering."""

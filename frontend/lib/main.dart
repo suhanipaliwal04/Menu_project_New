@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'core/theme.dart';
 import 'screens/home_screen.dart';
+import 'screens/customer_login_screen.dart';
+import 'screens/admin_dashboard_screen.dart';
+import 'screens/retailer_dashboard_screen.dart';
 import 'providers/chat_provider.dart';
 import 'providers/browse_provider.dart';
 import 'providers/cart_provider.dart';
@@ -13,6 +16,7 @@ import 'providers/admin_provider.dart';
 import 'providers/retailer_provider.dart';
 import 'providers/favorites_provider.dart';
 import 'providers/customer_bookings_provider.dart';
+import 'providers/auth_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,6 +36,7 @@ class MenuIntelligenceApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
         ChangeNotifierProvider(create: (_) => BrowseProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
@@ -55,8 +60,63 @@ class MenuIntelligenceApp extends StatelessWidget {
         title: 'Menu Intelligence',
         theme: AppTheme.darkTheme,
         debugShowCheckedModeBanner: false,
-        home: const HomeScreen(),
+        home: const AuthWrapper(),
       ),
     );
+  }
+}
+
+class AuthWrapper extends StatefulWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initAuth();
+  }
+
+  Future<void> _initAuth() async {
+    await context.read<AuthProvider>().init();
+    
+    // Also init retailer provider if role is retailer, so it loads dashboard stats etc.
+    final auth = context.read<AuthProvider>();
+    if (auth.isLoggedIn && auth.role == 'RESTAURANT_ADMIN') {
+      await context.read<RetailerProvider>().init();
+    }
+    
+    setState(() => _isLoading = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: AppTheme.background,
+        body: Center(child: CircularProgressIndicator(color: AppTheme.primary)),
+      );
+    }
+
+    final auth = context.watch<AuthProvider>();
+
+    if (!auth.isLoggedIn) {
+      return const CustomerLoginScreen();
+    }
+
+    switch (auth.role) {
+      case 'SYSTEM_ADMIN':
+        return const AdminDashboardScreen();
+      case 'RESTAURANT_ADMIN':
+        return const RetailerDashboardScreen();
+      case 'CUSTOMER':
+      default:
+        return const HomeScreen();
+    }
   }
 }

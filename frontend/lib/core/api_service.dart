@@ -400,9 +400,19 @@ class ApiService {
 
   // ── Admin Auth ────────────────────────────────────────────────────────────────
 
-  /// POST /auth/admin-login — Supabase sign-in, returns JWT access token.
-  Future<Map<String, dynamic>> adminLogin(String email, String password) async {
-    final data = await _post(AppConstants.adminLoginEndpoint, {
+  /// POST /auth/login — Supabase sign-in with strict role checks.
+  Future<Map<String, dynamic>> login(String email, String password, String expectedRole) async {
+    final data = await _post(AppConstants.authLoginEndpoint, {
+      'email': email,
+      'password': password,
+      'expected_role': expectedRole,
+    });
+    return data as Map<String, dynamic>;
+  }
+
+  /// POST /auth/register/{role}
+  Future<Map<String, dynamic>> register(String email, String password, String role) async {
+    final data = await _post('${AppConstants.authRegisterEndpoint}/$role', {
       'email': email,
       'password': password,
     });
@@ -423,6 +433,20 @@ class ApiService {
       '${AppConstants.adminEndpoint}/dashboard/$restaurantId',
       auth: true,
     );
+    return data as Map<String, dynamic>;
+  }
+
+  // ── System Admin ─────────────────────────────────────────────────────────────
+
+  /// GET /system-admin/pending-restaurants
+  Future<List<Map<String, dynamic>>> getPendingRestaurants() async {
+    final data = await _get('/system-admin/pending-restaurants', auth: true);
+    return (data as List).cast<Map<String, dynamic>>();
+  }
+
+  /// POST /system-admin/approve-restaurant/{user_id}
+  Future<Map<String, dynamic>> approveRestaurant(String userId) async {
+    final data = await _post('/system-admin/approve-restaurant/$userId', {}, auth: true);
     return data as Map<String, dynamic>;
   }
 

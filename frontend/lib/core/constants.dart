@@ -25,7 +25,8 @@ class AppConstants {
   static const String adminOrdersEndpoint    = '/orders/admin/restaurants';
   
   // ── Admin Endpoints ──────────────────────────────────────────────────────────
-  static const String adminLoginEndpoint = '/auth/admin-login';
+  static const String authLoginEndpoint = '/auth/login';
+  static const String authRegisterEndpoint = '/auth/register';
   static const String adminEndpoint = '/admin';
 
   // ── Timeouts ────────────────────────────────────────────────────────────────

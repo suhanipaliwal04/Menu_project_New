@@ -135,7 +135,7 @@ class AdminProvider extends ChangeNotifier {
     _errorMessage = null;
 
     try {
-      final data = await _api.adminLogin(email, password);
+      final data = await _api.login(email, password, 'SYSTEM_ADMIN');
       final token = data['access_token'] as String?;
       if (token == null || token.isEmpty) {
         _errorMessage = 'No token received from server';
@@ -224,8 +224,8 @@ class AdminProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> createRestaurant(String name, String areaId,
-      String priceCategory,
+  Future<bool> createRestaurant(
+      String name, String areaId, String priceCategory,
       {List<String>? cuisines, String? address, String? phone}) async {
     _setState(AdminState.loading);
     try {
@@ -330,8 +330,7 @@ class AdminProvider extends ChangeNotifier {
     if (_selectedRestaurant == null) return false;
     _errorMessage = null;
     try {
-      await _api.deleteAdminMenuItem(
-          _selectedRestaurant!.restaurantId, itemId);
+      await _api.deleteAdminMenuItem(_selectedRestaurant!.restaurantId, itemId);
       _menuItems.removeWhere((m) => m.itemId == itemId);
       // Decrement stats count
       if (_dashboardStats != null) {

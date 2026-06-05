@@ -5,7 +5,7 @@ from app.core.database import get_db
 import uuid
 
 from app.schemas.order import OrderCreate, OrderResponse, OrderUpdate
-from app.api.v1.endpoints.auth import get_current_admin
+from app.core.auth_roles import get_current_restaurant_admin
 
 router = APIRouter()
 
@@ -56,7 +56,7 @@ def create_takeaway_order(order_data: OrderCreate, db=Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/admin/restaurants/{restaurant_id}/orders", response_model=List[OrderResponse])
-def get_admin_orders(restaurant_id: uuid.UUID, admin=Depends(get_current_admin), db=Depends(get_db)):
+def get_admin_orders(restaurant_id: uuid.UUID, admin=Depends(get_current_restaurant_admin), db=Depends(get_db)):
     try:
         # Fetch orders
         orders_res = db.execute(text("""
@@ -105,7 +105,7 @@ def get_admin_orders(restaurant_id: uuid.UUID, admin=Depends(get_current_admin),
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.put("/admin/orders/{order_id}", response_model=OrderResponse)
-def update_order_status(order_id: uuid.UUID, update_data: OrderUpdate, admin=Depends(get_current_admin), db=Depends(get_db)):
+def update_order_status(order_id: uuid.UUID, update_data: OrderUpdate, admin=Depends(get_current_restaurant_admin), db=Depends(get_db)):
     try:
         res = db.execute(text("""
             UPDATE orders

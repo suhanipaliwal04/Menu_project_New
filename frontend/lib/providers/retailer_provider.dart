@@ -114,7 +114,7 @@ class RetailerProvider extends ChangeNotifier {
     _errorMessage = null;
 
     try {
-      final data = await _api.adminLogin(email, password);
+      final data = await _api.login(email, password, 'RESTAURANT_ADMIN');
       final token = data['access_token'] as String;
       final userId = data['user_id'] as String;
 
@@ -323,7 +323,8 @@ class RetailerProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> updateMenuItem(String itemId, Map<String, dynamic> updates) async {
+  Future<bool> updateMenuItem(
+      String itemId, Map<String, dynamic> updates) async {
     final id = _myRestaurant?.restaurantId;
     if (id == null) return false;
     try {
@@ -389,13 +390,15 @@ class RetailerProvider extends ChangeNotifier {
       _isUploading = false;
 
       // Add to history
-      _uploadHistory.insert(0, UploadHistoryItem(
-        uploadId: result['upload_id']?.toString() ?? '',
-        timestamp: DateTime.now(),
-        itemsExtracted: result['items_count'] as int? ?? 0,
-        status: result['status'] == 'completed' ? 'Completed' : 'Failed',
-        mode: _uploadMode ?? 'replace',
-      ));
+      _uploadHistory.insert(
+          0,
+          UploadHistoryItem(
+            uploadId: result['upload_id']?.toString() ?? '',
+            timestamp: DateTime.now(),
+            itemsExtracted: result['items_count'] as int? ?? 0,
+            status: result['status'] == 'completed' ? 'Completed' : 'Failed',
+            mode: _uploadMode ?? 'replace',
+          ));
 
       // Refresh items list
       await fetchMenuItems();
@@ -486,7 +489,8 @@ class RetailerProvider extends ChangeNotifier {
   // ── Upload History ─────────────────────────────────────────────────────────
 
   List<UploadHistoryItem> _uploadHistory = [];
-  List<UploadHistoryItem> get uploadHistory => List.unmodifiable(_uploadHistory);
+  List<UploadHistoryItem> get uploadHistory =>
+      List.unmodifiable(_uploadHistory);
 
   // ── Bookings ───────────────────────────────────────────────────────────────
 

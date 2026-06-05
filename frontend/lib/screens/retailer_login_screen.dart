@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../core/theme.dart';
+import '../providers/auth_provider.dart';
 import '../providers/retailer_provider.dart';
 import 'retailer_dashboard_screen.dart';
 
@@ -17,6 +18,7 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   bool _obscurePassword = true;
+  bool _isSignUp = false;
 
   @override
   void dispose() {
@@ -25,9 +27,9 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
     super.dispose();
   }
 
-  void _login() async {
+  void _submit() async {
     FocusScope.of(context).unfocus();
-    final provider = context.read<RetailerProvider>();
+    final authProvider = context.read<AuthProvider>();
     final email = _emailCtrl.text.trim();
     final pass = _passCtrl.text.trim();
 
@@ -37,29 +39,52 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
           content: Text('Please enter both email and password.', style: GoogleFonts.outfit()),
           backgroundColor: AppTheme.error,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       return;
     }
 
-    final success = await provider.login(email, pass);
-    if (!mounted) return;
-
-    if (success) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const RetailerDashboardScreen()),
-      );
+    if (_isSignUp) {
+      final success = await authProvider.register(email, pass, 'restaurant-admin');
+      if (!mounted) return;
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Registration successful! Please wait for System Admin approval before logging in.', style: GoogleFonts.outfit()),
+            backgroundColor: AppTheme.primary,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        setState(() => _isSignUp = false);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authProvider.errorMessage ?? 'Registration failed', style: GoogleFonts.outfit()),
+            backgroundColor: AppTheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(provider.errorMessage ?? 'Login failed', style: GoogleFonts.outfit()),
-          backgroundColor: AppTheme.error,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
+      final success = await authProvider.login(email, pass, 'RESTAURANT_ADMIN');
+      if (!mounted) return;
+
+      if (success) {
+        await context.read<RetailerProvider>().init();
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const RetailerDashboardScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authProvider.errorMessage ?? 'Login failed', style: GoogleFonts.outfit()),
+            backgroundColor: AppTheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
@@ -95,7 +120,7 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primary.withValues(alpha: 0.3),
+                      color: AppTheme.primary.withOpacity(0.3),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -118,7 +143,7 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
               ).animate().fadeIn(delay: 200.ms),
               const SizedBox(height: 8),
               Text(
-                'Manage your restaurant, upload menus & more.',
+                _isSignUp ? 'Register to list your restaurant.' : 'Manage your restaurant, upload menus & more.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary),
               ).animate().fadeIn(delay: 300.ms),
@@ -139,20 +164,20 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
 
               const SizedBox(height: 40),
 
-              // Login Button
-              Consumer<RetailerProvider>(
-                builder: (context, provider, child) {
+              // Login/Signup Button
+              Consumer<AuthProvider>(
+                builder: (context, auth, child) {
                   return SizedBox(
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: provider.state == RetailerState.loading ? null : _login,
+                      onPressed: auth.state == AuthState.loading ? null : _submit,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primary,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         elevation: 0,
                       ),
-                      child: provider.state == RetailerState.loading
+                      child: auth.state == AuthState.loading
                           ? const SizedBox(
                               width: 24,
                               height: 24,
@@ -161,10 +186,10 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
                           : Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.login_rounded, size: 20),
+                                Icon(_isSignUp ? Icons.app_registration : Icons.login_rounded, size: 20),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Sign In to Dashboard',
+                                  _isSignUp ? 'Request Approval' : 'Sign In to Dashboard',
                                   style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w700),
                                 ),
                               ],
@@ -174,13 +199,23 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
                 },
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+              
+              TextButton(
+                onPressed: () => setState(() => _isSignUp = !_isSignUp),
+                child: Text(
+                  _isSignUp ? 'Already approved? Sign In' : 'New restaurant? Sign Up',
+                  style: GoogleFonts.outfit(color: AppTheme.primary),
+                ),
+              ).animate().fadeIn(delay: 700.ms),
+              
+              const SizedBox(height: 8),
               Text(
-                'Sign in with your registered restaurant account.',
+                'New registrations require System Admin approval before login.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.outfit(
                     fontSize: 12, color: AppTheme.textMuted),
-              ).animate().fadeIn(delay: 700.ms),
+              ).animate().fadeIn(delay: 750.ms),
             ],
           ),
         ),
@@ -200,13 +235,6 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.divider),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: TextField(
@@ -229,13 +257,6 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.divider),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: TextField(
