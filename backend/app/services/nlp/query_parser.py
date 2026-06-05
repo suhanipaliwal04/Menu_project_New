@@ -169,7 +169,8 @@ Rules:
 - is_veg = true only if user says "veg", "vegetarian", or similar
 - is_veg = false if user mentions chicken/mutton/fish/meat/egg
 - is_veg = null if no preference stated
-- max_price: the price ceiling in rupees (null if not mentioned)
+- max_price: the price ceiling in rupees (ONLY if user says "under", "below", "less than". null if not mentioned)
+- min_price: the price floor in rupees (ONLY if user says "over", "above", "more than". null if not mentioned)
 - min_health_score: set to 6 if user says "healthy", 7 if "very healthy", null otherwise
 - section_name: null if no specific category mentioned
 - semantic_query: remove filter words and negative phrases from the query"""
