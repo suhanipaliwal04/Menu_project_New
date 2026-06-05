@@ -169,17 +169,22 @@ class ApiService {
     required String restaurantId,
     required int partySize,
     required String timeSlot,
+    String? customerName,
+    String? customerPhone,
   }) async {
     return await _post('/bookings/', {
       'restaurant_id': restaurantId,
       'party_size': partySize,
       'time_slot': timeSlot,
+      if (customerName != null) 'customer_name': customerName,
+      if (customerPhone != null) 'customer_phone': customerPhone,
     }) as Map<String, dynamic>;
   }
 
   /// GET /bookings/admin/restaurants/{id}/bookings
-  Future<List<Map<String, dynamic>>> getAdminBookings(String restaurantId) async {
-    final data = await _get('/bookings/admin/restaurants/$restaurantId/bookings') as List<dynamic>;
+  Future<List<Map<String, dynamic>>> getAdminBookings(String restaurantId, {String? status}) async {
+    final params = status != null ? {'status_filter': status} : null;
+    final data = await _get('/bookings/admin/restaurants/$restaurantId/bookings', params: params, auth: true) as List<dynamic>;
     return data.cast<Map<String, dynamic>>();
   }
 

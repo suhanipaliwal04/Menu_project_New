@@ -20,7 +20,7 @@ from app.services.ocr.ocr_engine import get_ocr_engine
 from app.services.ocr.menu_layout_parser import parse_menu
 from app.services.nlp.menu_structurer import get_menu_structurer
 from app.services.health.health_scorer import get_health_scorer
-from app.services.nlp.embedding_service import EmbeddingService
+from app.services.nlp.embedding_service import get_embedding_service
 from app.schemas.menu import UploadResponse, UploadStatusResponse
 
 logger = logging.getLogger(__name__)
@@ -226,9 +226,8 @@ async def upload_menu(
                         text += f" [{mi.section.section_name}]"
                     texts.append(text)
 
-                # Generate embedding vectors
-                from app.services.nlp.embedding_service import EmbeddingService
-                svc = EmbeddingService()
+                # Generate embedding vectors (uses singleton — no model re-load)
+                svc = get_embedding_service()
                 embeddings = svc.generate_embeddings(texts)
 
                 # Create MenuEmbedding records linked to existing items

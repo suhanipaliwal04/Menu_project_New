@@ -20,6 +20,8 @@ class DashboardStats(BaseModel):
     avg_price: Optional[float] = None
     veg_items: int
     non_veg_items: int
+    total_bookings: int = 0
+    pending_bookings: int = 0
     created_at: Optional[datetime] = None
 
 

@@ -18,6 +18,8 @@ class Booking(Base):
     # user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     party_size = Column(Integer, nullable=False)
     time_slot = Column(String(50), nullable=False)
+    customer_name = Column(String(100), nullable=True)
+    customer_phone = Column(String(20), nullable=True)
     status = Column(String(20), default="PENDING")  # PENDING, CONFIRMED, REJECTED, CANCELLED
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())

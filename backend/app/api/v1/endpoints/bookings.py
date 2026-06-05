@@ -32,6 +32,8 @@ def create_booking(
         restaurant_id=booking.restaurant_id,
         party_size=booking.party_size,
         time_slot=booking.time_slot,
+        customer_name=booking.customer_name,
+        customer_phone=booking.customer_phone,
         status="PENDING"
     )
     db.add(db_booking)
@@ -42,6 +44,7 @@ def create_booking(
 @router.get("/admin/restaurants/{restaurant_id}/bookings", response_model=List[BookingResponse])
 def get_restaurant_bookings(
     restaurant_id: uuid.UUID,
+    status_filter: str = None,
     current_user: uuid.UUID = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -55,7 +58,11 @@ def get_restaurant_bookings(
     if restaurant.owner_id != current_user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
         
-    bookings = db.query(Booking).filter(Booking.restaurant_id == restaurant_id).order_by(Booking.created_at.desc()).all()
+    query = db.query(Booking).filter(Booking.restaurant_id == restaurant_id)
+    if status_filter:
+        query = query.filter(Booking.status == status_filter)
+        
+    bookings = query.order_by(Booking.created_at.desc()).all()
     return bookings
 
 @router.put("/admin/bookings/{booking_id}", response_model=BookingResponse)

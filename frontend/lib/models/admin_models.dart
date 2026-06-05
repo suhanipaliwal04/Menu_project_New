@@ -12,6 +12,8 @@ class DashboardStats {
   final double? avgPrice;
   final int vegItems;
   final int nonVegItems;
+  final int totalBookings;
+  final int pendingBookings;
   final DateTime? createdAt;
 
   const DashboardStats({
@@ -26,6 +28,8 @@ class DashboardStats {
     this.avgPrice,
     required this.vegItems,
     required this.nonVegItems,
+    this.totalBookings = 0,
+    this.pendingBookings = 0,
     this.createdAt,
   });
 
@@ -41,6 +45,8 @@ class DashboardStats {
         avgPrice: (j['avg_price'] as num?)?.toDouble(),
         vegItems: j['veg_items'] as int? ?? 0,
         nonVegItems: j['non_veg_items'] as int? ?? 0,
+        totalBookings: j['total_bookings'] as int? ?? 0,
+        pendingBookings: j['pending_bookings'] as int? ?? 0,
         createdAt: j['created_at'] != null
             ? DateTime.tryParse(j['created_at'].toString())
             : null,
@@ -151,4 +157,39 @@ class UploadHistoryItem {
     required this.status,
     this.mode = 'replace',
   });
+}
+
+class BookingModel {
+  final String bookingId;
+  final String restaurantId;
+  final int partySize;
+  final String timeSlot;
+  final String status;
+  final String? customerName;
+  final String? customerPhone;
+  final DateTime? createdAt;
+
+  const BookingModel({
+    required this.bookingId,
+    required this.restaurantId,
+    required this.partySize,
+    required this.timeSlot,
+    required this.status,
+    this.customerName,
+    this.customerPhone,
+    this.createdAt,
+  });
+
+  factory BookingModel.fromJson(Map<String, dynamic> j) => BookingModel(
+        bookingId: j['booking_id']?.toString() ?? '',
+        restaurantId: j['restaurant_id']?.toString() ?? '',
+        partySize: j['party_size'] as int? ?? 0,
+        timeSlot: j['time_slot'] as String? ?? '',
+        status: j['status'] as String? ?? 'PENDING',
+        customerName: j['customer_name'] as String?,
+        customerPhone: j['customer_phone'] as String?,
+        createdAt: j['created_at'] != null
+            ? DateTime.tryParse(j['created_at'].toString())
+            : null,
+      );
 }

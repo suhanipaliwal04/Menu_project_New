@@ -53,6 +53,10 @@ class RetailerProvider extends ChangeNotifier {
   List<MenuSectionInfo> _sections = [];
   List<MenuSectionInfo> get sections => List.unmodifiable(_sections);
 
+  // Bookings
+  List<BookingModel> _bookings = [];
+  List<BookingModel> get bookings => List.unmodifiable(_bookings);
+
   // Active filters
   String? _sectionFilter;
   String? get sectionFilter => _sectionFilter;
@@ -168,7 +172,7 @@ class RetailerProvider extends ChangeNotifier {
     _dashboardStats = null;
     _menuItems = [];
     _sections = [];
-    _uploadHistory = [];
+    _bookings = [];
     _areas = [];
   }
 
@@ -478,6 +482,44 @@ class RetailerProvider extends ChangeNotifier {
 
   List<UploadHistoryItem> _uploadHistory = [];
   List<UploadHistoryItem> get uploadHistory => List.unmodifiable(_uploadHistory);
+
+  // ── Bookings ───────────────────────────────────────────────────────────────
+
+  Future<void> fetchBookings({String? status}) async {
+    final id = _myRestaurant?.restaurantId;
+    if (id == null) return;
+    try {
+      final raw = await _api.getAdminBookings(id, status: status);
+      _bookings = raw.map((e) => BookingModel.fromJson(e)).toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error fetching bookings: $e');
+    }
+  }
+
+  Future<bool> updateBookingStatus(String bookingId, String status) async {
+    try {
+      final data = await _api.updateBookingStatus(bookingId, status);
+      // Update locally
+      final updated = BookingModel.fromJson(data);
+      final index = _bookings.indexWhere((b) => b.bookingId == bookingId);
+      if (index != -1) {
+        _bookings[index] = updated;
+        // Optionally refresh stats so badge updates immediately
+        await fetchDashboard();
+        notifyListeners();
+      }
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.message;
+      notifyListeners();
+      return false;
+    } catch (_) {
+      _errorMessage = 'Failed to update booking status.';
+      notifyListeners();
+      return false;
+    }
+  }
 
   // ── Misc ───────────────────────────────────────────────────────────────────
 

@@ -28,6 +28,7 @@ from app.models.area import Area
 from app.models.menu import MenuSection, MenuItem
 from app.models.upload import MenuUpload
 from app.models.embedding import MenuEmbedding
+from app.models.booking import Booking
 from app.schemas.admin import DashboardStats, MenuItemSummary, MenuItemUpdate, MenuSectionSummary, MenuItemCreate
 
 logger = logging.getLogger(__name__)
@@ -79,6 +80,17 @@ def get_dashboard(
         MenuUpload.restaurant_id == restaurant_id
     ).scalar() or 0
 
+    # Count bookings
+    booking_stats = db.query(
+        sql_func.count(Booking.booking_id),
+        sql_func.count(Booking.booking_id).filter(Booking.status == "PENDING"),
+    ).filter(
+        Booking.restaurant_id == restaurant_id
+    ).first()
+    
+    total_bookings = booking_stats[0] or 0
+    pending_bookings = booking_stats[1] or 0
+
     return DashboardStats(
         restaurant_id=restaurant.restaurant_id,
         restaurant_name=restaurant.restaurant_name,
@@ -91,6 +103,8 @@ def get_dashboard(
         avg_price=avg_price,
         veg_items=veg_items,
         non_veg_items=non_veg_items,
+        total_bookings=total_bookings,
+        pending_bookings=pending_bookings,
         created_at=restaurant.created_at,
     )
 
@@ -576,9 +590,8 @@ async def admin_upload_menu(
                         text += f" [{mi.section.section_name}]"
                     texts.append(text)
 
-                from app.services.nlp.embedding_service import EmbeddingService
-
-                svc = EmbeddingService()
+                from app.services.nlp.embedding_service import get_embedding_service
+                svc = get_embedding_service()
                 embeddings = svc.generate_embeddings(texts)
 
                 for mi, emb in zip(created_items, embeddings):
