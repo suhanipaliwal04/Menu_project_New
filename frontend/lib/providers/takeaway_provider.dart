@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import '../models/chat_models.dart';
+import '../core/api_service.dart';
 
 enum TakeawayState { idle, checking }
 
@@ -75,18 +76,37 @@ class TakeawayProvider extends ChangeNotifier {
     if (capability != null) {
       result = capability;
     } else {
-      // Test Case 1: Success
-      final orderId = 'TW-${1000 + Random().nextInt(9000)}';
-      result = TakeawayAvailabilityResponse(
-        available: true,
-        confirmedTime: time,
-        reason: 'ok',
-        nearbyRestaurants: [],
-        orderId: orderId,
-        aiMessage: "Your order has been placed successfully! "
-            "Takeaway for $item from $restaurantName at $time. "
-            "Order ID: $orderId.",
-      );
+      try {
+        final res = await ApiService().createTakeawayOrder(
+          restaurantId: 'demo-restaurant-001', // Should ideally fetch proper ID based on name
+          customerName: userName,
+          customerPhone: phone,
+          timeSlot: time,
+          totalAmount: 500.0, // Hardcoded for voice test case
+          items: [
+            {'item_name': item, 'quantity': 1, 'price': 500.0}
+          ],
+        );
+        final orderId = res['order_id'] ?? 'TW-${1000 + Random().nextInt(9000)}';
+        result = TakeawayAvailabilityResponse(
+          available: true,
+          confirmedTime: time,
+          reason: 'ok',
+          nearbyRestaurants: [],
+          orderId: orderId,
+          aiMessage: "Your order has been placed successfully! "
+              "Takeaway for $item from $restaurantName at $time. "
+              "Order ID: $orderId.",
+        );
+      } catch (e) {
+        result = TakeawayAvailabilityResponse(
+          available: false,
+          confirmedTime: null,
+          reason: 'error',
+          nearbyRestaurants: [],
+          aiMessage: "I could not place the takeaway order due to a server error.",
+        );
+      }
     }
 
     _lastAvailability = result;

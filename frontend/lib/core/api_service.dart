@@ -364,6 +364,40 @@ class ApiService {
   }
 
 
+  // ── Orders (Takeaway) ────────────────────────────────────────────────────────
+
+  /// POST /orders/takeaway
+  Future<Map<String, dynamic>> createTakeawayOrder({
+    required String restaurantId,
+    required String customerName,
+    required String customerPhone,
+    required String timeSlot,
+    required double totalAmount,
+    required List<Map<String, dynamic>> items,
+  }) async {
+    final data = await _post(AppConstants.ordersTakeawayEndpoint, {
+      'restaurant_id': restaurantId,
+      'customer_name': customerName,
+      'customer_phone': customerPhone,
+      'time_slot': timeSlot,
+      'total_amount': totalAmount,
+      'items': items,
+    });
+    return data as Map<String, dynamic>;
+  }
+
+  /// GET /orders/admin/restaurants/{id}/orders
+  Future<List<Map<String, dynamic>>> getAdminOrders(String restaurantId) async {
+    final data = await _get('${AppConstants.adminOrdersEndpoint}/$restaurantId/orders', auth: true);
+    return (data as List).cast<Map<String, dynamic>>();
+  }
+
+  /// PUT /admin/orders/{id}
+  Future<Map<String, dynamic>> updateOrderStatus(String orderId, String status) async {
+    final data = await _put('/admin/orders/$orderId', {'status': status});
+    return data as Map<String, dynamic>;
+  }
+
   // ── Admin Auth ────────────────────────────────────────────────────────────────
 
   /// POST /auth/admin-login — Supabase sign-in, returns JWT access token.

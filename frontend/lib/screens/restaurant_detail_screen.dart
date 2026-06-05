@@ -8,7 +8,10 @@ import '../models/menu_model.dart';
 import '../widgets/health_badge.dart';
 import '../widgets/veg_indicator.dart';
 import '../core/api_service.dart';
+import '../widgets/voice_fab.dart';
+import '../providers/cart_provider.dart';
 import 'table_booking_screen.dart';
+import 'cart_screen.dart';
 
 class RestaurantDetailScreen extends StatefulWidget {
   final String restaurantId;
@@ -56,14 +59,23 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
 
           return Scaffold(
             backgroundColor: AppTheme.background,
-            floatingActionButton: restaurant.hasDineIn
-                ? FloatingActionButton.extended(
-                    onPressed: () => _showBookingModal(context, restaurant),
-                    backgroundColor: AppTheme.primary,
-                    icon: const Icon(Icons.event_seat_rounded, color: Colors.white),
-                    label: Text('Book a Table', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
-                  )
-                : null,
+            floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+            floatingActionButton: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: restaurant.hasDineIn ? MainAxisAlignment.spaceBetween : MainAxisAlignment.center,
+                children: [
+                  const VoiceFab(),
+                  if (restaurant.hasDineIn)
+                    FloatingActionButton.extended(
+                      onPressed: () => _showBookingModal(context, restaurant),
+                      backgroundColor: AppTheme.primary,
+                      icon: const Icon(Icons.event_seat_rounded, color: Colors.white),
+                      label: Text('Book a Table', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
+                    ),
+                ],
+              ),
+            ),
             body: CustomScrollView(
               slivers: [
                 _buildAppBar(restaurant.restaurantName),
@@ -121,7 +133,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                 else
                   ...(() {
                     if (_searchQuery.isEmpty) {
-                      return menuResponse.sections.map((section) => _buildMenuSection(section));
+                      return menuResponse.sections.map((section) => _buildMenuSection(section, restaurant.restaurantName));
                     }
                     final filteredSections = <MenuSectionModel>[];
                     for (final section in menuResponse.sections) {
@@ -150,7 +162,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                         )
                       ];
                     }
-                    return filteredSections.map((section) => _buildMenuSection(section));
+                    return filteredSections.map((section) => _buildMenuSection(section, restaurant.restaurantName));
                   })(),
                 const SliverToBoxAdapter(child: SizedBox(height: 100)),
               ],
@@ -211,7 +223,43 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
           ),
         ),
       ),
-      actions: [],
+      actions: [
+        Consumer<CartProvider>(
+          builder: (context, cart, _) {
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.shopping_bag_outlined, color: AppTheme.textPrimary, size: 28),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const CartScreen()),
+                    );
+                  },
+                ),
+                if (cart.items.isNotEmpty)
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: AppTheme.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '${cart.items.length}',
+                        style: GoogleFonts.outfit(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+        const SizedBox(width: 8),
+      ],
     );
   }
 
@@ -264,7 +312,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
     );
   }
 
-  Widget _buildMenuSection(MenuSectionModel section) {
+  Widget _buildMenuSection(MenuSectionModel section, String restaurantName) {
     return SliverMainAxisGroup(
       slivers: [
         SliverAppBar(
@@ -280,7 +328,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
-              (context, i) => _buildMenuItem(section.items[i]),
+              (context, i) => _buildMenuItem(section.items[i], restaurantName),
               childCount: section.items.length,
             ),
           ),
@@ -289,7 +337,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
     );
   }
 
-  Widget _buildMenuItem(MenuItemModel item) {
+  Widget _buildMenuItem(MenuItemModel item, String restaurantName) {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       child: Row(
@@ -320,13 +368,13 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
             ),
           ),
           const SizedBox(width: 16),
-          _buildItemImage(item),
+          _buildItemImage(item, restaurantName),
         ],
       ),
     ).animate().fadeIn().slideY(begin: 0.1, end: 0);
   }
 
-  Widget _buildItemImage(MenuItemModel item) {
+  Widget _buildItemImage(MenuItemModel item, String restaurantName) {
     return Stack(
       alignment: Alignment.bottomCenter,
       clipBehavior: Clip.none,
@@ -346,22 +394,40 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
         ),
         Positioned(
           bottom: -10,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.divider),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                )
-              ],
+          child: GestureDetector(
+            onTap: () {
+              context.read<CartProvider>().addItem(
+                id: item.itemId,
+                name: item.itemName,
+                price: item.price,
+                restaurantName: restaurantName,
+                restaurantId: widget.restaurantId,
+              );
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('${item.itemName} added to cart', style: GoogleFonts.outfit()),
+                  backgroundColor: AppTheme.primary,
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.divider),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  )
+                ],
+              ),
+              child: Text('ADD',
+                  style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.w900, fontSize: 14)),
             ),
-            child: Text('ADD',
-                style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.w900, fontSize: 14)),
           ),
         ),
       ],

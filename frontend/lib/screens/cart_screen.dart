@@ -5,8 +5,30 @@ import 'package:provider/provider.dart';
 import '../core/theme.dart';
 import '../providers/cart_provider.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
+
+  @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  final _nameCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  String? _selectedTimeSlot;
+
+  final List<String> _timeSlots = [
+    'ASAP',
+    '12:00 PM', '12:30 PM', '1:00 PM', '1:30 PM',
+    '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM'
+  ];
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _phoneCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +69,10 @@ class CartScreen extends StatelessWidget {
                   children: [
                     ...cart.items.map((item) => _buildCartItem(context, item, cart)),
                     const SizedBox(height: 24),
+                    if (cart.orderType.toLowerCase() == 'takeaway') ...[
+                      _buildTakeawayDetails(),
+                      const SizedBox(height: 24),
+                    ],
                     _buildPaymentSelector(cart),
                     const SizedBox(height: 24),
                     _buildOrderSummary(cart),
@@ -130,6 +156,97 @@ class CartScreen extends StatelessWidget {
         ],
       ),
     ).animate().fadeIn().slideY(begin: 0.05, end: 0);
+  }
+
+  Widget _buildTakeawayDetails() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppTheme.divider),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Takeaway Details',
+              style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.w800, fontSize: 16, color: AppTheme.textPrimary)),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _nameCtrl,
+            decoration: InputDecoration(
+              labelText: 'Name',
+              labelStyle: GoogleFonts.outfit(color: AppTheme.textSecondary),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppTheme.divider),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppTheme.divider),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppTheme.primary),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _phoneCtrl,
+            keyboardType: TextInputType.phone,
+            decoration: InputDecoration(
+              labelText: 'Phone Number',
+              labelStyle: GoogleFonts.outfit(color: AppTheme.textSecondary),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppTheme.divider),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppTheme.divider),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppTheme.primary),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text('Time Slot', style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _timeSlots.map((slot) {
+              final isSelected = _selectedTimeSlot == slot;
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedTimeSlot = slot;
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppTheme.primary : AppTheme.surfaceAlt,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: isSelected ? AppTheme.primary : AppTheme.divider),
+                  ),
+                  child: Text(slot,
+                      style: GoogleFonts.outfit(
+                          color: isSelected ? Colors.white : AppTheme.textPrimary,
+                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500)),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildPaymentSelector(CartProvider cart) {
@@ -251,7 +368,21 @@ class CartScreen extends StatelessWidget {
         width: double.infinity,
         height: 56,
         child: ElevatedButton(
-          onPressed: cart.placeOrder,
+          onPressed: () {
+            if (cart.orderType.toLowerCase() == 'takeaway') {
+              if (_nameCtrl.text.isEmpty || _phoneCtrl.text.isEmpty || _selectedTimeSlot == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please fill all Takeaway details')),
+                );
+                return;
+              }
+            }
+            cart.placeOrder(
+              customerName: _nameCtrl.text.trim(),
+              customerPhone: _phoneCtrl.text.trim(),
+              timeSlot: _selectedTimeSlot,
+            );
+          },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppTheme.primary,
             foregroundColor: Colors.white,
