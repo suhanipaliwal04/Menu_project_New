@@ -150,9 +150,7 @@ def _llm_parse(query: str, rule_result: Dict[str, Any]) -> Dict[str, Any]:
         logger.warning("groq SDK not installed — skipping LLM parse.")
         return rule_result
 
-    prompt = f"""You are a restaurant search query parser. Extract search filters from this query.
-
-Query: "{query}"
+    prompt = f"""You are a precise restaurant search query parser. Extract filters from the user's query.
 
 Return ONLY a JSON object (no extra text):
 {{
@@ -161,18 +159,30 @@ Return ONLY a JSON object (no extra text):
   "min_price": integer or null,
   "max_calories": integer or null,
   "min_health_score": integer 1-10 or null,
-  "section_name": one of [North Indian, South Indian, Chinese, Fast Food, Street Food, Biryani, Rice & Noodles, Indian Breads, Curries & Gravies, Snacks & Starters, Desserts, Beverages, Salads & Healthy, Thali & Combos, Tandoor & Grills, Seafood, Egg Dishes] or null,
-  "semantic_query": "cleaned query for semantic search"
+  "section_name": string or null,
+  "semantic_query": "cleaned query"
 }}
 
-Rules:
-- is_veg = true only if user says "veg", "vegetarian", or similar
-- is_veg = false if user mentions chicken/mutton/fish/meat/egg
-- is_veg = null if no preference stated
-- max_price: the price ceiling in rupees (null if not mentioned)
-- min_health_score: set to 6 if user says "healthy", 7 if "very healthy", null otherwise
-- section_name: null if no specific category mentioned
-- semantic_query: remove filter words and negative phrases from the query"""
+CRITICAL RULES:
+1. is_veg: MUST be `null` UNLESS the user explicitly says "veg", "vegetarian", "plant based" (true) OR "chicken", "mutton", "fish", "meat", "egg", "non veg" (false). Do NOT guess. Default is ALWAYS `null`.
+2. max_price: The upper limit in rupees (e.g., "under 200", "below 500"). Must be `null` if not mentioned.
+3. min_price: The lower limit in rupees (e.g., "over 200", "above 500"). Must be `null` if not mentioned.
+4. min_health_score: 6 if "healthy", 7 if "very healthy". `null` otherwise.
+5. section_name: Match to a category like "North Indian", "Chinese", "Desserts", etc. `null` if not mentioned.
+6. semantic_query: The remaining food intent with prices/dietary words removed.
+
+EXAMPLES:
+Q: "something over 200 rs"
+{{"is_veg": null, "max_price": null, "min_price": 200, "max_calories": null, "min_health_score": null, "section_name": null, "semantic_query": "something"}}
+
+Q: "healthy veg food under 300"
+{{"is_veg": true, "max_price": 300, "min_price": null, "max_calories": null, "min_health_score": 6, "section_name": null, "semantic_query": "food"}}
+
+Q: "spicy chicken biryani"
+{{"is_veg": false, "max_price": null, "min_price": null, "max_calories": null, "min_health_score": null, "section_name": "Biryani", "semantic_query": "spicy chicken biryani"}}
+
+Q: "{query}"
+"""
 
     try:
         client = Groq(api_key=groq_key)

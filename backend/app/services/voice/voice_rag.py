@@ -50,7 +50,7 @@ _VOICE_SYSTEM_MSG = (
     "2. NO bullet points, NO numbering, NO markdown formatting. "
     "3. Mention the restaurant name, item name, and price in a natural way. "
     "4. Sound warm and helpful, like a knowledgeable friend. "
-    "5. Never invent items or prices that are not in the provided menu data. "
+    "5. CRITICAL: ONLY recommend items from the 'Available menu items' list. DO NOT invent or hallucinate items, prices, or restaurants. "
     "6. If the conversation history is provided, reference it naturally when relevant."
 )
 
@@ -193,11 +193,11 @@ class VoiceRAGService:
 
         user_prompt = (
             f'Someone near {loc} asked via voice: "{query}"\n\n'
-            f"Available menu items:\n{context}"
+            f"Available menu items:\n{context}\n"
             f"{pref_block}\n\n"
             "Write a warm, spoken-aloud recommendation in exactly 1-2 short sentences. "
-            "Mention the best 1-2 items with restaurant name and price. "
-            "No bullet points. No markdown. Sound natural."
+            "Mention up to 2 items from the EXACT list above with their restaurant name and price. "
+            "Do not make up any other items or restaurants. No bullet points. No markdown. Sound natural."
         )
 
         # Build message list: [system] + [history…] + [user]
