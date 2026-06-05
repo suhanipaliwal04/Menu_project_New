@@ -9,6 +9,7 @@ import '../widgets/health_badge.dart';
 import '../widgets/veg_indicator.dart';
 import '../core/api_service.dart';
 import '../widgets/voice_fab.dart';
+import '../providers/cart_provider.dart';
 import 'table_booking_screen.dart';
 
 class RestaurantDetailScreen extends StatefulWidget {
@@ -131,7 +132,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                 else
                   ...(() {
                     if (_searchQuery.isEmpty) {
-                      return menuResponse.sections.map((section) => _buildMenuSection(section));
+                      return menuResponse.sections.map((section) => _buildMenuSection(section, restaurant.restaurantName));
                     }
                     final filteredSections = <MenuSectionModel>[];
                     for (final section in menuResponse.sections) {
@@ -160,7 +161,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                         )
                       ];
                     }
-                    return filteredSections.map((section) => _buildMenuSection(section));
+                    return filteredSections.map((section) => _buildMenuSection(section, restaurant.restaurantName));
                   })(),
                 const SliverToBoxAdapter(child: SizedBox(height: 100)),
               ],
@@ -274,7 +275,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
     );
   }
 
-  Widget _buildMenuSection(MenuSectionModel section) {
+  Widget _buildMenuSection(MenuSectionModel section, String restaurantName) {
     return SliverMainAxisGroup(
       slivers: [
         SliverAppBar(
@@ -290,7 +291,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
-              (context, i) => _buildMenuItem(section.items[i], menuResponse.restaurant.restaurantName),
+              (context, i) => _buildMenuItem(section.items[i], restaurantName),
               childCount: section.items.length,
             ),
           ),

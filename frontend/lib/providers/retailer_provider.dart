@@ -532,8 +532,12 @@ class RetailerProvider extends ChangeNotifier {
     final id = _myRestaurant?.restaurantId;
     if (id == null) return;
     try {
-      final raw = await _api.getAdminOrders(id, status: status);
-      _takeawayOrders = raw.map((e) => OrderModel.fromJson(e)).toList();
+      final raw = await _api.getAdminOrders(id);
+      var orders = raw.map((e) => OrderModel.fromJson(e)).toList();
+      if (status != null) {
+        orders = orders.where((o) => o.status == status).toList();
+      }
+      _takeawayOrders = orders;
       notifyListeners();
     } catch (e) {
       debugPrint('Error fetching takeaway orders: $e');
