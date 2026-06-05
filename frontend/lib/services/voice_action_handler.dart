@@ -137,6 +137,18 @@ class VoiceActionHandler {
       );
     }
 
+    // SEARCH detection (general food/cravings query) - Must be before ADD TO CART
+    if (_matchesAny(q, [
+      'want to eat', 'hungry', 'craving', 'looking for', 'find me',
+      'search', 'suggest', 'recommend', 'healthy', 'spicy', 'sweet', 'veg',
+      'what should i eat', 'something to eat',
+    ])) {
+      return VoiceAction(
+        type: VoiceActionType.search,
+        params: {'query': userQuery},
+      );
+    }
+
     // ADD TO CART detection
     if (_matchesAny(q, [
       'add', 'put', 'cart', 'order', 'want to eat', 'i want',
@@ -160,18 +172,6 @@ class VoiceActionHandler {
       return VoiceAction(
         type: VoiceActionType.openRestaurant,
         params: {'restaurantName': restaurant},
-      );
-    }
-
-    // SEARCH detection (general food/cravings query)
-    if (_matchesAny(q, [
-      'want to eat', 'hungry', 'craving', 'looking for', 'find me',
-      'search', 'suggest', 'recommend', 'healthy', 'spicy', 'sweet', 'veg',
-      'what should i eat', 'something to eat',
-    ])) {
-      return VoiceAction(
-        type: VoiceActionType.search,
-        params: {'query': userQuery},
       );
     }
 
