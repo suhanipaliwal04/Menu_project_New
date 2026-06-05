@@ -560,38 +560,6 @@ class ApiService {
     return data as Map<String, dynamic>;
   }
 
-  // ── Takeaway Orders ──────────────────────────────────────────────────────────
-
-  /// POST /orders/takeaway
-  Future<Map<String, dynamic>> createTakeawayOrder({
-    required String restaurantId,
-    required String customerName,
-    required String customerPhone,
-    required String timeSlot,
-    required double totalAmount,
-    required List<Map<String, dynamic>> items,
-  }) async {
-    return await _post('/orders/takeaway', {
-      'restaurant_id': restaurantId,
-      'customer_name': customerName,
-      'customer_phone': customerPhone,
-      'time_slot': timeSlot,
-      'total_amount': totalAmount,
-      'items': items,
-    }) as Map<String, dynamic>;
-  }
-
-  /// GET /orders/admin/restaurants/{id}/orders
-  Future<List<Map<String, dynamic>>> getAdminOrders(String restaurantId) async {
-    final data = await _get('/orders/admin/restaurants/$restaurantId/orders', auth: true) as List<dynamic>;
-    return data.cast<Map<String, dynamic>>();
-  }
-
-  /// PUT /orders/admin/orders/{id}
-  Future<Map<String, dynamic>> updateOrderStatus(String orderId, String status) async {
-    return await _put('/orders/admin/orders/$orderId', {'status': status}) as Map<String, dynamic>;
-  }
-
 }
 
 // ── Exception ────────────────────────────────────────────────────────────────────
