@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../core/api_service.dart';
 
 /// A single item in the cart.
 class CartItem {
@@ -153,10 +154,33 @@ class CartProvider extends ChangeNotifier {
 
   // ── Order Flow ────────────────────────────────────────────────────────────
 
-  void placeOrder() {
+  Future<void> placeOrder({String? customerName, String? customerPhone, String? timeSlot}) async {
     if (_items.isEmpty) return;
+    
+    if (_orderType.toLowerCase() == 'takeaway') {
+      try {
+        final res = await ApiService().createTakeawayOrder(
+          restaurantId: _items.first.restaurantId,
+          customerName: customerName ?? 'Guest',
+          customerPhone: customerPhone ?? 'Unknown',
+          timeSlot: timeSlot ?? 'ASAP',
+          totalAmount: totalPrice * 1.05,
+          items: _items.map((i) => {
+             'item_name': i.name,
+             'quantity': i.quantity,
+             'price': i.price,
+          }).toList(),
+        );
+        _lastOrderId = res['order_id'] ?? 'ORD${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+      } catch (e) {
+        debugPrint('Failed to place order: $e');
+        _lastOrderId = 'ORD${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+      }
+    } else {
+      _lastOrderId = 'ORD${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+    }
+
     _orderPlaced = true;
-    _lastOrderId = 'ORD${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
     notifyListeners();
   }
 

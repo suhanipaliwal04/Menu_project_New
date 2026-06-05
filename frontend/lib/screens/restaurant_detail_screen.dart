@@ -280,7 +280,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
-              (context, i) => _buildMenuItem(section.items[i]),
+              (context, i) => _buildMenuItem(section.items[i], menuResponse.restaurant.restaurantName),
               childCount: section.items.length,
             ),
           ),
@@ -289,7 +289,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
     );
   }
 
-  Widget _buildMenuItem(MenuItemModel item) {
+  Widget _buildMenuItem(MenuItemModel item, String restaurantName) {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       child: Row(
@@ -320,13 +320,13 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
             ),
           ),
           const SizedBox(width: 16),
-          _buildItemImage(item),
+          _buildItemImage(item, restaurantName),
         ],
       ),
     ).animate().fadeIn().slideY(begin: 0.1, end: 0);
   }
 
-  Widget _buildItemImage(MenuItemModel item) {
+  Widget _buildItemImage(MenuItemModel item, String restaurantName) {
     return Stack(
       alignment: Alignment.bottomCenter,
       clipBehavior: Clip.none,
@@ -346,22 +346,40 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
         ),
         Positioned(
           bottom: -10,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.divider),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                )
-              ],
+          child: GestureDetector(
+            onTap: () {
+              context.read<CartProvider>().addItem(
+                id: item.itemId,
+                name: item.itemName,
+                price: item.price,
+                restaurantName: restaurantName,
+                restaurantId: widget.restaurantId,
+              );
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('${item.itemName} added to cart', style: GoogleFonts.outfit()),
+                  backgroundColor: AppTheme.primary,
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.divider),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  )
+                ],
+              ),
+              child: Text('ADD',
+                  style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.w900, fontSize: 14)),
             ),
-            child: Text('ADD',
-                style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.w900, fontSize: 14)),
           ),
         ),
       ],

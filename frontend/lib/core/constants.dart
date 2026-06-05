@@ -21,6 +21,10 @@ class AppConstants {
   static const String dineCheckEndpoint = '/dine/check-availability';
   static const String dineConfirmEndpoint = '/dine/confirm-booking';
 
+  // ── Orders (Takeaway) Endpoints ──────────────────────────────────────────────
+  static const String ordersTakeawayEndpoint = '/orders/takeaway';
+  static const String adminOrdersEndpoint    = '/orders/admin/restaurants';
+  
   // ── Admin Endpoints ──────────────────────────────────────────────────────────
   static const String adminLoginEndpoint = '/auth/admin-login';
   static const String adminEndpoint = '/admin';
