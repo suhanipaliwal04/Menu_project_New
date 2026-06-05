@@ -11,6 +11,7 @@ import '../core/api_service.dart';
 import '../widgets/voice_fab.dart';
 import '../providers/cart_provider.dart';
 import 'table_booking_screen.dart';
+import 'cart_screen.dart';
 
 class RestaurantDetailScreen extends StatefulWidget {
   final String restaurantId;
@@ -222,7 +223,43 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
           ),
         ),
       ),
-      actions: [],
+      actions: [
+        Consumer<CartProvider>(
+          builder: (context, cart, _) {
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.shopping_bag_outlined, color: AppTheme.textPrimary, size: 28),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const CartScreen()),
+                    );
+                  },
+                ),
+                if (cart.items.isNotEmpty)
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: AppTheme.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '${cart.items.length}',
+                        style: GoogleFonts.outfit(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+        const SizedBox(width: 8),
+      ],
     );
   }
 
