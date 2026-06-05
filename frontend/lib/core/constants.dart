@@ -1,8 +1,8 @@
 class AppConstants {
   // ── API ─────────────────────────────────────────────────────────────────────
   // We are using localhost to prove the code works with the JWT secret!
-  static const String _renderBase = 'http://127.0.0.1:8000/api/v1';
-  // static const String _renderBase = 'https://eatbot-lifa.onrender.com/api/v1';
+  // static const String _renderBase = 'http://127.0.0.1:8000/api/v1';
+  static const String _renderBase = 'https://eatbot-lifa.onrender.com/api/v1';
 
   static String get baseUrl => _renderBase;
 
