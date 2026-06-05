@@ -100,6 +100,7 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
           context,
           MaterialPageRoute(
             builder: (_) => TableBookingScreen(
+              restaurantId:     action.params['restaurantId'] as String? ?? '',
               restaurantName:   action.params['restaurantName'] as String? ??
                   vp.currentRestaurantName,
               timeSlot:         action.params['time'] as String? ?? '',

@@ -347,6 +347,13 @@ class _OverviewTab extends StatelessWidget {
                 ),
 
               const SizedBox(height: 20),
+              
+              // Pending Bookings
+              _sectionLabel('Pending Booking Requests'),
+              const SizedBox(height: 10),
+              _buildPendingBookings(p),
+
+              const SizedBox(height: 20),
               _sectionLabel('Restaurant Info'),
               const SizedBox(height: 10),
               _infoCard(r),
@@ -355,6 +362,68 @@ class _OverviewTab extends StatelessWidget {
         ),
       );
     });
+  }
+
+  Widget _buildPendingBookings(RetailerProvider p) {
+    final pending = p.bookings.where((b) => b.status == 'PENDING').take(3).toList();
+    
+    if (pending.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.divider),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.event_available_rounded, color: AppTheme.textMuted, size: 20),
+            const SizedBox(width: 12),
+            Text('No pending booking requests.', style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontSize: 13)),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      children: pending.map((b) => Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTheme.error.withOpacity(0.3)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Booking #${b.bookingId.substring(0, 8)}', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(Icons.people_alt_rounded, size: 12, color: AppTheme.textSecondary),
+                    const SizedBox(width: 4),
+                    Text('${b.partySize} Guests', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary)),
+                    const SizedBox(width: 12),
+                    const Icon(Icons.access_time_rounded, size: 12, color: AppTheme.textSecondary),
+                    const SizedBox(width: 4),
+                    Text(b.timeSlot, style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary)),
+                  ],
+                ),
+              ],
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(color: AppTheme.error.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+              child: Text('PENDING', style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.error)),
+            ),
+          ],
+        ),
+      )).toList(),
+    ).animate().fadeIn().slideY(begin: 0.1, end: 0);
   }
 
   Widget _buildSetupPrompt(BuildContext context) {

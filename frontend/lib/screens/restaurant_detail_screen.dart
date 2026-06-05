@@ -8,6 +8,7 @@ import '../models/menu_model.dart';
 import '../widgets/health_badge.dart';
 import '../widgets/veg_indicator.dart';
 import '../core/api_service.dart';
+import 'table_booking_screen.dart';
 
 class RestaurantDetailScreen extends StatefulWidget {
   final String restaurantId;
@@ -123,113 +124,13 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
   }
 
   void _showBookingModal(BuildContext context, RestaurantMenuInfo restaurant) {
-    int partySize = 2;
-    String selectedTime = '7:00 PM';
-    final times = ['6:00 PM', '6:30 PM', '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM'];
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setModalState) {
-          return Container(
-            padding: const EdgeInsets.all(24),
-            decoration: const BoxDecoration(
-              color: AppTheme.background,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Book a Table at ${restaurant.restaurantName}',
-                    style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
-                const SizedBox(height: 24),
-                
-                Text('Party Size', style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.remove_circle_outline),
-                      onPressed: () {
-                        if (partySize > 1) setModalState(() => partySize--);
-                      },
-                    ),
-                    Text('$partySize people', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600)),
-                    IconButton(
-                      icon: const Icon(Icons.add_circle_outline),
-                      onPressed: () {
-                        if (partySize < 20) setModalState(() => partySize++);
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                
-                Text('Time', style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: times.map((t) {
-                    final isSelected = t == selectedTime;
-                    return GestureDetector(
-                      onTap: () => setModalState(() => selectedTime = t),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: isSelected ? AppTheme.primary : AppTheme.surfaceAlt,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: isSelected ? AppTheme.primary : AppTheme.divider),
-                        ),
-                        child: Text(t, style: GoogleFonts.outfit(
-                          color: isSelected ? Colors.white : AppTheme.textPrimary,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        )),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  height: 54,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      Navigator.pop(ctx);
-                      try {
-                        await ApiService().createBooking(
-                          restaurantId: restaurant.restaurantId,
-                          partySize: partySize,
-                          timeSlot: selectedTime,
-                        );
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Booking request sent!'), backgroundColor: Colors.green),
-                          );
-                        }
-                      } catch (e) {
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-                          );
-                        }
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                    child: Text('Confirm Request', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TableBookingScreen(
+          restaurantId: restaurant.restaurantId,
+          restaurantName: restaurant.restaurantName,
+        ),
       ),
     );
   }

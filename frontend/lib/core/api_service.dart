@@ -334,6 +334,8 @@ class ApiService {
     required String timeSlot,
     required int partySize,
     String? dateStr,
+    String? customerName,
+    String? customerPhone,
   }) async {
     final data = await _post(AppConstants.dineConfirmEndpoint, {
       'restaurant_id': restaurantId,
@@ -341,8 +343,24 @@ class ApiService {
       'time_slot': timeSlot,
       'party_size': partySize,
       if (dateStr != null) 'date_str': dateStr,
+      if (customerName != null) 'customer_name': customerName,
+      if (customerPhone != null) 'customer_phone': customerPhone,
     });
     return DineBookingConfirmation.fromJson(data as Map<String, dynamic>);
+  }
+
+  /// GET /dine/slots/{restaurantId}
+  Future<List<Map<String, dynamic>>> getAvailableSlots(String restaurantId, String date) async {
+    final data = await _get('/dine/slots/$restaurantId?date=$date');
+    return (data as List).cast<Map<String, dynamic>>();
+  }
+
+  /// POST /bookings/customer
+  Future<List<dynamic>> getCustomerBookings(List<String> bookingIds) async {
+    final data = await _post('/bookings/customer', {
+      'booking_ids': bookingIds,
+    });
+    return data as List<dynamic>;
   }
 
 

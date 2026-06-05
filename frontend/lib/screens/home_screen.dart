@@ -19,6 +19,7 @@ import 'cart_screen.dart';
 import 'category_results_screen.dart';
 import 'admin_login_screen.dart';
 import 'retailer_login_screen.dart';
+import 'my_bookings_screen.dart';
 import '../widgets/voice_fab.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -462,6 +463,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const MyBookingsScreen()),
+                  ),
+                  child: const CircleAvatar(
+                    backgroundColor: AppTheme.surfaceAlt,
+                    child: Icon(Icons.receipt_long_rounded,
+                        color: AppTheme.textPrimary),
+                  ),
+                ),
+                const SizedBox(width: 12),
                 GestureDetector(
                   onTap: () => _showPortalSheet(context),
                   child: const CircleAvatar(

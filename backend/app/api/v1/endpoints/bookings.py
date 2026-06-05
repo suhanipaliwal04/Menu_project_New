@@ -10,6 +10,11 @@ from app.models.booking import Booking
 from app.models.restaurant import Restaurant
 from app.schemas.booking import BookingCreate, BookingUpdate, BookingResponse
 
+from pydantic import BaseModel
+
+class CustomerBookingsRequest(BaseModel):
+    booking_ids: List[uuid.UUID]
+
 router = APIRouter()
 
 @router.post("/", response_model=BookingResponse)
@@ -32,6 +37,7 @@ def create_booking(
         restaurant_id=booking.restaurant_id,
         party_size=booking.party_size,
         time_slot=booking.time_slot,
+        booking_date=booking.booking_date,
         customer_name=booking.customer_name,
         customer_phone=booking.customer_phone,
         status="PENDING"
@@ -90,3 +96,14 @@ def update_booking_status(
     db.commit()
     db.refresh(booking)
     return booking
+
+@router.post("/customer", response_model=List[BookingResponse])
+def get_customer_bookings(
+    request: CustomerBookingsRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Get booking details for a list of booking IDs stored locally by the customer.
+    """
+    bookings = db.query(Booking).filter(Booking.booking_id.in_(request.booking_ids)).order_by(Booking.created_at.desc()).all()
+    return bookings

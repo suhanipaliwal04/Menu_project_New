@@ -56,6 +56,8 @@ class BookingRequest(BaseModel):
     time_slot: str
     party_size: int = Field(..., ge=1, le=50)
     date_str: Optional[str] = None
+    customer_name: Optional[str] = None
+    customer_phone: Optional[str] = None
 
 
 class BookingConfirmation(BaseModel):
@@ -157,27 +159,27 @@ async def check_availability(req: AvailabilityRequest):
     )
 
 
-@router.post(
-    "/confirm-booking",
-    response_model=BookingConfirmation,
-    summary="Confirm a dine-in table booking",
-    description="Confirms the reservation and returns a booking record with ID.",
-    status_code=201,
-)
-async def confirm_booking(req: BookingRequest):
-    """
-    Confirm and persist the booking. Returns booking details + voice confirmation message.
-    """
+@router.post("/confirm-booking", response_model=BookingConfirmation)
+async def confirm_booking(request: BookingRequest) -> Dict[str, Any]:
     svc = get_dine_booking_service()
-    booking = svc.confirm_booking(
-        restaurant_id=req.restaurant_id,
-        restaurant_name=req.restaurant_name,
-        time_slot=req.time_slot,
-        party_size=req.party_size,
-        date_str=req.date_str,
+    result = svc.confirm_booking(
+        restaurant_id=request.restaurant_id,
+        restaurant_name=request.restaurant_name,
+        time_slot=request.time_slot,
+        party_size=request.party_size,
+        date_str=request.date_str,
+        customer_name=request.customer_name,
+        customer_phone=request.customer_phone,
     )
+    result["ai_message"] = (
+        f"Awesome, I've booked your table for {request.party_size} "
+        f"at {request.restaurant_name or 'the restaurant'} for {result['time_slot']}. "
+        "You'll get a notification once the restaurant accepts it."
+    )
+    return result
 
-    return BookingConfirmation(
-        **booking,
-        ai_message=_build_confirmation_message(booking),
-    )
+
+@router.get("/slots/{restaurant_id}")
+async def get_slots(restaurant_id: str, date: str) -> List[Dict[str, Any]]:
+    svc = get_dine_booking_service()
+    return svc.get_slots_availability(restaurant_id=restaurant_id, date_str=date)

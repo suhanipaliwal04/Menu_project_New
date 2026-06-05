@@ -31,9 +31,8 @@ logger = logging.getLogger(__name__)
 
 # ── All possible time slots ────────────────────────────────────────────────────
 ALL_SLOTS = [
-    "6:00 PM", "6:30 PM", "7:00 PM", "7:30 PM",
-    "8:00 PM", "8:30 PM", "9:00 PM", "9:30 PM",
-    "10:00 PM", "10:30 PM", "11:00 PM",
+    "6:00 PM", "7:00 PM", "8:00 PM", "9:00 PM",
+    "10:00 PM", "11:00 PM",
 ]
 
 # ── Slot normalization ─────────────────────────────────────────────────────────
@@ -113,9 +112,31 @@ class DineBookingService:
                 "available": False,
                 "confirmed_slot": None,
                 "reason": "time_unavailable",
-                "alternative_slots": ["7:00 PM", "7:30 PM", "8:00 PM", "8:30 PM"],
+                "alternative_slots": ["7:00 PM", "8:00 PM", "9:00 PM"],
                 "nearby_restaurants": [],
             }
+
+        date_str = datetime.utcnow().strftime("%d %b %Y")
+        db: Session = SessionLocal()
+        try:
+            bookings = db.query(Booking).filter(
+                Booking.restaurant_id == restaurant_id,
+                Booking.booking_date == date_str,
+                Booking.time_slot == matched_slot,
+                Booking.status.in_(["PENDING", "CONFIRMED"])
+            ).all()
+            total_seats = sum(b.party_size for b in bookings)
+            if total_seats + party_size > 10:
+                logger.info(f"DineBooking: '{matched_slot}' full for {party_size} at '{restaurant_name}' (Current: {total_seats}/10)")
+                return {
+                    "available": False,
+                    "confirmed_slot": None,
+                    "reason": "time_unavailable",
+                    "alternative_slots": [s for s in ALL_SLOTS if s != matched_slot][:3],
+                    "nearby_restaurants": [],
+                }
+        finally:
+            db.close()
 
         logger.info(f"DineBooking: '{matched_slot}' available for {party_size} at '{restaurant_name}'")
         return {
@@ -133,6 +154,8 @@ class DineBookingService:
         time_slot: str,
         party_size: int,
         date_str: Optional[str] = None,
+        customer_name: Optional[str] = None,
+        customer_phone: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Confirm a table booking by inserting it into the database with PENDING status.
@@ -146,6 +169,9 @@ class DineBookingService:
                 restaurant_id=restaurant_id,
                 party_size=party_size,
                 time_slot=matched_slot,
+                booking_date=date_str,
+                customer_name=customer_name,
+                customer_phone=customer_phone,
                 status="PENDING"
             )
             db.add(new_booking)
@@ -170,6 +196,40 @@ class DineBookingService:
             "date": date_str,
             "status": "PENDING",
         }
+
+    def get_slots_availability(
+        self,
+        restaurant_id: str,
+        date_str: str,
+    ) -> List[Dict[str, Any]]:
+        """
+        Return a list of slots and whether they are available (capacity = 10 seats per 1-hour slot).
+        """
+        db: Session = SessionLocal()
+        try:
+            bookings = db.query(Booking).filter(
+                Booking.restaurant_id == restaurant_id,
+                Booking.booking_date == date_str,
+                Booking.status.in_(["PENDING", "CONFIRMED"])
+            ).all()
+
+            # Group party size by slot
+            slot_capacity = {s: 0 for s in ALL_SLOTS}
+            for b in bookings:
+                if b.time_slot in slot_capacity:
+                    slot_capacity[b.time_slot] += b.party_size
+
+            result = []
+            for s in ALL_SLOTS:
+                available = slot_capacity[s] < 10
+                result.append({
+                    "time_slot": s,
+                    "available": available,
+                    "seats_booked": slot_capacity[s]
+                })
+            return result
+        finally:
+            db.close()
 
 _service: Optional[DineBookingService] = None
 
