@@ -9,6 +9,7 @@ import '../widgets/food_item_card.dart';
 import '../widgets/skeleton_card.dart';
 import '../widgets/typewriter_text.dart';
 import '../widgets/voice_fab.dart';
+import 'restaurant_detail_screen.dart';
 
 class ResultsScreen extends StatefulWidget {
   const ResultsScreen({super.key});
@@ -177,7 +178,29 @@ class _ResultsScreenState extends State<ResultsScreen> {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
-                (_, i) => FoodItemCard(item: displayItems[i], index: i),
+                (_, i) {
+                  final item = displayItems[i];
+                  return FoodItemCard(
+                    item: item,
+                    index: i,
+                    onTap: () {
+                      if (item.restaurantId != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => RestaurantDetailScreen(
+                              restaurantId: item.restaurantId!,
+                            ),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Restaurant details not available')),
+                        );
+                      }
+                    },
+                  );
+                },
                 childCount: displayItems.length,
               ),
             ),

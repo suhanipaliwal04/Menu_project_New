@@ -193,3 +193,66 @@ class BookingModel {
             : null,
       );
 }
+
+class OrderItemModel {
+  final String orderItemId;
+  final String orderId;
+  final String itemName;
+  final int quantity;
+  final double price;
+
+  const OrderItemModel({
+    required this.orderItemId,
+    required this.orderId,
+    required this.itemName,
+    required this.quantity,
+    required this.price,
+  });
+
+  factory OrderItemModel.fromJson(Map<String, dynamic> j) => OrderItemModel(
+        orderItemId: j['order_item_id']?.toString() ?? '',
+        orderId: j['order_id']?.toString() ?? '',
+        itemName: j['item_name']?.toString() ?? '',
+        quantity: j['quantity'] as int? ?? 1,
+        price: (j['price'] as num?)?.toDouble() ?? 0.0,
+      );
+}
+
+class OrderModel {
+  final String orderId;
+  final String restaurantId;
+  final String customerName;
+  final String customerPhone;
+  final String timeSlot;
+  final double totalAmount;
+  final String status;
+  final DateTime? createdAt;
+  final List<OrderItemModel> items;
+
+  const OrderModel({
+    required this.orderId,
+    required this.restaurantId,
+    required this.customerName,
+    required this.customerPhone,
+    required this.timeSlot,
+    required this.totalAmount,
+    required this.status,
+    this.createdAt,
+    this.items = const [],
+  });
+
+  factory OrderModel.fromJson(Map<String, dynamic> j) {
+    var itemsList = j['items'] as List<dynamic>? ?? [];
+    return OrderModel(
+      orderId: j['order_id']?.toString() ?? '',
+      restaurantId: j['restaurant_id']?.toString() ?? '',
+      customerName: j['customer_name']?.toString() ?? '',
+      customerPhone: j['customer_phone']?.toString() ?? '',
+      timeSlot: j['time_slot']?.toString() ?? '',
+      totalAmount: (j['total_amount'] as num?)?.toDouble() ?? 0.0,
+      status: j['status']?.toString() ?? 'PENDING',
+      createdAt: j['created_at'] != null ? DateTime.tryParse(j['created_at'].toString()) : null,
+      items: itemsList.map((i) => OrderItemModel.fromJson(i)).toList(),
+    );
+  }
+}

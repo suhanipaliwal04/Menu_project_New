@@ -8,6 +8,7 @@ import '../models/menu_model.dart';
 import '../widgets/health_badge.dart';
 import '../widgets/veg_indicator.dart';
 import '../core/api_service.dart';
+import '../widgets/voice_fab.dart';
 import 'table_booking_screen.dart';
 
 class RestaurantDetailScreen extends StatefulWidget {
@@ -56,14 +57,23 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
 
           return Scaffold(
             backgroundColor: AppTheme.background,
-            floatingActionButton: restaurant.hasDineIn
-                ? FloatingActionButton.extended(
-                    onPressed: () => _showBookingModal(context, restaurant),
-                    backgroundColor: AppTheme.primary,
-                    icon: const Icon(Icons.event_seat_rounded, color: Colors.white),
-                    label: Text('Book a Table', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
-                  )
-                : null,
+            floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+            floatingActionButton: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: restaurant.hasDineIn ? MainAxisAlignment.spaceBetween : MainAxisAlignment.center,
+                children: [
+                  const VoiceFab(),
+                  if (restaurant.hasDineIn)
+                    FloatingActionButton.extended(
+                      onPressed: () => _showBookingModal(context, restaurant),
+                      backgroundColor: AppTheme.primary,
+                      icon: const Icon(Icons.event_seat_rounded, color: Colors.white),
+                      label: Text('Book a Table', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
+                    ),
+                ],
+              ),
+            ),
             body: CustomScrollView(
               slivers: [
                 _buildAppBar(restaurant.restaurantName),

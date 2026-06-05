@@ -21,6 +21,7 @@ class ChatRequest {
 class ChatMenuItem {
   final String itemName;
   final String restaurantName;
+  final String? restaurantId;
   final String? sectionName;
   final int? price;
   final bool? isVeg;
@@ -31,6 +32,7 @@ class ChatMenuItem {
   const ChatMenuItem({
     required this.itemName,
     required this.restaurantName,
+    this.restaurantId,
     this.sectionName,
     this.price,
     this.isVeg,
@@ -42,6 +44,7 @@ class ChatMenuItem {
   factory ChatMenuItem.fromJson(Map<String, dynamic> json) => ChatMenuItem(
         itemName: json['item_name']?.toString() ?? '',
         restaurantName: json['restaurant_name']?.toString() ?? 'Unknown',
+        restaurantId: json['restaurant_id']?.toString(),
         sectionName: json['section_name']?.toString(),
         price: _parseInt(json['price']),
         isVeg: _parseBool(json['is_veg']),

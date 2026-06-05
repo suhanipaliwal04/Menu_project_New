@@ -57,6 +57,10 @@ class RetailerProvider extends ChangeNotifier {
   List<BookingModel> _bookings = [];
   List<BookingModel> get bookings => List.unmodifiable(_bookings);
 
+  // Takeaway Orders
+  List<OrderModel> _takeawayOrders = [];
+  List<OrderModel> get takeawayOrders => List.unmodifiable(_takeawayOrders);
+
   // Active filters
   String? _sectionFilter;
   String? get sectionFilter => _sectionFilter;
@@ -173,6 +177,7 @@ class RetailerProvider extends ChangeNotifier {
     _menuItems = [];
     _sections = [];
     _bookings = [];
+    _takeawayOrders = [];
     _areas = [];
   }
 
@@ -521,6 +526,41 @@ class RetailerProvider extends ChangeNotifier {
     }
   }
 
+  // ── Takeaway Orders ────────────────────────────────────────────────────────
+
+  Future<void> fetchTakeawayOrders({String? status}) async {
+    final id = _myRestaurant?.restaurantId;
+    if (id == null) return;
+    try {
+      final raw = await _api.getAdminOrders(id, status: status);
+      _takeawayOrders = raw.map((e) => OrderModel.fromJson(e)).toList();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error fetching takeaway orders: $e');
+    }
+  }
+
+  Future<bool> updateTakeawayOrderStatus(String orderId, String status) async {
+    try {
+      final data = await _api.updateOrderStatus(orderId, status);
+      final updated = OrderModel.fromJson(data);
+      final index = _takeawayOrders.indexWhere((o) => o.orderId == orderId);
+      if (index != -1) {
+        _takeawayOrders[index] = updated;
+        notifyListeners();
+      }
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.message;
+      notifyListeners();
+      return false;
+    } catch (_) {
+      _errorMessage = 'Failed to update order status.';
+      notifyListeners();
+      return false;
+    }
+  }
+
   // ── Misc ───────────────────────────────────────────────────────────────────
 
   void clearError() {
@@ -533,6 +573,7 @@ class RetailerProvider extends ChangeNotifier {
     _dashboardStats = null;
     _menuItems = [];
     _sections = [];
+    _takeawayOrders = [];
     _storage.delete(key: _restaurantIdKey);
     _setState(RetailerState.idle);
   }

@@ -35,6 +35,7 @@ class _RetailerDashboardScreenState extends State<RetailerDashboardScreen>
     (icon: Icons.settings_rounded, label: 'Settings'),
     (icon: Icons.history_rounded, label: 'History'),
     (icon: Icons.book_online_rounded, label: 'Bookings'),
+    (icon: Icons.shopping_bag_rounded, label: 'Takeaway'),
   ];
 
   @override
@@ -111,6 +112,7 @@ class _RetailerDashboardScreenState extends State<RetailerDashboardScreen>
             _SettingsTab(),
             _HistoryTab(),
             _BookingsTab(),
+            _TakeawayTab(),
           ],
         ),
       ),
