@@ -33,7 +33,7 @@ from typing import Dict, Any, List, Optional
 
 from app.core.config import settings
 from app.services.nlp.query_parser import get_query_parser
-from app.services.nlp.embedding_service import EmbeddingService
+from app.services.nlp.embedding_service import get_embedding_service
 from app.services.voice.voice_session import get_session_store, VoiceSession
 
 logger = logging.getLogger(__name__)
@@ -114,8 +114,8 @@ class VoiceRAGService:
         effective_rid  = restaurant_id or session.restaurant_id
         restaurant_ids = [effective_rid] if effective_rid else None
 
-        with EmbeddingService() as svc:
-            items = svc.hybrid_search(
+        svc = get_embedding_service()
+        items = svc.hybrid_search(
                 query=query,
                 filters=hard_filters,
                 top_k=self.top_k,

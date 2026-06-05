@@ -576,9 +576,8 @@ async def admin_upload_menu(
                         text += f" [{mi.section.section_name}]"
                     texts.append(text)
 
-                from app.services.nlp.embedding_service import EmbeddingService
-
-                svc = EmbeddingService()
+                from app.services.nlp.embedding_service import get_embedding_service
+                svc = get_embedding_service()
                 embeddings = svc.generate_embeddings(texts)
 
                 for mi, emb in zip(created_items, embeddings):
