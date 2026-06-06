@@ -58,7 +58,7 @@ class AppTheme {
         displayColor: textPrimary,
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: background,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: GoogleFonts.outfit(

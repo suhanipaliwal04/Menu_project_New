@@ -65,36 +65,12 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Center(
-                  child: Container(
-                    width: 110,
-                    height: 110,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppTheme.textPrimary, Color(0xFF2E1A15)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(color: AppTheme.textPrimary.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8)),
-                      ],
-                      border: Border.all(color: AppTheme.primary, width: 3),
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.smart_toy_rounded, size: 50, color: AppTheme.primary),
-                    ),
+                  child: Image.asset(
+                    'assets/images/eatbot_logo.png',
+                    height: 180,
+                    fit: BoxFit.contain,
                   ),
                 ).animate().scale(delay: 200.ms, duration: 500.ms, curve: Curves.easeOutBack),
-                const SizedBox(height: 16),
-                Text(
-                  'EatBot',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.outfit(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w900,
-                    color: AppTheme.textPrimary,
-                  ),
-                ).animate().fadeIn(delay: 300.ms),
                 const SizedBox(height: 48),
   
                 // Title
