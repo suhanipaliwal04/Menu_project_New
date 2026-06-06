@@ -10,7 +10,9 @@ import '../widgets/skeleton_card.dart';
 import '../widgets/typewriter_text.dart';
 import '../widgets/voice_fab.dart';
 import '../providers/cart_provider.dart';
+import '../providers/browse_provider.dart';
 import 'restaurant_detail_screen.dart';
+import 'category_results_screen.dart';
 import 'cart_screen.dart';
 
 class ResultsScreen extends StatefulWidget {
@@ -55,47 +57,68 @@ class _ResultsScreenState extends State<ResultsScreen> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const VoiceFab(),
-            const SizedBox(width: 16),
-            Consumer<CartProvider>(
-              builder: (context, cart, _) {
-                return FloatingActionButton(
-                  heroTag: 'cart_fab_results',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const CartScreen()),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const VoiceFab(),
+                const SizedBox(width: 16),
+                Consumer<CartProvider>(
+                  builder: (context, cart, _) {
+                    return FloatingActionButton(
+                      heroTag: 'cart_fab_results',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const CartScreen()),
+                        );
+                      },
+                      backgroundColor: AppTheme.surfaceAlt,
+                      elevation: 4,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        clipBehavior: Clip.none,
+                        children: [
+                          const Icon(Icons.shopping_bag_outlined, color: AppTheme.textPrimary, size: 26),
+                          if (cart.items.isNotEmpty)
+                            Positioned(
+                              right: -8,
+                              top: -8,
+                              child: Container(
+                                padding: const EdgeInsets.all(5),
+                                decoration: const BoxDecoration(
+                                  color: AppTheme.primary,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  '${cart.items.length}',
+                                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     );
                   },
-                  backgroundColor: AppTheme.surfaceAlt,
-                  elevation: 4,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    clipBehavior: Clip.none,
-                    children: [
-                      const Icon(Icons.shopping_bag_outlined, color: AppTheme.textPrimary, size: 26),
-                      if (cart.items.isNotEmpty)
-                        Positioned(
-                          right: -8,
-                          top: -8,
-                          child: Container(
-                            padding: const EdgeInsets.all(5),
-                            decoration: const BoxDecoration(
-                              color: AppTheme.primary,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Text(
-                              '${cart.items.length}',
-                              style: GoogleFonts.outfit(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ),
-                    ],
+                ),
+              ],
+            ),
+            FloatingActionButton.extended(
+              heroTag: 'book_table_results',
+              onPressed: () {
+                context.read<BrowseProvider>().loadRestaurants(orderType: 'Dine In');
+                context.read<CartProvider>().setOrderType('Dine In');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const CategoryResultsScreen(categoryName: 'Dine In'),
                   ),
                 );
               },
+              backgroundColor: AppTheme.primary,
+              icon: const Icon(Icons.event_seat_rounded, color: Colors.white),
+              label: Text('Book a Table', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
             ),
           ],
         ),

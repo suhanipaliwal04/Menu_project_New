@@ -121,62 +121,114 @@ class FoodItemCard extends StatelessWidget {
   }
 
   Widget _buildImagePlaceholder(BuildContext context) {
-    return Stack(
-      alignment: Alignment.bottomCenter,
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          width: 100,
-          height: 100,
-          decoration: BoxDecoration(
-            color: AppTheme.surfaceAlt,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.divider),
-            image: const DecorationImage(
-              image: NetworkImage('https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?q=80&w=200'),
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: -10,
-          child: GestureDetector(
-            onTap: () {
-              if (item.restaurantId != null) {
-                context.read<CartProvider>().addItem(
-                  id: '${item.restaurantId}_${item.itemName}',
-                  name: item.itemName,
-                  price: double.tryParse(item.priceDisplay.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0,
-                  restaurantName: item.restaurantName,
-                  restaurantId: item.restaurantId!,
-                );
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${item.itemName} added to cart!'),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              }
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    return Consumer<CartProvider>(
+      builder: (context, cart, _) {
+        final itemId = '${item.restaurantId}_${item.itemName}';
+        final isItemInCart = cart.items.containsKey(itemId);
+        final currentQuantity = isItemInCart ? cart.items[itemId]!.quantity : 0;
+
+        return Stack(
+          alignment: Alignment.bottomCenter,
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              width: 100,
+              height: 100,
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
+                color: AppTheme.surfaceAlt,
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppTheme.divider),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  )
-                ],
+                image: const DecorationImage(
+                  image: NetworkImage('https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?q=80&w=200'),
+                  fit: BoxFit.cover,
+                ),
               ),
-              child: Text('ADD', style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.w800, fontSize: 13)),
             ),
-          ),
-        ),
-      ],
+            Positioned(
+              bottom: -10,
+              child: isItemInCart 
+                  ? Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppTheme.divider),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          )
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          GestureDetector(
+                            onTap: () => cart.removeItem(itemId),
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              child: Icon(Icons.remove, size: 16, color: AppTheme.primary),
+                            ),
+                          ),
+                          Text('$currentQuantity', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textPrimary)),
+                          GestureDetector(
+                            onTap: () {
+                              cart.addItem(
+                                id: itemId,
+                                name: item.itemName,
+                                price: double.tryParse(item.priceDisplay.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0,
+                                restaurantName: item.restaurantName,
+                                restaurantId: item.restaurantId!,
+                              );
+                            },
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              child: Icon(Icons.add, size: 16, color: AppTheme.primary),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : GestureDetector(
+                      onTap: () {
+                        if (item.restaurantId != null) {
+                          cart.addItem(
+                            id: itemId,
+                            name: item.itemName,
+                            price: double.tryParse(item.priceDisplay.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0,
+                            restaurantName: item.restaurantName,
+                            restaurantId: item.restaurantId!,
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${item.itemName} added to cart!'),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppTheme.divider),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            )
+                          ],
+                        ),
+                        child: Text('ADD', style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.w800, fontSize: 13)),
+                      ),
+                    ),
+            ),
+          ],
+        );
+      },
     );
   }
 
