@@ -596,7 +596,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       const CircleAvatar(
                         backgroundColor: AppTheme.surfaceAlt,
-                        child: Icon(Icons.book_online_rounded, color: AppTheme.textPrimary),
+                        child: Icon(Icons.bookmarks_rounded, color: AppTheme.primary),
                       ),
                       Consumer<CustomerBookingsProvider>(
                         builder: (context, provider, _) {
