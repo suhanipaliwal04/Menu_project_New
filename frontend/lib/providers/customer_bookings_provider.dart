@@ -8,10 +8,12 @@ class CustomerBookingsProvider extends ChangeNotifier {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
   
   List<dynamic> _bookings = [];
+  List<dynamic> _orders = [];
   bool _isLoading = false;
   String? _error;
 
   List<dynamic> get bookings => _bookings;
+  List<dynamic> get orders => _orders;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
@@ -36,6 +38,18 @@ class CustomerBookingsProvider extends ChangeNotifier {
         _bookings = [];
       } else {
         _bookings = await _apiService.getCustomerBookings(bookingIds);
+      }
+
+      final orderIdsString = await _storage.read(key: 'customer_order_ids');
+      if (orderIdsString == null || orderIdsString.isEmpty) {
+        _orders = [];
+      } else {
+        final List<String> orderIds = List<String>.from(jsonDecode(orderIdsString));
+        if (orderIds.isEmpty) {
+          _orders = [];
+        } else {
+          _orders = await _apiService.getCustomerOrders(orderIds);
+        }
       }
     } catch (e) {
       _error = 'Failed to load bookings: $e';
@@ -79,6 +93,26 @@ class CustomerBookingsProvider extends ChangeNotifier {
       }
     } catch (e) {
       _error = 'Failed to remove booking ID: $e';
+      notifyListeners();
+    }
+  }
+
+  /// Adds a new order ID to local storage and refreshes
+  Future<void> addOrderId(String orderId) async {
+    try {
+      final idsString = await _storage.read(key: 'customer_order_ids');
+      List<String> orderIds = [];
+      if (idsString != null && idsString.isNotEmpty) {
+        orderIds = List<String>.from(jsonDecode(idsString));
+      }
+      
+      if (!orderIds.contains(orderId)) {
+        orderIds.add(orderId);
+        await _storage.write(key: 'customer_order_ids', value: jsonEncode(orderIds));
+        await loadBookings();
+      }
+    } catch (e) {
+      _error = 'Failed to save order ID: $e';
       notifyListeners();
     }
   }

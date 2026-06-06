@@ -6,8 +6,12 @@ import uuid
 
 from app.schemas.order import OrderCreate, OrderResponse, OrderUpdate
 from app.core.auth_roles import get_current_restaurant_admin
+from pydantic import BaseModel
 
 router = APIRouter()
+
+class CustomerOrdersRequest(BaseModel):
+    order_ids: List[str]
 
 @router.post("/takeaway", response_model=OrderResponse)
 def create_takeaway_order(order_data: OrderCreate, db=Depends(get_db)):
@@ -121,6 +125,26 @@ def update_order_status(order_id: uuid.UUID, update_data: OrderUpdate, admin=Dep
         return get_order_by_id(str(order_id), db)
     except Exception as e:
         db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/customer", response_model=List[OrderResponse])
+def get_customer_orders(request: CustomerOrdersRequest, db=Depends(get_db)):
+    try:
+        if not request.order_ids:
+            return []
+        
+        orders_list = []
+        for oid in request.order_ids:
+            try:
+                # Ensure it's a valid UUID
+                uuid.UUID(oid)
+                order = get_order_by_id(oid, db)
+                if order:
+                    orders_list.append(order)
+            except ValueError:
+                continue # Skip invalid UUIDs
+        return orders_list
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 def get_order_by_id(order_id: str, db):

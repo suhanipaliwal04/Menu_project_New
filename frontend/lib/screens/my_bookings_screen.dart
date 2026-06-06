@@ -53,8 +53,10 @@ class MyBookingsScreen extends StatelessWidget {
           }
 
           final bookings = provider.bookings;
+          final orders = provider.orders;
+          final allItems = [...bookings, ...orders];
 
-          if (bookings.isEmpty) {
+          if (allItems.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -63,7 +65,7 @@ class MyBookingsScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   Text('No Bookings Yet', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
                   const SizedBox(height: 8),
-                  Text('Your table reservations will appear here.', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
+                  Text('Your table reservations and takeaway orders will appear here.', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
                 ],
               ),
             ).animate().fadeIn();
@@ -71,10 +73,11 @@ class MyBookingsScreen extends StatelessWidget {
 
           return ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: bookings.length,
+            itemCount: allItems.length,
             itemBuilder: (context, index) {
-              final b = bookings[index];
-              final status = b['status'] as String;
+              final item = allItems[index];
+              final isTakeaway = item.containsKey('order_id');
+              final status = item['status'] as String;
               final color = status == 'CONFIRMED' ? AppTheme.success : (status == 'REJECTED' ? AppTheme.error : AppTheme.primary);
 
               return Container(
@@ -93,7 +96,7 @@ class MyBookingsScreen extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            b['restaurant_name'] ?? 'Restaurant',
+                            isTakeaway ? 'Takeaway Order' : (item['restaurant_name'] ?? 'Restaurant'),
                             style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -112,9 +115,9 @@ class MyBookingsScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        const Icon(Icons.people_alt_rounded, size: 16, color: AppTheme.textSecondary),
+                        Icon(isTakeaway ? Icons.shopping_bag_rounded : Icons.people_alt_rounded, size: 16, color: AppTheme.textSecondary),
                         const SizedBox(width: 8),
-                        Text('${b['party_size']} Guests', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
+                        Text(isTakeaway ? 'Takeaway' : '${item['party_size']} Guests', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -122,20 +125,48 @@ class MyBookingsScreen extends StatelessWidget {
                       children: [
                         const Icon(Icons.access_time_rounded, size: 16, color: AppTheme.textSecondary),
                         const SizedBox(width: 8),
-                        Text('${b['booking_date']} at ${b['time_slot']}', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
+                        Text(isTakeaway ? 'Time Slot: ${item['time_slot']}' : '${item['booking_date']} at ${item['time_slot']}', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
                       ],
                     ),
+                    if (status == 'CONFIRMED' && isTakeaway) ...[
+                       const SizedBox(height: 8),
+                       Container(
+                         padding: const EdgeInsets.all(8),
+                         decoration: BoxDecoration(color: AppTheme.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                         child: Row(
+                           children: [
+                             const Icon(Icons.mark_email_read_rounded, size: 16, color: AppTheme.success),
+                             const SizedBox(width: 8),
+                             Expanded(child: Text('Message: "thanks for placing the order"', style: GoogleFonts.outfit(color: AppTheme.success, fontSize: 13, fontWeight: FontWeight.bold))),
+                           ],
+                         ),
+                       ),
+                    ],
+                    if (status == 'REJECTED' && isTakeaway) ...[
+                       const SizedBox(height: 8),
+                       Container(
+                         padding: const EdgeInsets.all(8),
+                         decoration: BoxDecoration(color: AppTheme.error.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                         child: Row(
+                           children: [
+                             const Icon(Icons.cancel_presentation_rounded, size: 16, color: AppTheme.error),
+                             const SizedBox(width: 8),
+                             Expanded(child: Text('Message: "sorry restaurant is not currently accepting any order"', style: GoogleFonts.outfit(color: AppTheme.error, fontSize: 13, fontWeight: FontWeight.bold))),
+                           ],
+                         ),
+                       ),
+                    ],
                     const Divider(height: 24, color: AppTheme.divider),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('ID: ${b['booking_id'].toString().substring(0, 8)}', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textMuted)),
+                        Text('ID: ${isTakeaway ? item['order_id'].toString().substring(0, 8) : item['booking_id'].toString().substring(0, 8)}', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textMuted)),
                         if (status == 'CONFIRMED')
                           Row(
                             children: [
                               const Icon(Icons.check_circle_rounded, size: 14, color: AppTheme.success),
                               const SizedBox(width: 4),
-                              Text('Table Reserved', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.success, fontWeight: FontWeight.bold)),
+                              Text(isTakeaway ? 'Order Accepted' : 'Table Reserved', style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.success, fontWeight: FontWeight.bold)),
                             ],
                           ),
                       ],

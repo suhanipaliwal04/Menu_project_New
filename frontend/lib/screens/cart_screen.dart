@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../core/theme.dart';
 import '../providers/cart_provider.dart';
+import '../providers/customer_bookings_provider.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -436,6 +437,11 @@ class _CartScreenState extends State<CartScreen> {
               customerPhone: phoneText,
               timeSlot: _selectedTimeSlot,
             );
+            
+            if (success && cart.lastOrderId != null && context.mounted && cart.orderType.toLowerCase() == 'takeaway') {
+              await context.read<CustomerBookingsProvider>().addOrderId(cart.lastOrderId!);
+            }
+
             if (!success && context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Failed to place order. Please try again later.')),

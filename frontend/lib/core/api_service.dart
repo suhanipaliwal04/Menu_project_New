@@ -363,6 +363,14 @@ class ApiService {
     return data as List<dynamic>;
   }
 
+  /// POST /orders/customer
+  Future<List<dynamic>> getCustomerOrders(List<String> orderIds) async {
+    final data = await _post('/orders/customer', {
+      'order_ids': orderIds,
+    });
+    return data as List<dynamic>;
+  }
+
 
   // ── Orders (Takeaway) ────────────────────────────────────────────────────────
 
