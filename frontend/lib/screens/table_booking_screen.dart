@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -6,6 +7,7 @@ import '../core/theme.dart';
 import '../core/api_service.dart';
 import '../models/chat_models.dart';
 import '../providers/customer_bookings_provider.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class TableBookingScreen extends StatefulWidget {
   final String restaurantId;
@@ -67,6 +69,17 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
     if (!_confirmed && widget.restaurantId.isNotEmpty) {
       _loadSlots();
     }
+    _loadSavedContact();
+  }
+
+  Future<void> _loadSavedContact() async {
+    const storage = FlutterSecureStorage();
+    final name = await storage.read(key: 'booking_name');
+    final phone = await storage.read(key: 'booking_phone');
+    if (mounted) {
+      if (name != null) _nameCtrl.text = name;
+      if (phone != null) _phoneCtrl.text = phone;
+    }
   }
 
   @override
@@ -120,9 +133,17 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
       );
       return;
     }
-    if (_nameCtrl.text.trim().isEmpty || _phoneCtrl.text.trim().isEmpty) {
+    final phoneText = _phoneCtrl.text.trim();
+    if (_nameCtrl.text.trim().isEmpty || phoneText.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter name and phone number'), backgroundColor: AppTheme.error),
+      );
+      return;
+    }
+    
+    if (phoneText.length != 10 || int.tryParse(phoneText) == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid 10-digit phone number'), backgroundColor: AppTheme.error),
       );
       return;
     }
@@ -144,6 +165,10 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
       if (mounted) {
         await context.read<CustomerBookingsProvider>().addBookingId(res.bookingId);
       }
+      
+      const storage = FlutterSecureStorage();
+      await storage.write(key: 'booking_name', value: _nameCtrl.text.trim());
+      await storage.write(key: 'booking_phone', value: _phoneCtrl.text.trim());
 
       setState(() {
         _confirmed = true;
@@ -319,6 +344,10 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
             child: TextField(
               controller: _phoneCtrl,
               keyboardType: TextInputType.phone,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+              ],
               style: GoogleFonts.outfit(fontSize: 16, color: AppTheme.textPrimary),
               decoration: InputDecoration(
                 hintText: 'Phone Number',
@@ -418,31 +447,18 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
       return Text("No slots available.", style: GoogleFonts.outfit(color: AppTheme.textSecondary));
     }
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        childAspectRatio: 2.5,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-      ),
-      itemCount: _slots.length,
-      itemBuilder: (context, index) {
-        final slot = _slots[index];
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: _slots.map((slot) {
         final time = slot['time_slot'] as String;
         final available = slot['available'] == true;
-
         final isSelected = _selectedTime == time;
 
         return GestureDetector(
-          onTap: available
-              ? () {
-                  setState(() => _selectedTime = time);
-                }
-              : null,
+          onTap: available ? () => setState(() => _selectedTime = time) : null,
           child: Container(
-            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             decoration: BoxDecoration(
               color: available
                   ? (isSelected ? AppTheme.primary : AppTheme.surfaceAlt)
@@ -466,7 +482,7 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
             ),
           ),
         );
-      },
+      }).toList(),
     );
   }
 
