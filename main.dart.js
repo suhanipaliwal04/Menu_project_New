@@ -33516,7 +33516,7 @@ q=s[1]
 s=s[2]
 p=b[2]
 return A.b([o*m+l*k+j*n,o*r+l*q+j*s,o*p[0]+l*p[1]+j*p[2]],t.n)},
-b8T(){return"http://127.0.0.1:8000/api/v1"},
+b8T(){return"https://eatbot-lifa.onrender.com/api/v1"},
 b8U(a){if(a==null)return B.U
 if(a>=7)return B.Lx
 if(a>=4)return B.ro
@@ -107727,7 +107727,7 @@ s=o==null?s:o}catch(n){}throw A.f(new A.dH(s,m))},
 GV(){var s=0,r=A.x(t.y),q,p=2,o=[],n=this,m,l,k,j,i
 var $async$GV=A.r(function(a,b){if(a===1){o.push(b)
 s=p}for(;;)switch(s){case 0:p=4
-m=A.eT(A.em("http://127.0.0.1:8000/api/v1","/api/v1","")+"/health",0,null)
+m=A.eT(A.em("https://eatbot-lifa.onrender.com/api/v1","/api/v1","")+"/health",0,null)
 k=t.N
 s=7
 return A.l(n.b.NC("GET",m,A.af(["Content-Type","application/json","Accept","application/json"],k,k)).po(0,B.dY),$async$GV)
