@@ -122,11 +122,11 @@ supabase.yaml
 
 # **/.env.example
 .venv/
-*.jpeg
-*.png
-*.jpg
-*.webp
-*.gif
+# *.jpeg
+# *.png
+# *.jpg
+# *.webp
+# *.gif
 # Miscellaneous
 *.class
 *.log
