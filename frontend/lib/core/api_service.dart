@@ -140,7 +140,7 @@ class ApiService {
 
   /// POST /restaurants/ — create a new restaurant
   Future<RestaurantModel> createRestaurant(CreateRestaurantRequest req) async {
-    final data = await _post(AppConstants.restaurantsEndpoint, req.toJson());
+    final data = await _post(AppConstants.restaurantsEndpoint, req.toJson(), auth: true);
     return RestaurantModel.fromJson(data as Map<String, dynamic>);
   }
 
