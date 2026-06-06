@@ -403,40 +403,94 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
         ),
         Positioned(
           bottom: -10,
-          child: GestureDetector(
-            onTap: () {
-              context.read<CartProvider>().addItem(
-                id: item.itemId,
-                name: item.itemName,
-                price: item.price,
-                restaurantName: restaurantName,
-                restaurantId: widget.restaurantId,
-              );
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${item.itemName} added to cart', style: GoogleFonts.outfit()),
-                  backgroundColor: AppTheme.primary,
-                  duration: const Duration(seconds: 1),
-                ),
-              );
+          child: Consumer<CartProvider>(
+            builder: (context, cart, _) {
+              final cartItems = cart.items.where((i) => i.id == item.itemId).toList();
+              final qty = cartItems.isNotEmpty ? cartItems.first.quantity : 0;
+              
+              if (qty == 0) {
+                return GestureDetector(
+                  onTap: () {
+                    cart.addItem(
+                      id: item.itemId,
+                      name: item.itemName,
+                      price: item.price,
+                      restaurantName: restaurantName,
+                      restaurantId: widget.restaurantId,
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('${item.itemName} added to cart', style: GoogleFonts.outfit()),
+                        backgroundColor: AppTheme.primary,
+                        duration: const Duration(seconds: 1),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.divider),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        )
+                      ],
+                    ),
+                    child: Text('ADD',
+                        style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.w900, fontSize: 14)),
+                  ),
+                );
+              } else {
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.divider),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      )
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      GestureDetector(
+                        onTap: () => cart.decrementItem(item.itemId),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          child: const Icon(Icons.remove_rounded, color: AppTheme.primary, size: 20),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text('$qty', style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 14, color: AppTheme.primary)),
+                      ),
+                      GestureDetector(
+                        onTap: () => cart.addItem(
+                          id: item.itemId,
+                          name: item.itemName,
+                          price: item.price,
+                          restaurantName: restaurantName,
+                          restaurantId: widget.restaurantId,
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          child: const Icon(Icons.add_rounded, color: AppTheme.primary, size: 20),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
             },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.divider),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  )
-                ],
-              ),
-              child: Text('ADD',
-                  style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.w900, fontSize: 14)),
-            ),
           ),
         ),
       ],

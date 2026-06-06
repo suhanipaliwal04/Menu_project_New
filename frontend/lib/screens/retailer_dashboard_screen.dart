@@ -3155,8 +3155,20 @@ class _TakeawayTabState extends State<_TakeawayTab> {
           ? 'Message sent to user: "thanks for placing the order"'
           : 'Message sent to user: "sorry restaurant is not currently accepting any order"';
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Status updated to $status.\n$msg')),
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          backgroundColor: AppTheme.surface,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text('Status Updated', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+          content: Text('Takeaway Order status updated to $status.\n\n$msg', style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('OK', style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
       );
     }
   }
