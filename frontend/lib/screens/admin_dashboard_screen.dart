@@ -9,6 +9,7 @@ import 'admin_restaurants_screen.dart';
 import 'admin_menu_items_screen.dart';
 import 'admin_approvals_screen.dart';
 import 'upload_screen.dart';
+import 'admin_login_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -43,7 +44,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             onPressed: () {
               context.read<AdminProvider>().logout();
               Navigator.pop(ctx);
-              Navigator.pop(context);
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const AdminLoginScreen()),
+                (route) => false,
+              );
             },
             child: Text('Logout', style: GoogleFonts.outfit(color: AppTheme.error, fontWeight: FontWeight.bold)),
           ),

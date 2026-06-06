@@ -11,6 +11,7 @@ import '../models/admin_models.dart';
 import '../models/area_model.dart';
 import '../models/restaurant_model.dart';
 import '../core/api_service.dart';
+import 'retailer_login_screen.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN SCREEN
@@ -82,7 +83,11 @@ class _RetailerDashboardScreenState extends State<RetailerDashboardScreen>
               await context.read<RetailerProvider>().logout();
               if (mounted) {
                 Navigator.pop(ctx);
-                Navigator.pop(context);
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const RetailerLoginScreen()),
+                  (route) => false,
+                );
               }
             },
             child: Text('Sign Out',

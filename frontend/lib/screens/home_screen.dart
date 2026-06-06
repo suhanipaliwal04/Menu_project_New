@@ -19,8 +19,10 @@ import 'cart_screen.dart';
 import 'category_results_screen.dart';
 import 'admin_login_screen.dart';
 import 'retailer_login_screen.dart';
+import 'customer_login_screen.dart';
 import 'my_bookings_screen.dart';
 import '../widgets/voice_fab.dart';
+import '../providers/auth_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -130,13 +132,13 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Choose Portal',
+            Text('Account & Portals',
                 style: GoogleFonts.outfit(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
                     color: AppTheme.textPrimary)),
             const SizedBox(height: 6),
-            Text('Which portal would you like to access?',
+            Text('Manage your account or access other portals',
                 style: GoogleFonts.outfit(
                     color: AppTheme.textSecondary, fontSize: 13)),
             const SizedBox(height: 24),
@@ -234,6 +236,57 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const Icon(Icons.chevron_right_rounded,
                         color: AppTheme.textMuted),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Customer Logout
+            GestureDetector(
+              onTap: () async {
+                Navigator.pop(ctx);
+                await context.read<AuthProvider>().logout();
+                if (mounted) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CustomerLoginScreen()),
+                    (route) => false,
+                  );
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: AppTheme.surface,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppTheme.error.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.error.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(Icons.logout_rounded,
+                          color: AppTheme.error, size: 24),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Logout',
+                              style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.error)),
+                          Text('Sign out of your customer account',
+                              style: GoogleFonts.outfit(
+                                  color: AppTheme.textSecondary, fontSize: 12)),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
