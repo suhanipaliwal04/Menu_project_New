@@ -72,28 +72,7 @@ class VoiceActionHandler {
     final q = userQuery.toLowerCase();
     final r = aiReply.toLowerCase();
 
-    // CART OPEN detection
-    if (_matchesAny(q, ['view cart', 'show cart', 'open cart', 'go to cart', 'what is in my cart'])) {
-      return const VoiceAction(type: VoiceActionType.placeOrder);
-    }
-
-    // ORDER / PAYMENT detection (must be before cart check)
-    if (_matchesAny(q, [
-      'order it', 'place order', 'confirm order', 'buy it', 'checkout',
-      'cash on delivery', 'cod', 'pay online', 'pay by upi',
-      'order me'
-    ])) {
-      final paymentMethod = _detectPayment(q);
-      final item = _extractItem(q);
-      return VoiceAction(
-        type: VoiceActionType.placeOrder,
-        params: {'payment': paymentMethod, 'item': item},
-      );
-    }
-
-    // TABLE BOOKING and TAKEAWAY actions have been disabled per user request.
-
-    // SEARCH detection (general food/cravings query) - Must be before ADD TO CART
+    // SEARCH detection (general food/cravings query)
     if (_matchesAny(q, [
       'want to eat', 'hungry', 'craving', 'looking for', 'find me',
       'search', 'suggest', 'recommend', 'healthy', 'spicy', 'sweet', 'veg',
@@ -102,32 +81,6 @@ class VoiceActionHandler {
       return VoiceAction(
         type: VoiceActionType.search,
         params: {'query': userQuery},
-      );
-    }
-
-    // ADD TO CART detection
-    if (_matchesAny(q, [
-      'add', 'put', 'cart', 'order', 'want to eat', 'i want',
-      'get me', 'bring me',
-    ])) {
-      final item = _extractItem(q);
-      if (item.isNotEmpty) {
-        return VoiceAction(
-          type: VoiceActionType.addToCart,
-          params: {'item': item},
-        );
-      }
-    }
-
-    // OPEN RESTAURANT detection
-    if (_matchesAny(q, [
-      'menu of', 'show menu', "what's on the menu", 'open restaurant',
-      'open ', "what does", 'tell me the menu', 'go to',
-    ])) {
-      final restaurant = _extractRestaurantName(q);
-      return VoiceAction(
-        type: VoiceActionType.openRestaurant,
-        params: {'restaurantName': restaurant},
       );
     }
 
@@ -142,7 +95,11 @@ class VoiceActionHandler {
       );
     }
 
-    return const VoiceAction(type: VoiceActionType.none);
+    // Default to search if no other commands match, to strictly do only query parsing
+    return VoiceAction(
+      type: VoiceActionType.search,
+      params: {'query': userQuery},
+    );
   }
 
   /// Attempts to fill missing constraints of a `pendingAction` from a new user utterance.

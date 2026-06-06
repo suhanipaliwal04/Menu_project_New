@@ -23,6 +23,7 @@ import 'customer_login_screen.dart';
 import 'my_bookings_screen.dart';
 import '../widgets/voice_fab.dart';
 import '../providers/auth_provider.dart';
+import '../providers/customer_bookings_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -590,10 +591,40 @@ class _HomeScreenState extends State<HomeScreen> {
                     context,
                     MaterialPageRoute(builder: (_) => const MyBookingsScreen()),
                   ),
-                  child: const CircleAvatar(
-                    backgroundColor: AppTheme.surfaceAlt,
-                    child: Icon(Icons.receipt_long_rounded,
-                        color: AppTheme.textPrimary),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      const CircleAvatar(
+                        backgroundColor: AppTheme.surfaceAlt,
+                        child: Icon(Icons.book_online_rounded, color: AppTheme.textPrimary),
+                      ),
+                      Consumer<CustomerBookingsProvider>(
+                        builder: (context, provider, _) {
+                          if (provider.pendingCount > 0) {
+                            return Positioned(
+                              right: -2,
+                              top: -2,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: AppTheme.error,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  '${provider.pendingCount}',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 12),

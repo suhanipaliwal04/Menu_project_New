@@ -12,6 +12,9 @@ import 'results_screen.dart';
 import 'cart_screen.dart';
 import 'table_booking_screen.dart';
 import 'takeaway_screen.dart';
+import '../providers/browse_provider.dart';
+import '../providers/cart_provider.dart';
+import 'category_results_screen.dart';
 
 /// Immersive fullscreen Voice AI Agent overlay.
 /// Slides up from bottom. Tap mic to start/stop.
@@ -151,7 +154,7 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF0A0A14), Color(0xFF12101E)],
+            colors: [Color(0xFF3E2723), Color(0xFF1B110D)],
           ),
         ),
         child: SafeArea(
@@ -704,6 +707,30 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
       children: chips.map((c) {
         return GestureDetector(
           onTap: () async {
+            if (c.contains('Book table')) {
+              Navigator.pop(context);
+              context.read<BrowseProvider>().loadRestaurants(orderType: 'Dine In');
+              context.read<CartProvider>().setOrderType('Dine In');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const CategoryResultsScreen(categoryName: 'Dine In'),
+                ),
+              );
+              return;
+            } else if (c.contains('Takeaway')) {
+              Navigator.pop(context);
+              context.read<BrowseProvider>().loadRestaurants(orderType: 'Takeaway');
+              context.read<CartProvider>().setOrderType('Takeaway');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const CategoryResultsScreen(categoryName: 'Takeaway'),
+                ),
+              );
+              return;
+            }
+
             final vp = context.read<VoiceAgentProvider>();
             await vp.processQueryAndGetAction(
                 c.replaceAll(RegExp(r'[^\w\s]'), '').trim());

@@ -2992,47 +2992,32 @@ class _BookingsTabState extends State<_BookingsTab> {
     });
   }
 
-  Future<void> _updateStatus(String bookingId, String status) async {
-    final success = await context.read<RetailerProvider>().updateBookingStatus(bookingId, status);
-    if (mounted) {
-      if (success) {
-        String msg = status == 'CONFIRMED'
-            ? 'Message sent to user: "your table has been booked successfully"'
-            : 'Message sent to user: "sorry, restaurant is not currently accepting table bookings"';
-
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            backgroundColor: AppTheme.surface,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: Text('Status Updated', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
-            content: Text('Dine-In Booking status updated to $status.\n\n$msg', style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('OK', style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.bold)),
-              ),
-            ],
-          ),
-        );
-      } else {
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            backgroundColor: AppTheme.surface,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: Text('Update Failed', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.error)),
-            content: Text('Failed to update booking status. Please try again.', style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('OK', style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.bold)),
-              ),
-            ],
-          ),
-        );
+  void _updateStatus(String bookingId, String status) {
+    context.read<RetailerProvider>().updateBookingStatus(bookingId, status).then((success) {
+      if (!success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update status', style: GoogleFonts.outfit()), backgroundColor: AppTheme.error));
       }
-    }
+    });
+
+    String msg = status == 'CONFIRMED'
+        ? 'Message sent to user: "your table has been booked successfully"'
+        : 'Message sent to user: "sorry, restaurant is not currently accepting table bookings"';
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Status Updated', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+        content: Text('Dine-In Booking status updated to $status.\n\n$msg', style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK', style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -3176,29 +3161,32 @@ class _TakeawayTabState extends State<_TakeawayTab> {
     });
   }
 
-  Future<void> _updateStatus(String orderId, String status) async {
-    final success = await context.read<RetailerProvider>().updateTakeawayOrderStatus(orderId, status);
-    if (success && mounted) {
-      String msg = status == 'CONFIRMED'
-          ? 'Message sent to user: "thanks for placing the order"'
-          : 'Message sent to user: "sorry restaurant is not currently accepting any order"';
+  void _updateStatus(String orderId, String status) {
+    context.read<RetailerProvider>().updateTakeawayOrderStatus(orderId, status).then((success) {
+      if (!success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update status', style: GoogleFonts.outfit()), backgroundColor: AppTheme.error));
+      }
+    });
 
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          backgroundColor: AppTheme.surface,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text('Status Updated', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
-          content: Text('Takeaway Order status updated to $status.\n\n$msg', style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('OK', style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-      );
-    }
+    String msg = status == 'CONFIRMED'
+        ? 'Message sent to user: "thanks for placing the order"'
+        : 'Message sent to user: "sorry restaurant is not currently accepting any order"';
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Status Updated', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+        content: Text('Takeaway Order status updated to $status.\n\n$msg', style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK', style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

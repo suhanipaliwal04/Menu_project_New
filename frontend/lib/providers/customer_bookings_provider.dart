@@ -17,6 +17,17 @@ class CustomerBookingsProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
+  int get pendingCount {
+    int count = 0;
+    for (var b in _bookings) {
+      if (b['status'] == 'PENDING') count++;
+    }
+    for (var o in _orders) {
+      if (o['status'] == 'PENDING') count++;
+    }
+    return count;
+  }
+
   /// Loads locally stored booking IDs and fetches their details from backend
   Future<void> loadBookings() async {
     _isLoading = true;
