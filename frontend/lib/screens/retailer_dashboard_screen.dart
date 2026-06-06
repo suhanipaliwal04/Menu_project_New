@@ -3011,7 +3011,7 @@ class _BookingsTabState extends State<_BookingsTab> {
   Widget build(BuildContext context) {
     return Consumer<RetailerProvider>(
       builder: (context, provider, _) {
-        final bookings = provider.bookings;
+        final bookings = provider.bookings.where((b) => b.status == 'PENDING').toList();
         
         if (bookings.isEmpty) {
           return Center(
@@ -3181,7 +3181,7 @@ class _TakeawayTabState extends State<_TakeawayTab> {
           return const Center(child: Text('Please setup your restaurant first.'));
         }
 
-        final orders = p.takeawayOrders;
+        final orders = p.takeawayOrders.where((o) => o.status == 'PENDING').toList();
         if (orders.isEmpty) {
           return Center(
             child: Column(

@@ -27,17 +27,13 @@ class CustomerBookingsProvider extends ChangeNotifier {
       final idsString = await _storage.read(key: 'customer_booking_ids');
       if (idsString == null || idsString.isEmpty) {
         _bookings = [];
-        _isLoading = false;
-        notifyListeners();
-        return;
-      }
-
-      final List<String> bookingIds = List<String>.from(jsonDecode(idsString));
-      
-      if (bookingIds.isEmpty) {
-        _bookings = [];
       } else {
-        _bookings = await _apiService.getCustomerBookings(bookingIds);
+        final List<String> bookingIds = List<String>.from(jsonDecode(idsString));
+        if (bookingIds.isEmpty) {
+          _bookings = [];
+        } else {
+          _bookings = await _apiService.getCustomerBookings(bookingIds);
+        }
       }
 
       final orderIdsString = await _storage.read(key: 'customer_order_ids');

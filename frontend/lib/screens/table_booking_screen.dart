@@ -370,6 +370,7 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
                 hintText: 'Phone Number',
                 hintStyle: GoogleFonts.outfit(color: AppTheme.textMuted),
                 errorText: _phoneError,
+                prefixText: '+91 ',
                 border: InputBorder.none,
                 prefixIcon: const Icon(Icons.phone_rounded, color: AppTheme.primary, size: 20),
                 isDense: true,

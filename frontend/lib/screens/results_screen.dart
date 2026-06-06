@@ -57,7 +57,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Row(
               mainAxisSize: MainAxisSize.min,
@@ -104,6 +104,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 ),
               ],
             ),
+            const SizedBox(width: 16),
             FloatingActionButton.extended(
               heroTag: 'book_table_results',
               onPressed: () {

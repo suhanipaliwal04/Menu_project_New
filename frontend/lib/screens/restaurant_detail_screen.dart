@@ -63,7 +63,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
             floatingActionButton: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Row(
                     mainAxisSize: MainAxisSize.min,
@@ -110,9 +110,10 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                       ),
                     ],
                   ),
+                  const SizedBox(width: 16),
                   if (restaurant.hasDineIn)
                     FloatingActionButton.extended(
-                      heroTag: 'book_table_fab',
+                      heroTag: 'book_table_${widget.restaurantId}',
                       onPressed: () => _showBookingModal(context, restaurant),
                       backgroundColor: AppTheme.primary,
                       icon: const Icon(Icons.event_seat_rounded, color: Colors.white),
