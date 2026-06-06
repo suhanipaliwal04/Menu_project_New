@@ -11,7 +11,7 @@ import '../models/admin_models.dart';
 import '../models/area_model.dart';
 import '../models/restaurant_model.dart';
 import '../core/api_service.dart';
-import 'retailer_login_screen.dart';
+import 'customer_login_screen.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN SCREEN
@@ -85,7 +85,7 @@ class _RetailerDashboardScreenState extends State<RetailerDashboardScreen>
                 Navigator.pop(ctx);
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (_) => const RetailerLoginScreen()),
+                  MaterialPageRoute(builder: (_) => const CustomerLoginScreen()),
                   (route) => false,
                 );
               }
@@ -147,10 +147,17 @@ class _RetailerDashboardScreenState extends State<RetailerDashboardScreen>
             ),
           ),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.logout_rounded, color: AppTheme.error),
-              onPressed: _confirmLogout,
-              tooltip: 'Sign Out',
+            Container(
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFC19A6B).withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.logout_rounded, color: Color(0xFFC19A6B), size: 20),
+                onPressed: _confirmLogout,
+                tooltip: 'Sign Out',
+              ),
             ),
           ],
           flexibleSpace: FlexibleSpaceBar(

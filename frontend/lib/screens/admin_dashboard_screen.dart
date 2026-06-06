@@ -9,7 +9,7 @@ import 'admin_restaurants_screen.dart';
 import 'admin_menu_items_screen.dart';
 import 'admin_approvals_screen.dart';
 import 'upload_screen.dart';
-import 'admin_login_screen.dart';
+import 'customer_login_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -46,7 +46,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Navigator.pop(ctx);
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (_) => const AdminLoginScreen()),
+                MaterialPageRoute(builder: (_) => const CustomerLoginScreen()),
                 (route) => false,
               );
             },
