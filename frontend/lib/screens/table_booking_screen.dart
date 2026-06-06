@@ -58,6 +58,8 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
   List<Map<String, dynamic>> _slots = [];
 
   bool _isConfirming = false;
+  String? _nameError;
+  String? _phoneError;
 
   @override
   void initState() {
@@ -127,24 +129,36 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
   }
 
   Future<void> _confirm() async {
+    setState(() {
+      _nameError = null;
+      _phoneError = null;
+    });
+
     if (_selectedTime.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a time slot'), backgroundColor: AppTheme.error),
       );
       return;
     }
+    final nameText = _nameCtrl.text.trim();
     final phoneText = _phoneCtrl.text.trim();
-    if (_nameCtrl.text.trim().isEmpty || phoneText.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter name and phone number'), backgroundColor: AppTheme.error),
-      );
-      return;
-    }
     
-    if (phoneText.length != 10 || int.tryParse(phoneText) == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid 10-digit phone number'), backgroundColor: AppTheme.error),
-      );
+    bool hasError = false;
+
+    if (nameText.isEmpty) {
+      _nameError = 'Name cannot be empty';
+      hasError = true;
+    }
+
+    if (phoneText.isEmpty) {
+      _phoneError = 'Phone number cannot be empty';
+      hasError = true;
+    } else if (phoneText.length != 10 || !RegExp(r'^[0-9]+$').hasMatch(phoneText)) {
+      _phoneError = 'Phone number must be exactly 10 digits';
+      hasError = true;
+    }
+
+    if (hasError) {
       return;
     }
 
@@ -327,12 +341,14 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
 
           _sectionLabel('Customer Details'),
           _inputFieldBox(
+            hasError: _nameError != null,
             child: TextField(
               controller: _nameCtrl,
               style: GoogleFonts.outfit(fontSize: 16, color: AppTheme.textPrimary),
               decoration: InputDecoration(
                 hintText: 'Full Name',
                 hintStyle: GoogleFonts.outfit(color: AppTheme.textMuted),
+                errorText: _nameError,
                 border: InputBorder.none,
                 prefixIcon: const Icon(Icons.person_rounded, color: AppTheme.primary, size: 20),
                 isDense: true,
@@ -341,6 +357,7 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
           ),
           const SizedBox(height: 12),
           _inputFieldBox(
+            hasError: _phoneError != null,
             child: TextField(
               controller: _phoneCtrl,
               keyboardType: TextInputType.phone,
@@ -352,6 +369,7 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
               decoration: InputDecoration(
                 hintText: 'Phone Number',
                 hintStyle: GoogleFonts.outfit(color: AppTheme.textMuted),
+                errorText: _phoneError,
                 border: InputBorder.none,
                 prefixIcon: const Icon(Icons.phone_rounded, color: AppTheme.primary, size: 20),
                 isDense: true,
@@ -493,13 +511,16 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
     );
   }
 
-  Widget _inputFieldBox({required Widget child}) {
+  Widget _inputFieldBox({required Widget child, bool hasError = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.divider),
+        border: Border.all(
+          color: hasError ? AppTheme.error : AppTheme.divider,
+          width: hasError ? 1.5 : 1.0,
+        ),
       ),
       child: child,
     );

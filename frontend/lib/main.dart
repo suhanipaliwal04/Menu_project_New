@@ -61,16 +61,27 @@ class MenuIntelligenceApp extends StatelessWidget {
         theme: AppTheme.darkTheme,
         debugShowCheckedModeBanner: false,
         builder: (context, child) {
-          return Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/eatbot_bg.png'),
-                fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(Colors.white70, BlendMode.lighten),
-                opacity: 0.3,
-              ),
-            ),
-            child: child,
+          return Consumer<AuthProvider>(
+            builder: (ctx, auth, _) {
+              String bgPath = 'assets/images/eatbot_bg.png';
+              if (auth.role == 'restaurant_admin') {
+                bgPath = 'assets/images/restaurant_bg.png';
+              } else if (auth.role == 'system_admin') {
+                bgPath = 'assets/images/admin_bg.png';
+              }
+
+              return Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(bgPath),
+                    fit: BoxFit.cover,
+                    colorFilter: const ColorFilter.mode(Colors.white70, BlendMode.lighten),
+                    opacity: 0.25, // Increased opacity slightly as requested
+                  ),
+                ),
+                child: child,
+              );
+            },
           );
         },
         home: const AuthWrapper(),

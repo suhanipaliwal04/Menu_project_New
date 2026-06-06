@@ -16,6 +16,8 @@ class _CartScreenState extends State<CartScreen> {
   final _nameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   String? _selectedTimeSlot;
+  String? _nameError;
+  String? _phoneError;
 
   final List<String> _timeSlots = [
     'ASAP',
@@ -61,6 +63,14 @@ class _CartScreenState extends State<CartScreen> {
           if (cart.orderPlaced) return _buildOrderSuccess(context, cart);
           if (cart.items.isEmpty) return _buildEmptyCart(context);
 
+          // Force update order type to Takeaway if it's not Delivery and not Takeaway
+          // to fix the bug where Dine In bypasses the API call but shows Takeaway UI
+          if (cart.orderType.toLowerCase() != 'delivery' && cart.orderType.toLowerCase() != 'takeaway') {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              cart.setOrderType('Takeaway');
+            });
+          }
+
           return Column(
             children: [
               Expanded(
@@ -69,7 +79,10 @@ class _CartScreenState extends State<CartScreen> {
                   children: [
                     ...cart.items.map((item) => _buildCartItem(context, item, cart)),
                     const SizedBox(height: 24),
-                    _buildTakeawayDetails(),
+                    _buildOrderTypeToggle(cart),
+                    const SizedBox(height: 16),
+                    if (cart.orderType.toLowerCase() != 'dine in')
+                      _buildTakeawayDetails(),
                     const SizedBox(height: 24),
                     _buildOrderSummary(cart),
                   ],
@@ -225,6 +238,7 @@ class _CartScreenState extends State<CartScreen> {
             controller: _nameCtrl,
             decoration: InputDecoration(
               labelText: 'Name',
+              errorText: _nameError,
               labelStyle: GoogleFonts.outfit(color: AppTheme.textSecondary),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -238,6 +252,14 @@ class _CartScreenState extends State<CartScreen> {
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: AppTheme.primary),
               ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppTheme.error, width: 1.5),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppTheme.error, width: 1.5),
+              ),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
           ),
@@ -247,6 +269,7 @@ class _CartScreenState extends State<CartScreen> {
             keyboardType: TextInputType.phone,
             decoration: InputDecoration(
               labelText: 'Phone Number',
+              errorText: _phoneError,
               prefixText: '+91 ',
               labelStyle: GoogleFonts.outfit(color: AppTheme.textSecondary),
               border: OutlineInputBorder(
@@ -260,6 +283,14 @@ class _CartScreenState extends State<CartScreen> {
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: AppTheme.primary),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppTheme.error, width: 1.5),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppTheme.error, width: 1.5),
               ),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
@@ -417,15 +448,41 @@ class _CartScreenState extends State<CartScreen> {
         height: 56,
         child: ElevatedButton(
           onPressed: () async {
-            if (_nameCtrl.text.trim().isEmpty || _phoneCtrl.text.trim().isEmpty || _selectedTimeSlot == null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Please fill all Takeaway details')),
-              );
-              return;
+            setState(() {
+              _nameError = null;
+              _phoneError = null;
+            });
+
+            final nameText = _nameCtrl.text.trim();
+            final phoneText = _phoneCtrl.text.trim();
+            bool hasError = false;
+
+            if (cart.orderType.toLowerCase() != 'dine in') {
+              if (nameText.isEmpty) {
+                _nameError = 'Name cannot be empty';
+                hasError = true;
+              }
+              if (phoneText.isEmpty) {
+                _phoneError = 'Phone number cannot be empty';
+                hasError = true;
+              } else if (phoneText.length != 10 || !RegExp(r'^[0-9]+$').hasMatch(phoneText)) {
+                _phoneError = 'Phone number must be exactly 10 digits';
+                hasError = true;
+              }
+
+              if (hasError || _selectedTimeSlot == null) {
+                if (_selectedTimeSlot == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please select a time slot')),
+                  );
+                }
+                return;
+              }
             }
+
             final success = await cart.placeOrder(
-              customerName: _nameCtrl.text.trim(),
-              customerPhone: _phoneCtrl.text.trim(),
+              customerName: nameText,
+              customerPhone: phoneText,
               timeSlot: _selectedTimeSlot,
             );
             if (!success && context.mounted) {
