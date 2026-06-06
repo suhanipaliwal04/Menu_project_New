@@ -60,6 +60,18 @@ class MenuIntelligenceApp extends StatelessWidget {
         title: 'Menu Intelligence',
         theme: AppTheme.darkTheme,
         debugShowCheckedModeBanner: false,
+        builder: (context, child) {
+          return Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/eatbot_bg.png'),
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(Colors.white54, BlendMode.lighten),
+              ),
+            ),
+            child: child,
+          );
+        },
         home: const AuthWrapper(),
       ),
     );
@@ -98,7 +110,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        backgroundColor: AppTheme.background,
+        
         body: Center(child: CircularProgressIndicator(color: AppTheme.primary)),
       );
     }

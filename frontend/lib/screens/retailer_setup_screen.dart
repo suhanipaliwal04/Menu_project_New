@@ -112,7 +112,7 @@ class _RetailerSetupScreenState extends State<RetailerSetupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,

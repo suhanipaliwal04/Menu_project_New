@@ -17,9 +17,9 @@ class CategoryResultsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      
       appBar: AppBar(
-        backgroundColor: AppTheme.background,
+        
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.textPrimary),

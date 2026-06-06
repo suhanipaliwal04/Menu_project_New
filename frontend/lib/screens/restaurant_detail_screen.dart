@@ -43,7 +43,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      
       body: Consumer<BrowseProvider>(
         builder: (context, provider, _) {
           if (provider.menuState == BrowseState.loading) {
@@ -58,7 +58,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
           final restaurant = menuResponse.restaurant;
 
           return Scaffold(
-            backgroundColor: AppTheme.background,
+            
             floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
             floatingActionButton: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -236,7 +236,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
       pinned: true,
       elevation: 0,
       stretch: true,
-      backgroundColor: AppTheme.background,
+      
       flexibleSpace: FlexibleSpaceBar(
         stretchModes: const [StretchMode.zoomBackground],
         background: Stack(
@@ -328,7 +328,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
           pinned: true,
           primary: false,
           automaticallyImplyLeading: false,
-          backgroundColor: AppTheme.background,
+          
           elevation: 0,
           title: Text(section.sectionName,
               style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),

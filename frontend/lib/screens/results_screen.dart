@@ -36,7 +36,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      
       body: Consumer<ChatProvider>(
         builder: (_, provider, __) {
           if (provider.state == ChatState.loading) {

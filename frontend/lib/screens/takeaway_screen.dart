@@ -63,7 +63,7 @@ class _TakeawayScreenState extends State<TakeawayScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      
       appBar: AppBar(
         backgroundColor: AppTheme.surface,
         elevation: 0,

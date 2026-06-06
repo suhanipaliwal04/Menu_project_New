@@ -380,7 +380,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      
       floatingActionButton: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Row(
@@ -472,7 +472,7 @@ class _HomeScreenState extends State<HomeScreen> {
       floating: true,
       pinned: true,
       expandedHeight: 80,
-      backgroundColor: AppTheme.background,
+      
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
         background: SafeArea(

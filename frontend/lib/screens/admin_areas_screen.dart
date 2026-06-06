@@ -33,7 +33,7 @@ class _AdminAreasScreenState extends State<AdminAreasScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      
       appBar: AppBar(
         backgroundColor: AppTheme.surface,
         title: Text('Areas', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),

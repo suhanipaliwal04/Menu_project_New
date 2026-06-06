@@ -91,13 +91,22 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.textPrimary),
-          onPressed: () => Navigator.pop(context),
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: AppTheme.textPrimary,
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 20),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
         ),
       ),
       body: Center(
@@ -108,25 +117,26 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Logo/Icon
-              Container(
-                width: 88,
-                height: 88,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFC19A6B), Color(0xFFAF6F09)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.primary.withOpacity(0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
+              Center(
+                child: Container(
+                  width: 110,
+                  height: 110,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppTheme.textPrimary, Color(0xFF2E1A15)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                  ],
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(color: AppTheme.textPrimary.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8)),
+                    ],
+                    border: Border.all(color: AppTheme.primary, width: 3),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.storefront_rounded, size: 50, color: AppTheme.primary),
+                  ),
                 ),
-                child: const Icon(Icons.storefront_rounded, size: 44, color: Colors.white),
               ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack),
 
               const SizedBox(height: 28),
@@ -201,20 +211,34 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
 
               const SizedBox(height: 16),
               
-              TextButton(
-                onPressed: () => setState(() => _isSignUp = !_isSignUp),
-                child: Text(
-                  _isSignUp ? 'Already approved? Sign In' : 'New restaurant? Sign Up',
-                  style: GoogleFonts.outfit(color: AppTheme.primary),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.85),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: TextButton(
+                  onPressed: () => setState(() => _isSignUp = !_isSignUp),
+                  child: Text(
+                    _isSignUp ? 'Already approved? Sign In' : 'New restaurant? Sign Up',
+                    style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.w900),
+                  ),
                 ),
               ).animate().fadeIn(delay: 700.ms),
               
               const SizedBox(height: 8),
-              Text(
-                'New registrations require System Admin approval before login.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.outfit(
-                    fontSize: 12, color: AppTheme.textMuted),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.85),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  'New registrations require System Admin approval before login.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.outfit(
+                      fontSize: 12, color: Colors.black, fontWeight: FontWeight.w900),
+                ),
               ).animate().fadeIn(delay: 750.ms),
             ],
           ),

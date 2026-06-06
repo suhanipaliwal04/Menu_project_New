@@ -61,7 +61,7 @@ class _AdminApprovalsScreenState extends State<AdminApprovalsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      
       appBar: AppBar(
         backgroundColor: AppTheme.surface,
         title: Text('Pending Approvals', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),

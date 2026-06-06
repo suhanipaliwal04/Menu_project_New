@@ -97,7 +97,7 @@ class _RetailerDashboardScreenState extends State<RetailerDashboardScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           _buildSliverAppBar(innerBoxIsScrolled),

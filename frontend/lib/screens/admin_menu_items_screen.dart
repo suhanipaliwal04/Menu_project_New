@@ -38,7 +38,7 @@ class _AdminMenuItemsScreenState extends State<AdminMenuItemsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      
       appBar: AppBar(
         backgroundColor: AppTheme.surface,
         elevation: 0,

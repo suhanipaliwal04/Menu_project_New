@@ -57,103 +57,135 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
     final isLoading = context.watch<AuthProvider>().state == AuthState.loading;
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Icon(Icons.restaurant_menu, size: 80, color: AppTheme.primary)
-                  .animate().scale(delay: 200.ms, duration: 500.ms, curve: Curves.easeOutBack),
-              const SizedBox(height: 16),
-              Text(
-                'EatBot',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.outfit(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                  color: AppTheme.textPrimary,
-                ),
-              ).animate().fadeIn(delay: 300.ms),
-              const SizedBox(height: 48),
-
-              // Title
-              Text(
-                _isSignUp ? 'Create an Account' : 'Welcome Back',
-                style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-              const SizedBox(height: 24),
-
-              // Form
-              TextField(
-                controller: _emailCtrl,
-                style: GoogleFonts.outfit(color: AppTheme.textPrimary),
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: const Icon(Icons.email_outlined, color: Colors.grey),
-                  filled: true,
-                  fillColor: AppTheme.surface,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _passCtrl,
-                obscureText: true,
-                style: GoogleFonts.outfit(color: AppTheme.textPrimary),
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  prefixIcon: const Icon(Icons.lock_outline, color: Colors.grey),
-                  filled: true,
-                  fillColor: AppTheme.surface,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              ElevatedButton(
-                onPressed: isLoading ? null : _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: isLoading
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : Text(_isSignUp ? 'Sign Up' : 'Login', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-              ),
-              const SizedBox(height: 16),
-
-              TextButton(
-                onPressed: () => setState(() => _isSignUp = !_isSignUp),
-                child: Text(
-                  _isSignUp ? 'Already have an account? Login' : 'Don\'t have an account? Sign Up',
-                  style: GoogleFonts.outfit(color: AppTheme.primary),
-                ),
-              ),
-
-              const Divider(height: 48, color: Colors.white24),
-
-              // Links to other portals
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RetailerLoginScreen())),
-                    child: const Text('Restaurant Portal', style: TextStyle(color: Colors.grey)),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 110,
+                    height: 110,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [AppTheme.textPrimary, Color(0xFF2E1A15)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(color: AppTheme.textPrimary.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8)),
+                      ],
+                      border: Border.all(color: AppTheme.primary, width: 3),
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.smart_toy_rounded, size: 50, color: AppTheme.primary),
+                    ),
                   ),
-                  TextButton(
-                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminLoginScreen())),
-                    child: const Text('System Admin', style: TextStyle(color: Colors.grey)),
+                ).animate().scale(delay: 200.ms, duration: 500.ms, curve: Curves.easeOutBack),
+                const SizedBox(height: 16),
+                Text(
+                  'EatBot',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.outfit(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    color: AppTheme.textPrimary,
                   ),
-                ],
-              )
-            ],
-          ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, end: 0),
+                ).animate().fadeIn(delay: 300.ms),
+                const SizedBox(height: 48),
+  
+                // Title
+                Text(
+                  _isSignUp ? 'Create an Account' : 'Welcome Back',
+                  style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                ),
+                const SizedBox(height: 24),
+  
+                // Form
+                TextField(
+                  controller: _emailCtrl,
+                  style: GoogleFonts.outfit(color: AppTheme.textPrimary),
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: const Icon(Icons.email_outlined, color: Colors.grey),
+                    filled: true,
+                    fillColor: AppTheme.surface.withOpacity(0.9),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _passCtrl,
+                  obscureText: true,
+                  style: GoogleFonts.outfit(color: AppTheme.textPrimary),
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    prefixIcon: const Icon(Icons.lock_outline, color: Colors.grey),
+                    filled: true,
+                    fillColor: AppTheme.surface.withOpacity(0.9),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  ),
+                ),
+                const SizedBox(height: 24),
+  
+                ElevatedButton(
+                  onPressed: isLoading ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: isLoading
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : Text(_isSignUp ? 'Sign Up' : 'Login', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                ),
+                const SizedBox(height: 16),
+  
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.85),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: TextButton(
+                    onPressed: () => setState(() => _isSignUp = !_isSignUp),
+                    child: Text(
+                      _isSignUp ? 'Already have an account? Login' : 'Don\'t have an account? Sign Up',
+                      style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.w900),
+                    ),
+                  ),
+                ),
+  
+                const Divider(height: 48, color: Colors.black12),
+  
+                // Links to other portals
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.85),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RetailerLoginScreen())),
+                        child: Text('Restaurant Portal', style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.w900)),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminLoginScreen())),
+                        child: Text('System Admin', style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.w900)),
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, end: 0),
+          ),
         ),
-      ),
-    );
+      );
   }
 }

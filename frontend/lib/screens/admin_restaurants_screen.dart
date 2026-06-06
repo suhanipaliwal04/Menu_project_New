@@ -38,7 +38,7 @@ class _AdminRestaurantsScreenState extends State<AdminRestaurantsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      
       appBar: AppBar(
         backgroundColor: AppTheme.surface,
         title: Text('Restaurants', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),

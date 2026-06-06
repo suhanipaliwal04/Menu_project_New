@@ -43,7 +43,7 @@ class AppTheme {
   static ThemeData get lightTheme {
     final base = ThemeData.light();
     return base.copyWith(
-      scaffoldBackgroundColor: background,
+      scaffoldBackgroundColor: Colors.transparent,
       colorScheme: const ColorScheme.light(
         primary: primary,
         secondary: secondary,

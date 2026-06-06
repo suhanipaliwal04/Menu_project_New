@@ -41,11 +41,11 @@ class _BrowseScreenState extends State<BrowseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      
       appBar: AppBar(
         title: Text('Explore Nagpur',
           style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 24)),
-        backgroundColor: AppTheme.background,
+        
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(110),
           child: Column(
