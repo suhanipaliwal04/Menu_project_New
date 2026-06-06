@@ -1,7 +1,7 @@
 [build]
   base = "frontend"
   publish = "build/web"
-  command = "rm -rf flutter && git clone https://github.com/flutter/flutter.git -b stable --depth 1 && ./flutter/bin/flutter pub get && ./flutter/bin/flutter build web --release"
+  command = "rm -rf flutter && git clone https://github.com/flutter/flutter.git -b stable --depth 1 && ./flutter/bin/flutter pub get && ./flutter/bin/flutter build web --web-renderer html --release"
 
 [build.environment]
   GIT_SUBMODULE_FETCH = "false"
