@@ -63,9 +63,8 @@ class _CartScreenState extends State<CartScreen> {
           if (cart.orderPlaced) return _buildOrderSuccess(context, cart);
           if (cart.items.isEmpty) return _buildEmptyCart(context);
 
-          // Force update order type to Takeaway if it's not Delivery and not Takeaway
-          // to fix the bug where Dine In bypasses the API call but shows Takeaway UI
-          if (cart.orderType.toLowerCase() != 'delivery' && cart.orderType.toLowerCase() != 'takeaway') {
+          // Force update order type to Takeaway
+          if (cart.orderType.toLowerCase() != 'takeaway') {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               cart.setOrderType('Takeaway');
             });
@@ -97,55 +96,7 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildOrderTypeToggle(CartProvider cart) {
-    final isDelivery = cart.orderType.toLowerCase() == 'delivery';
-    return Container(
-      margin: const EdgeInsets.only(bottom: 24),
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceAlt,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: GestureDetector(
-              onTap: () => cart.setOrderType('Delivery'),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  color: isDelivery ? AppTheme.primary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Center(
-                  child: Text('Delivery',
-                      style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.bold,
-                          color: isDelivery ? Colors.white : AppTheme.textSecondary)),
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => cart.setOrderType('Takeaway'),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  color: !isDelivery ? AppTheme.primary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Center(
-                  child: Text('Takeaway',
-                      style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.bold,
-                          color: !isDelivery ? Colors.white : AppTheme.textSecondary)),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    return const SizedBox.shrink();
   }
 
   Widget _buildCartItem(BuildContext context, CartItem item, CartProvider cart) {
