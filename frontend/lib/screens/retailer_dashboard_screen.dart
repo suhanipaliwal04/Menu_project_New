@@ -126,7 +126,7 @@ class _RetailerDashboardScreenState extends State<RetailerDashboardScreen>
         final isLive = p.myRestaurant != null;
 
         return SliverAppBar(
-          expandedHeight: 160,
+          expandedHeight: 210,
           pinned: true,
           backgroundColor: AppTheme.surface,
           leading: Container(
@@ -160,7 +160,7 @@ class _RetailerDashboardScreenState extends State<RetailerDashboardScreen>
               ),
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 48, 20, 16),
+                  padding: const EdgeInsets.fromLTRB(20, 60, 20, 64),
                   child: Row(
                     children: [
                       Container(
