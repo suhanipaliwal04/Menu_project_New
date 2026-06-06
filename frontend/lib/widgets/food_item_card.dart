@@ -124,8 +124,8 @@ class FoodItemCard extends StatelessWidget {
     return Consumer<CartProvider>(
       builder: (context, cart, _) {
         final itemId = '${item.restaurantId}_${item.itemName}';
-        final isItemInCart = cart.items.containsKey(itemId);
-        final currentQuantity = isItemInCart ? cart.items[itemId]!.quantity : 0;
+        final isItemInCart = cart.items.any((i) => i.id == itemId);
+        final currentQuantity = isItemInCart ? cart.items.firstWhere((i) => i.id == itemId).quantity : 0;
 
         return Stack(
           alignment: Alignment.bottomCenter,
