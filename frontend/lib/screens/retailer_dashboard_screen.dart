@@ -51,6 +51,7 @@ class _RetailerDashboardScreenState extends State<RetailerDashboardScreen>
         p.fetchDashboard();
         p.fetchMenuItems();
         p.fetchSections();
+        p.fetchTakeawayOrders();
       }
     });
   }
@@ -264,6 +265,17 @@ class _RetailerDashboardScreenState extends State<RetailerDashboardScreen>
                             decoration: BoxDecoration(color: AppTheme.error, borderRadius: BorderRadius.circular(10)),
                             child: Text(
                               '${p.dashboardStats!.pendingBookings}',
+                              style: GoogleFonts.outfit(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                        if (t.label == 'Takeaway' && p.takeawayOrders.where((o) => o.status == 'PENDING').isNotEmpty) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(color: AppTheme.error, borderRadius: BorderRadius.circular(10)),
+                            child: Text(
+                              '${p.takeawayOrders.where((o) => o.status == 'PENDING').length}',
                               style: GoogleFonts.outfit(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                             ),
                           ),
@@ -3139,8 +3151,12 @@ class _TakeawayTabState extends State<_TakeawayTab> {
   Future<void> _updateStatus(String orderId, String status) async {
     final success = await context.read<RetailerProvider>().updateTakeawayOrderStatus(orderId, status);
     if (success && mounted) {
+      String msg = status == 'CONFIRMED'
+          ? 'Message sent to user: "thanks for placing the order"'
+          : 'Message sent to user: "sorry restaurant is not currently accepting any order"';
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Takeaway Order status updated to $status')),
+        SnackBar(content: Text('Status updated to $status.\n$msg')),
       );
     }
   }
