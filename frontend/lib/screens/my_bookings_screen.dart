@@ -142,6 +142,20 @@ class MyBookingsScreen extends StatelessWidget {
                          ),
                        ),
                     ],
+                    if (status == 'CONFIRMED' && !isTakeaway) ...[
+                       const SizedBox(height: 8),
+                       Container(
+                         padding: const EdgeInsets.all(8),
+                         decoration: BoxDecoration(color: AppTheme.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                         child: Row(
+                           children: [
+                             const Icon(Icons.mark_email_read_rounded, size: 16, color: AppTheme.success),
+                             const SizedBox(width: 8),
+                             Expanded(child: Text('Message: "your table has been reserved successfully"', style: GoogleFonts.outfit(color: AppTheme.success, fontSize: 13, fontWeight: FontWeight.bold))),
+                           ],
+                         ),
+                       ),
+                    ],
                     if (status == 'REJECTED' && isTakeaway) ...[
                        const SizedBox(height: 8),
                        Container(
