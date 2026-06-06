@@ -25,6 +25,7 @@ from app.core.config import settings
 from app.core.auth import get_current_user
 from app.models.restaurant import Restaurant
 from app.models.area import Area
+from app.models.user import User
 from app.models.menu import MenuSection, MenuItem
 from app.models.upload import MenuUpload
 from app.models.embedding import MenuEmbedding
@@ -52,7 +53,7 @@ def get_dashboard(
     Returns item counts, section counts, upload history, average price,
     veg/non-veg split, and restaurant metadata.
     """
-    restaurant = _verify_ownership(restaurant_id, current_user, db)
+    restaurant = _verify_ownership(restaurant_id, current_user, db, allow_admin=True)
     area = restaurant.area
 
     # Count sections
@@ -686,10 +687,11 @@ def clear_menu(
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def _verify_ownership(
-    restaurant_id: uuid.UUID, current_user: uuid.UUID, db: Session
+    restaurant_id: uuid.UUID, current_user: uuid.UUID, db: Session, allow_admin: bool = False
 ) -> Restaurant:
     """
     Check that the restaurant exists AND the current user is the owner.
+    If allow_admin is True, bypass the owner check if the user is a SYSTEM_ADMIN.
 
     Returns the restaurant object if all checks pass.
     Raises 404 if restaurant doesn't exist, 403 if user is not the owner.
@@ -702,6 +704,11 @@ def _verify_ownership(
         raise HTTPException(status_code=404, detail="Restaurant not found")
 
     if restaurant.owner_id != current_user:
+        if allow_admin:
+            user = db.query(User).filter(User.user_id == current_user).first()
+            if user and user.role == "SYSTEM_ADMIN":
+                return restaurant
+
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You are not the owner of this restaurant",
