@@ -66,7 +66,8 @@ class MenuIntelligenceApp extends StatelessWidget {
               image: DecorationImage(
                 image: AssetImage('assets/images/eatbot_bg.png'),
                 fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(Colors.white54, BlendMode.lighten),
+                colorFilter: ColorFilter.mode(Colors.white70, BlendMode.lighten),
+                opacity: 0.3,
               ),
             ),
             child: child,
