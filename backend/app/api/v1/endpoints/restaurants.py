@@ -29,7 +29,7 @@ router = APIRouter()
 # PUBLIC — no auth required
 # ═══════════════════════════════════════════════════════════════════════════════
 
-@router.get("/", response_model=List[RestaurantResponse])
+@router.get("", response_model=List[RestaurantResponse])
 def list_restaurants(
     area_id: uuid.UUID | None = None,
     city: str | None = None,
@@ -145,7 +145,7 @@ def get_restaurant_menu(restaurant_id: uuid.UUID, db: Session = Depends(get_db))
 # PROTECTED — auth required
 # ═══════════════════════════════════════════════════════════════════════════════
 
-@router.post("/", response_model=RestaurantResponse)
+@router.post("", response_model=RestaurantResponse)
 def create_restaurant(
     restaurant: RestaurantCreate,
     current_user: uuid.UUID = Depends(get_current_user),
