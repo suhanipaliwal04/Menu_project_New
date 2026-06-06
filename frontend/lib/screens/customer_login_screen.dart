@@ -65,24 +65,10 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      borderRadius: BorderRadius.circular(32),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 15,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Image.asset(
-                      'assets/images/eatbot_logo.png',
-                      height: 200,
-                      fit: BoxFit.contain,
-                    ),
+                  child: Image.asset(
+                    'assets/images/eatbot_logo.png',
+                    height: 240,
+                    fit: BoxFit.contain,
                   ),
                 ).animate().scale(delay: 200.ms, duration: 500.ms, curve: Curves.easeOutBack),
                 const SizedBox(height: 48),
