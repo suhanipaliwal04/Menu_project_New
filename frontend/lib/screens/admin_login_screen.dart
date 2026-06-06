@@ -88,17 +88,35 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Center(
-                child: Image.asset(
-                  'assets/images/admin_logo.png',
-                  height: 240,
-                  fit: BoxFit.contain,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(32),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 15,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Image.asset(
+                    'assets/images/admin_logo.png',
+                    height: 200,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
               Text(
                 'Sign in with your Supabase admin account.',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary),
+                style: GoogleFonts.outfit(
+                  fontSize: 16, 
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textPrimary,
+                ),
               ).animate().fadeIn(delay: 300.ms),
               const SizedBox(height: 48),
 
