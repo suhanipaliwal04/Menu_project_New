@@ -76,7 +76,7 @@ class MenuIntelligenceApp extends StatelessWidget {
                     image: AssetImage(bgPath),
                     fit: BoxFit.cover,
                     colorFilter: const ColorFilter.mode(Colors.white70, BlendMode.lighten),
-                    opacity: 0.25, // Increased opacity slightly as requested
+                    opacity: 0.40, // Increased opacity slightly as requested
                   ),
                 ),
                 child: child,

@@ -2996,13 +2996,41 @@ class _BookingsTabState extends State<_BookingsTab> {
     final success = await context.read<RetailerProvider>().updateBookingStatus(bookingId, status);
     if (mounted) {
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Booking $status', style: GoogleFonts.outfit()),
-            backgroundColor: AppTheme.success));
+        String msg = status == 'CONFIRMED'
+            ? 'Message sent to user: "your table has been booked successfully"'
+            : 'Message sent to user: "sorry, restaurant is not currently accepting table bookings"';
+
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            backgroundColor: AppTheme.surface,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: Text('Status Updated', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+            content: Text('Dine-In Booking status updated to $status.\n\n$msg', style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('OK', style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Failed to update status', style: GoogleFonts.outfit()),
-            backgroundColor: AppTheme.error));
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            backgroundColor: AppTheme.surface,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: Text('Update Failed', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.error)),
+            content: Text('Failed to update booking status. Please try again.', style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('OK', style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        );
       }
     }
   }

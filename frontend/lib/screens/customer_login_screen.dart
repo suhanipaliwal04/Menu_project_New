@@ -17,6 +17,7 @@ class CustomerLoginScreen extends StatefulWidget {
 
 class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
   bool _isSignUp = false;
+  bool _obscurePassword = true;
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
 
@@ -95,11 +96,18 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                 const SizedBox(height: 16),
                 TextField(
                   controller: _passCtrl,
-                  obscureText: true,
+                  obscureText: _obscurePassword,
                   style: GoogleFonts.outfit(color: AppTheme.textPrimary),
                   decoration: InputDecoration(
                     labelText: 'Password',
                     prefixIcon: const Icon(Icons.lock_outline, color: Colors.grey),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    ),
                     filled: true,
                     fillColor: AppTheme.surface.withOpacity(0.9),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),

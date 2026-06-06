@@ -402,7 +402,7 @@ class ApiService {
 
   /// PUT /admin/orders/{id}
   Future<Map<String, dynamic>> updateOrderStatus(String orderId, String status) async {
-    final data = await _put('/admin/orders/$orderId', {'status': status});
+    final data = await _put('/orders/admin/orders/$orderId', {'status': status});
     return data as Map<String, dynamic>;
   }
 

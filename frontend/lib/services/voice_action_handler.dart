@@ -91,51 +91,7 @@ class VoiceActionHandler {
       );
     }
 
-    // TABLE BOOKING detection — must catch ALL natural phrasings
-    if (_matchesAny(q, [
-      // Explicit booking phrases
-      'book a table', 'reserve a table', 'book table', 'book me a table',
-      'reservation', 'i want to dine', 'want to dine', 'dining',
-      // Natural/casual phrases (most common in practice)
-      'table for', 'a table for', 'a table at', 'table at',
-      'seats for', 'seat for',
-      'dine in', 'dine at', 'eating at',
-      'i want to book', 'want to book', 'can you book',
-      'make a reservation', 'get a table',
-    ])) {
-      final time   = _extractTime(q);
-      final people = _extractPeople(q);
-      final rest   = _extractRestaurantName(q);
-      var params = <String, dynamic>{};
-      if (people != null) params['people'] = people;
-      if (time.isNotEmpty) params['time'] = time;
-      if (rest.isNotEmpty) params['restaurantName'] = rest;
-      return VoiceAction(type: VoiceActionType.bookTable, params: params);
-    }
-
-    // TAKEAWAY detection
-    if (_matchesAny(q, [
-      'takeaway', 'take away', 'pick up', 'parcel', 'pack it',
-      'ill pick', "i'll pick", 'collect',
-    ])) {
-      final time = _extractTime(q.isEmpty ? r : q);
-      final item = _extractItem(q);
-      final rest = _extractRestaurantName(q);
-      var params = <String, dynamic>{};
-      if (time.isNotEmpty) {
-        params['time'] = time;
-      }
-      if (item.isNotEmpty) {
-        params['item'] = item;
-      }
-      if (rest.isNotEmpty) {
-        params['restaurantName'] = rest;
-      }
-      return VoiceAction(
-        type: VoiceActionType.scheduleTakeaway,
-        params: params,
-      );
-    }
+    // TABLE BOOKING and TAKEAWAY actions have been disabled per user request.
 
     // SEARCH detection (general food/cravings query) - Must be before ADD TO CART
     if (_matchesAny(q, [
