@@ -44,6 +44,13 @@ def get_restaurant_reviews(restaurant_id: uuid.UUID, skip: int = 0, limit: int =
     ).order_by(RestaurantReview.created_at.desc()).offset(skip).limit(limit).all()
     return reviews
 
+@router.delete("/restaurant/{restaurant_id}")
+def clear_restaurant_reviews(restaurant_id: uuid.UUID, db: Session = Depends(get_db)):
+    """Clear all reviews for a specific restaurant"""
+    db.query(RestaurantReview).filter(RestaurantReview.restaurant_id == restaurant_id).delete()
+    db.commit()
+    return {"detail": "Restaurant reviews cleared successfully"}
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # APP REVIEWS
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -66,3 +73,10 @@ def get_app_reviews(skip: int = 0, limit: int = 100, db: Session = Depends(get_d
     """Get all app reviews"""
     reviews = db.query(AppReview).order_by(AppReview.created_at.desc()).offset(skip).limit(limit).all()
     return reviews
+
+@router.delete("/app")
+def clear_app_reviews(db: Session = Depends(get_db)):
+    """Clear all app reviews"""
+    db.query(AppReview).delete()
+    db.commit()
+    return {"detail": "App reviews cleared successfully"}

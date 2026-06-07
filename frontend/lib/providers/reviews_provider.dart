@@ -47,7 +47,7 @@ class ReviewsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final res = await _api.get('reviews/restaurant/$restaurantId');
+      final res = await _api.get('/reviews/restaurant/$restaurantId');
       _restaurantReviews = (res as List).map((r) => ReviewModel.fromJson(r)).toList();
     } catch (e) {
       debugPrint('Error fetching restaurant reviews: $e');
@@ -64,7 +64,7 @@ class ReviewsProvider extends ChangeNotifier {
     required String customerName,
   }) async {
     try {
-      await _api.post('reviews/restaurant', {
+      await _api.post('/reviews/restaurant', {
         'restaurant_id': restaurantId,
         'rating': rating,
         'review_text': reviewText,
@@ -84,7 +84,7 @@ class ReviewsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final res = await _api.get('reviews/app');
+      final res = await _api.get('/reviews/app');
       _appReviews = (res as List).map((r) => ReviewModel.fromJson(r)).toList();
     } catch (e) {
       debugPrint('Error fetching app reviews: $e');
@@ -100,7 +100,7 @@ class ReviewsProvider extends ChangeNotifier {
     required String customerName,
   }) async {
     try {
-      await _api.post('reviews/app', {
+      await _api.post('/reviews/app', {
         'rating': rating,
         'review_text': reviewText,
         'customer_name': customerName,
