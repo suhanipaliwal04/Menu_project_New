@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -18,7 +19,7 @@ class _UploadScreenState extends State<UploadScreen> {
   final _areaCtrl = TextEditingController();
   final _cityCtrl = TextEditingController();
   final _restaurantCtrl = TextEditingController();
-  File? _image;
+  XFile? _image;
 
   bool _isUploading = false;
   bool _isProcessing = false;
@@ -38,7 +39,7 @@ class _UploadScreenState extends State<UploadScreen> {
     final picked = await picker.pickImage(source: ImageSource.gallery);
     if (picked != null) {
       setState(() {
-        _image = File(picked.path);
+        _image = picked;
         _error = null;
       });
     }
@@ -207,7 +208,7 @@ class _UploadScreenState extends State<UploadScreen> {
             style: BorderStyle.solid,
           ),
           image: _image != null
-              ? DecorationImage(image: FileImage(_image!), fit: BoxFit.cover)
+              ? DecorationImage(image: kIsWeb ? NetworkImage(_image!.path) : FileImage(File(_image!.path)) as ImageProvider, fit: BoxFit.cover)
               : null,
         ),
         child: _image == null

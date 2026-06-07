@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:io';
 import 'dart:async';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../core/api_service.dart';
@@ -394,7 +396,7 @@ class RetailerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> uploadMenuImage(File imageFile) async {
+  Future<bool> uploadMenuImage(XFile imageFile) async {
     final id = _myRestaurant?.restaurantId;
     if (id == null) return false;
 

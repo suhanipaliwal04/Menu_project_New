@@ -82,17 +82,18 @@ def _rule_parse(query: str) -> Dict[str, Any]:
         result["exclude_keywords"].extend(m_neg)
 
     # ── Price filters ─────────────────────────────────────────────────────────
-    # "under ₹200", "less than 300", "below 150", "upto 200", "cheap under 100"
-    m = re.search(r'(?:under|below|less\s+than|upto|up\s+to|within|<)\s*[₹rs\.]*\s*(\d+)', q)
+    # Handles: "under ₹200", "less than 300", "below 150", "upto 200", "cheap under 100", "budget of 500", "max 300", "200 bucks"
+    m = re.search(r'(?:under|below|less\s+than|upto|up\s+to|within|<|max(?:imum)?|budget\s*(?:of)?)\s*[₹rs\.]*\s*(\d+)\s*(?:bucks|rupees)?', q)
     if m:
         result["max_price"] = int(m.group(1))
 
-    m = re.search(r'(?:above|over|more\s+than|minimum|min|>)\s*[₹rs\.]*\s*(\d+)', q)
+    m = re.search(r'(?:above|over|more\s+than|minimum|min|>)\s*[₹rs\.]*\s*(\d+)\s*(?:bucks|rupees)?', q)
     if m:
         result["min_price"] = int(m.group(1))
 
     # ── Calorie filters ───────────────────────────────────────────────────────
-    m = re.search(r'(?:under|below|less\s+than|low[- ]?er\s+than)\s*(\d+)\s*(?:kcal|cal|calories)', q)
+    # Handles: "sub 400 calories", "max 500 kcal", "under 300 cal"
+    m = re.search(r'(?:under|below|less\s+than|low[- ]?er\s+than|sub|max(?:imum)?)\s*(\d+)\s*(?:kcal|cal|calories)', q)
     if m:
         result["max_calories"] = int(m.group(1))
 
@@ -120,7 +121,7 @@ def _rule_parse(query: str) -> Dict[str, Any]:
             break
 
     clean = re.sub(
-        r'(under|below|less than|upto|above|over|more than|minimum|within)\s*[₹rs\.]*\s*\d+',
+        r'(under|below|less than|upto|up to|above|over|more than|minimum|within|max|maximum|budget of|sub)\s*[₹rs\.]*\s*\d+\s*(bucks|rupees|kcal|cal|calories)?',
         '', q, flags=re.IGNORECASE
     )
     clean = re.sub(r'\b(healthy|veg(etarian)?|non.?veg|cheap|affordable|expensive)\b',

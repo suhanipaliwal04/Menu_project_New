@@ -43,9 +43,20 @@ def _build_embedding_text(item: Dict[str, Any],
     carries full geographic + semantic context.
 
     Example output:
-        "Dal Tadka | section: Indian Combo Meals | restaurant: Gabbar da Dhaba | area: Pune"
+        "Dal Tadka | Veg | Healthy (8/10) | section: Indian Combo Meals | restaurant: Gabbar da Dhaba | area: Pune"
     """
     parts = [item["item"]]
+    
+    # Inject dietary preference
+    if item.get("is_veg") is True:
+        parts.append("Veg")
+    elif item.get("is_veg") is False:
+        parts.append("Non-Veg")
+
+    # Inject health score if present
+    if item.get("health_score") is not None:
+        parts.append(f"Healthy ({item['health_score']}/10)")
+
     if item.get("category") and item["category"] not in ("General", ""):
         parts.append(f"section: {item['category']}")
     if restaurant_name:
@@ -375,17 +386,17 @@ class EmbeddingService:
 
         where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
 
-        # Boost term if section_name is provided
-        boost_term = "0.0"
+        # Boost term if section_name is provided or min_health_score is present
+        boost_terms = []
         boost_val = filters.get("section_name")
         if boost_val:
-            boost_term = "(CASE WHEN ms.section_name ILIKE %s THEN 0.15 ELSE 0 END)"
-            # Insert the boost value into params: 
-            # Wait, PostgreSQL needs the parameter immediately before the embedding distance 
-            # OR we can inject the string literal if we avoid SQL injection.
-            # But the safer way is to rewrite params list, or just use string formatting 
-            # ONLY because boost_val is from predefined categories list, not arbitrary user input.
-            boost_term = f"(CASE WHEN ms.section_name = '{boost_val}' THEN 0.25 ELSE 0 END)"
+            boost_terms.append(f"(CASE WHEN ms.section_name = '{boost_val}' THEN 0.25 ELSE 0 END)")
+            
+        if filters.get("min_health_score") is not None:
+            # Add a small boost proportional to health score (e.g., 0.02 * health_score -> max 0.2)
+            boost_terms.append("(COALESCE(mi.health_score, 0) * 0.02)")
+
+        boost_term = " + ".join(boost_terms) if boost_terms else "0.0"
 
         # Second copy of vector for ORDER BY
         params.append(query_vector)

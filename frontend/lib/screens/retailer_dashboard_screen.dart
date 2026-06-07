@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use, unused_field, use_build_context_synchronously
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -1727,14 +1728,14 @@ class _UploadTab extends StatefulWidget {
 }
 
 class _UploadTabState extends State<_UploadTab> {
-  File? _image;
+  XFile? _image;
   final _picker = ImagePicker();
 
   Future<void> _pick(ImageSource src) async {
     final picked = await _picker.pickImage(
         source: src, imageQuality: 85, maxWidth: 2048);
     if (picked != null && mounted) {
-      setState(() => _image = File(picked.path));
+      setState(() => _image = picked);
     }
   }
 
@@ -1906,7 +1907,7 @@ class _UploadTabState extends State<_UploadTab> {
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            Image.file(_image!, fit: BoxFit.cover),
+                            kIsWeb ? Image.network(_image!.path, fit: BoxFit.cover) : Image.file(File(_image!.path), fit: BoxFit.cover),
                             Positioned(
                               top: 8,
                               right: 8,

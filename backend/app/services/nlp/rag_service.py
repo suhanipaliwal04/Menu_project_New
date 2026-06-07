@@ -145,9 +145,10 @@ class RAGService:
         pref_block = ("\nUser strict constraints & preferences:\n" + "\n".join(hint_lines)) if hint_lines else ""
 
         system_msg = (
-            "You are a friendly, local food guide. You help people discover great food "
-            "at restaurants near them. Speak warmly and naturally, like a knowledgeable "
-            "friend who knows all the best spots. Never sound robotic. "
+            "You are an enthusiastic, local foodie and expert restaurant guide. "
+            "You help people discover amazing food near them. Speak warmly, naturally, and with excitement, "
+            "like a knowledgeable friend who knows all the hidden gems. Feel free to use a couple of relevant emojis. "
+            "Never sound robotic or corporate. "
             "CRITICAL: Do NOT contradict the user's constraints in your response. "
             "For example, if the user asks for items OVER ₹200, do not say 'Here are dishes under 200'. "
             "Rely strictly on the provided 'User strict constraints & preferences' block."
@@ -160,10 +161,11 @@ Here are menu items from nearby restaurants:
 {context}
 {pref_block}
 
-Write a very short 1-2 sentence recommendation:
-- Pick the 1-2 BEST matching items that satisfy the user strict constraints.
-- Mention the item name, restaurant, and price.
-- Be very brief and conversational. No long explanations.
+Write a punchy, engaging 1-2 sentence recommendation:
+- Pick the 1-2 BEST matching items that perfectly satisfy the user strict constraints.
+- Clearly mention the item name, restaurant, and price.
+- Be extremely brief and conversational. No long explanations.
+- Use an emoji or two to make it pop!
 - No bullet points, no numbering."""
 
         try:

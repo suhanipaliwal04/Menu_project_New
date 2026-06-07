@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'constants.dart';
@@ -227,7 +228,7 @@ class ApiService {
   /// POST /menus/upload — upload menu image (multipart)
   /// Note: all four fields are required by the API.
   Future<UploadResult> uploadMenu({
-    required File imageFile,
+    required XFile imageFile,
     required String areaName,
     required String city,
     required String restaurantName,
@@ -241,14 +242,16 @@ class ApiService {
     request.fields['restaurant_name'] = restaurantName;
 
     // File
-    final ext = imageFile.path.split('.').last.toLowerCase();
+    final ext = imageFile.name.split('.').last.toLowerCase();
     final contentType = ext == 'pdf'
         ? MediaType('application', 'pdf')
         : MediaType('image', ext == 'jpg' ? 'jpeg' : ext);
 
-    request.files.add(await http.MultipartFile.fromPath(
+    final bytes = await imageFile.readAsBytes();
+    request.files.add(http.MultipartFile.fromBytes(
       'file',
-      imageFile.path,
+      bytes,
+      filename: imageFile.name,
       contentType: contentType,
     ));
 
@@ -533,7 +536,7 @@ class ApiService {
 
   /// POST /admin/restaurants/{id}/menu/upload — Upload menu image with replace/append mode.
   Future<Map<String, dynamic>> adminUploadMenuImage({
-    required File imageFile,
+    required XFile imageFile,
     required String restaurantId,
     String mode = 'replace',
   }) async {
@@ -543,14 +546,16 @@ class ApiService {
     request.headers.addAll(_authHeaders..remove('Content-Type'));
     request.fields['mode'] = mode;
 
-    final ext = imageFile.path.split('.').last.toLowerCase();
+    final ext = imageFile.name.split('.').last.toLowerCase();
     final contentType = ext == 'pdf'
         ? MediaType('application', 'pdf')
         : MediaType('image', ext == 'jpg' ? 'jpeg' : ext);
 
-    request.files.add(await http.MultipartFile.fromPath(
+    final bytes = await imageFile.readAsBytes();
+    request.files.add(http.MultipartFile.fromBytes(
       'file',
-      imageFile.path,
+      bytes,
+      filename: imageFile.name,
       contentType: contentType,
     ));
 
