@@ -270,9 +270,6 @@ def delete_restaurant(
     restaurant.is_active = False
     db.commit()
 
-    return {"message": f"Restaurant '{restaurant.restaurant_name}' deactivated", "restaurant_id": str(restaurant_id)}
-
-
 # ── Helper ──────────────────────────────────────────────────────────────────
 
 def _restaurant_with_area(restaurant: Restaurant, area, db: Session = None) -> dict:

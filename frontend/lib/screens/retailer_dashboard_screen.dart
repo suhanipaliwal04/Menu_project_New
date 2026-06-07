@@ -942,6 +942,13 @@ class _MenuItemsTabState extends State<_MenuItemsTab> {
                       fontSize: 12, color: AppTheme.textMuted)),
               const Spacer(),
               TextButton.icon(
+                onPressed: () => _confirmClearAll(context, p),
+                icon: const Icon(Icons.delete_sweep_rounded, size: 16),
+                label: Text('Clear All',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
+                style: TextButton.styleFrom(foregroundColor: AppTheme.error),
+              ),
+              TextButton.icon(
                 onPressed: () => _showAddItemSheet(context, p),
                 icon: const Icon(Icons.add_rounded, size: 16),
                 label: Text('Add Item',
@@ -1018,6 +1025,92 @@ class _MenuItemsTabState extends State<_MenuItemsTab> {
       backgroundColor: Colors.transparent,
       builder: (_) => _AddItemSheet(provider: p, sections: p.sections),
     );
+  }
+
+  Future<void> _confirmClearAll(BuildContext ctx, RetailerProvider p) async {
+    // First confirmation
+    final sure1 = await showDialog<bool>(
+      context: ctx,
+      builder: (c) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Clear Entire Menu?',
+            style: GoogleFonts.outfit(
+                color: AppTheme.error, fontWeight: FontWeight.bold)),
+        content: Text(
+            'This will permanently delete all menu sections, items, and AI embeddings. Are you absolutely sure?',
+            style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(c, false),
+              child: Text('Cancel',
+                  style: GoogleFonts.outfit(color: AppTheme.textSecondary))),
+          TextButton(
+              onPressed: () => Navigator.pop(c, true),
+              child: Text('Yes, proceed',
+                  style: GoogleFonts.outfit(
+                      color: AppTheme.error, fontWeight: FontWeight.bold))),
+        ],
+      ),
+    );
+
+    if (sure1 != true) return;
+
+    // Second confirmation (type 'confirm')
+    final ctrl = TextEditingController();
+    if (!ctx.mounted) return;
+    final sure2 = await showDialog<bool>(
+      context: ctx,
+      builder: (c) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Final Confirmation',
+            style: GoogleFonts.outfit(
+                color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Type "confirm" to permanently clear the menu.',
+                style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
+            const SizedBox(height: 12),
+            TextField(
+              controller: ctrl,
+              decoration: const InputDecoration(
+                hintText: 'confirm',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(c, false),
+              child: Text('Cancel',
+                  style: GoogleFonts.outfit(color: AppTheme.textSecondary))),
+          TextButton(
+              onPressed: () => Navigator.pop(c, ctrl.text.trim().toLowerCase() == 'confirm'),
+              child: Text('Clear Menu',
+                  style: GoogleFonts.outfit(
+                      color: AppTheme.error, fontWeight: FontWeight.bold))),
+        ],
+      ),
+    );
+
+    if (sure2 == true) {
+      final success = await p.clearAllMenuData();
+      if (!ctx.mounted) return;
+      if (success) {
+        ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+          content: Text('Menu completely cleared.', style: GoogleFonts.outfit()),
+          backgroundColor: AppTheme.success,
+        ));
+      } else {
+         ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+          content: Text(p.errorMessage ?? 'Failed to clear menu.', style: GoogleFonts.outfit()),
+          backgroundColor: AppTheme.error,
+        ));
+      }
+    }
   }
 }
 
@@ -1161,8 +1254,54 @@ class _MenuItemCard extends StatelessWidget {
                           fontSize: 15,
                           fontWeight: FontWeight.w800,
                           color: AppTheme.textPrimary)),
-                  const Icon(Icons.chevron_right_rounded,
-                      color: AppTheme.textMuted, size: 18),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline_rounded,
+                        color: AppTheme.error, size: 20),
+                    padding: const EdgeInsets.only(top: 8),
+                    constraints: const BoxConstraints(),
+                    onPressed: () async {
+                      final del = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: AppTheme.surface,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20)),
+                          title: Text('Delete Item',
+                              style: GoogleFonts.outfit(
+                                  color: AppTheme.textPrimary,
+                                  fontWeight: FontWeight.bold)),
+                          content: Text(
+                              'Remove "${item.itemName}" from your menu?\nThis also removes its AI embedding.',
+                              style: GoogleFonts.outfit(
+                                  color: AppTheme.textSecondary)),
+                          actions: [
+                            TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: Text('Cancel',
+                                    style: GoogleFonts.outfit(
+                                        color: AppTheme.textSecondary))),
+                            TextButton(
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: Text('Delete',
+                                    style: GoogleFonts.outfit(
+                                        color: AppTheme.error,
+                                        fontWeight: FontWeight.bold))),
+                          ],
+                        ),
+                      );
+                      if (del == true && context.mounted) {
+                        context.read<RetailerProvider>().deleteMenuItem(item.itemId);
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('"${item.itemName}" deleted',
+                              style: GoogleFonts.outfit()),
+                          backgroundColor: AppTheme.error,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ));
+                      }
+                    },
+                  ),
                 ],
               ),
             ],
