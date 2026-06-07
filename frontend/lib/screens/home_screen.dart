@@ -123,14 +123,16 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showPortalSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: AppTheme.background,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
+      builder: (ctx) => SingleChildScrollView(
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: const BoxDecoration(
+            color: AppTheme.background,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -335,6 +337,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 24),
           ],
         ),
+      ),
       ),
     );
   }
@@ -941,13 +944,13 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Row(
               children: [
-                Image.asset('assets/images/eatbot_logo.png', height: 24, width: 24),
+                Image.asset('assets/images/eatbot_logo.png', height: 42, width: 42),
                 const SizedBox(width: 12),
                 Text(
                   'eatbot',
                   style: GoogleFonts.outfit(
                     fontWeight: FontWeight.w800,
-                    fontSize: 16,
+                    fontSize: 22,
                     letterSpacing: -0.5,
                     color: AppTheme.textPrimary,
                   ),
