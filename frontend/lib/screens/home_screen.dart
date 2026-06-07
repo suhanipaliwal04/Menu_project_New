@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../providers/reviews_provider.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dots_indicator/dots_indicator.dart';
 import '../core/api_service.dart';
@@ -237,6 +238,45 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const Icon(Icons.chevron_right_rounded,
                         color: AppTheme.textMuted),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Rate the App
+            GestureDetector(
+              onTap: () {
+                Navigator.pop(ctx);
+                _showAppRatingDialog(context);
+              },
+              child: Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: AppTheme.surface,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppTheme.divider),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(Icons.star_rate_rounded, color: Colors.orange, size: 24),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Rate the App', style: GoogleFonts.outfit(fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
+                          Text('Give your feedback about the system', style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded, color: AppTheme.textMuted),
                   ],
                 ),
               ),
@@ -1094,7 +1134,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             const Icon(Icons.star_rounded,
                                 color: Color(0xFFE67E22), size: 16),
                             const SizedBox(width: 4),
-                            Text('4.8',
+                            Text(r.averageRating.toStringAsFixed(1),
                                 style: GoogleFonts.outfit(
                                     fontSize: 13,
                                     color: AppTheme.textPrimary,
@@ -1128,6 +1168,89 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
+
+  void _showAppRatingDialog(BuildContext context) {
+    double selectedRating = 5.0;
+    final textCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) {
+          return AlertDialog(
+            backgroundColor: AppTheme.surface,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: Text('Rate Menu Intelligence', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(5, (index) {
+                    return IconButton(
+                      icon: Icon(
+                        index < selectedRating ? Icons.star_rounded : Icons.star_outline_rounded,
+                        color: Colors.orange,
+                        size: 32,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          selectedRating = index + 1.0;
+                        });
+                      },
+                    );
+                  }),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: textCtrl,
+                  maxLines: 3,
+                  style: GoogleFonts.outfit(color: AppTheme.textPrimary),
+                  decoration: InputDecoration(
+                    hintText: 'What do you think about our app?',
+                    hintStyle: GoogleFonts.outfit(color: AppTheme.textMuted),
+                    filled: true,
+                    fillColor: AppTheme.background,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text('Cancel', style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                onPressed: () async {
+                  final provider = context.read<ReviewsProvider>();
+                  final success = await provider.submitAppReview(
+                    rating: selectedRating,
+                    reviewText: textCtrl.text.trim(),
+                    customerName: context.read<AuthProvider>().phone ?? 'Customer',
+                  );
+                  if (ctx.mounted) {
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(success ? 'Thank you for your feedback!' : 'Failed to submit review.', style: GoogleFonts.outfit()),
+                        backgroundColor: success ? AppTheme.success : AppTheme.error,
+                      ),
+                    );
+                  }
+                },
+                child: Text('Submit', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          );
+        }
+      ),
+    );
+  }
 
   Widget _buildPopularItems() {
     return Consumer2<BrowseProvider, FavoritesProvider>(

@@ -10,6 +10,7 @@ import 'admin_menu_items_screen.dart';
 import 'admin_approvals_screen.dart';
 import 'upload_screen.dart';
 import 'customer_login_screen.dart';
+import 'admin_app_feedback_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -249,6 +250,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   color: const Color(0xFFE74C3C),
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminApprovalsScreen())),
                   delay: 550,
+                ),
+                const SizedBox(height: 12),
+                _buildModuleCard(
+                  context: context,
+                  title: 'App Feedback',
+                  subtitle: 'View customer reviews about the system',
+                  icon: Icons.star_rate_rounded,
+                  color: Colors.orange,
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminAppFeedbackScreen())),
+                  delay: 600,
                 ),
                 const SizedBox(height: 24),
               ],

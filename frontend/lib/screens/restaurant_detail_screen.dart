@@ -305,13 +305,13 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                   children: [
                     Row(
                       children: [
-                        Text('4.5', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 16, color: AppTheme.accent)),
+                        Text(r.averageRating.toStringAsFixed(1), style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 16, color: AppTheme.accent)),
                         const SizedBox(width: 4),
                         const Icon(Icons.star_rounded, size: 18, color: AppTheme.accent),
                       ],
                     ),
                     const SizedBox(height: 2),
-                    Text('1k+ ratings', style: GoogleFonts.outfit(fontSize: 10, color: AppTheme.accent, fontWeight: FontWeight.bold)),
+                    Text('${r.totalReviews} ratings', style: GoogleFonts.outfit(fontSize: 10, color: AppTheme.accent, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),

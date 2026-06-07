@@ -79,7 +79,7 @@ def list_restaurants(
         else:
             open_restaurants.append(r)
             
-    return [_restaurant_with_area(r, r.area) for r in open_restaurants]
+    return [_restaurant_with_area(r, r.area, db) for r in open_restaurants]
 
 
 @router.get("/{restaurant_id}", response_model=RestaurantResponse)
@@ -92,7 +92,7 @@ def get_restaurant(restaurant_id: uuid.UUID, db: Session = Depends(get_db)):
     if not restaurant:
         raise HTTPException(status_code=404, detail="Restaurant not found")
     
-    return _restaurant_with_area(restaurant, restaurant.area)
+    return _restaurant_with_area(restaurant, restaurant.area, db)
 
 
 @router.get("/{restaurant_id}/menu")
@@ -180,7 +180,7 @@ def create_restaurant(
     db.refresh(db_restaurant)
 
     # Attach area info for the response
-    return _restaurant_with_area(db_restaurant, area)
+    return _restaurant_with_area(db_restaurant, area, db)
 
 
 @router.put("/{restaurant_id}", response_model=RestaurantResponse)
@@ -222,7 +222,7 @@ def update_restaurant(
 
     db.commit()
     db.refresh(restaurant)
-    return _restaurant_with_area(restaurant, restaurant.area)
+    return _restaurant_with_area(restaurant, restaurant.area, db)
 
 
 @router.delete("/{restaurant_id}")
@@ -258,8 +258,23 @@ def delete_restaurant(
 
 # ── Helper ──────────────────────────────────────────────────────────────────
 
-def _restaurant_with_area(restaurant: Restaurant, area) -> dict:
+def _restaurant_with_area(restaurant: Restaurant, area, db: Session = None) -> dict:
     """Build a RestaurantResponse-compatible dict with joined area info."""
+    average_rating = 4.8
+    total_reviews = 0
+    
+    if db:
+        from app.models.review import RestaurantReview
+        from sqlalchemy import func
+        result = db.query(
+            func.avg(RestaurantReview.rating),
+            func.count(RestaurantReview.review_id)
+        ).filter(RestaurantReview.restaurant_id == restaurant.restaurant_id).first()
+        
+        if result and result[1] > 0:
+            average_rating = round(float(result[0]), 1)
+            total_reviews = result[1]
+
     return {
         "restaurant_id": restaurant.restaurant_id,
         "restaurant_name": restaurant.restaurant_name,
@@ -276,7 +291,8 @@ def _restaurant_with_area(restaurant: Restaurant, area) -> dict:
         "opening_time": getattr(restaurant, "opening_time", None),
         "closing_time": getattr(restaurant, "closing_time", None),
         "area_name": area.area_name if area else None,
-
+        "average_rating": average_rating,
+        "total_reviews": total_reviews,
         "city": area.city if area else None,
         "created_at": restaurant.created_at,
         "updated_at": restaurant.updated_at,

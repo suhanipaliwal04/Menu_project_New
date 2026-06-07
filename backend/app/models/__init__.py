@@ -8,6 +8,7 @@ from app.models.embedding import MenuEmbedding
 from app.models.upload import MenuUpload
 from app.models.booking import Booking
 from app.models.user import User
+from app.models.review import RestaurantReview, AppReview
 
 __all__ = [
     "Area",
@@ -17,5 +18,7 @@ __all__ = [
     "MenuEmbedding",
     "MenuUpload",
     "Booking",
-    "User"
+    "User",
+    "RestaurantReview",
+    "AppReview"
 ]

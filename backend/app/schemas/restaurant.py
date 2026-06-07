@@ -50,6 +50,8 @@ class RestaurantResponse(RestaurantBase):
     is_open_manually: bool = True
     opening_time: Optional[time] = None
     closing_time: Optional[time] = None
+    average_rating: float = 4.8
+    total_reviews: int = 0
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

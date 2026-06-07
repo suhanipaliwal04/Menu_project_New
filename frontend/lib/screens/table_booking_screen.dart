@@ -340,41 +340,77 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
           const SizedBox(height: 28),
 
           _sectionLabel('Customer Details'),
-          _inputFieldBox(
-            hasError: _nameError != null,
-            child: TextField(
-              controller: _nameCtrl,
-              style: GoogleFonts.outfit(fontSize: 16, color: AppTheme.textPrimary),
-              decoration: InputDecoration(
-                hintText: 'Full Name',
-                hintStyle: GoogleFonts.outfit(color: AppTheme.textMuted),
-                errorText: _nameError,
-                border: InputBorder.none,
-                prefixIcon: const Icon(Icons.person_rounded, color: AppTheme.primary, size: 20),
-                isDense: true,
+          TextField(
+            controller: _nameCtrl,
+            style: GoogleFonts.outfit(fontSize: 16, color: AppTheme.textPrimary),
+            decoration: InputDecoration(
+              hintText: 'Full Name',
+              hintStyle: GoogleFonts.outfit(color: AppTheme.textMuted),
+              errorText: _nameError,
+              prefixIcon: const Icon(Icons.person_rounded, color: AppTheme.primary, size: 20),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: AppTheme.divider),
               ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: AppTheme.divider),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: AppTheme.primary),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: AppTheme.error, width: 1.5),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: AppTheme.error, width: 1.5),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              filled: true,
+              fillColor: AppTheme.surface,
             ),
           ),
           const SizedBox(height: 12),
-          _inputFieldBox(
-            hasError: _phoneError != null,
-            child: TextField(
-              controller: _phoneCtrl,
-              keyboardType: TextInputType.phone,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(10),
-              ],
-              style: GoogleFonts.outfit(fontSize: 16, color: AppTheme.textPrimary),
-              decoration: InputDecoration(
-                hintText: 'Phone Number',
-                hintStyle: GoogleFonts.outfit(color: AppTheme.textMuted),
-                errorText: _phoneError,
-                prefixText: '+91 ',
-                border: InputBorder.none,
-                prefixIcon: const Icon(Icons.phone_rounded, color: AppTheme.primary, size: 20),
-                isDense: true,
+          TextField(
+            controller: _phoneCtrl,
+            keyboardType: TextInputType.phone,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(10),
+            ],
+            style: GoogleFonts.outfit(fontSize: 16, color: AppTheme.textPrimary),
+            decoration: InputDecoration(
+              hintText: 'Phone Number',
+              hintStyle: GoogleFonts.outfit(color: AppTheme.textMuted),
+              errorText: _phoneError,
+              prefixText: '+91 ',
+              prefixIcon: const Icon(Icons.phone_rounded, color: AppTheme.primary, size: 20),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: AppTheme.divider),
               ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: AppTheme.divider),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: AppTheme.primary),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: AppTheme.error, width: 1.5),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: AppTheme.error, width: 1.5),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              filled: true,
+              fillColor: AppTheme.surface,
             ),
           ),
           const SizedBox(height: 20),

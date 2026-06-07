@@ -12,6 +12,7 @@ import '../models/area_model.dart';
 import '../models/restaurant_model.dart';
 import '../core/api_service.dart';
 import 'customer_login_screen.dart';
+import '../providers/reviews_provider.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN SCREEN
@@ -37,6 +38,7 @@ class _RetailerDashboardScreenState extends State<RetailerDashboardScreen>
     (icon: Icons.history_rounded, label: 'History'),
     (icon: Icons.book_online_rounded, label: 'Bookings'),
     (icon: Icons.shopping_bag_rounded, label: 'Takeaway'),
+    (icon: Icons.star_rounded, label: 'Reviews'),
   ];
 
   @override
@@ -119,6 +121,7 @@ class _RetailerDashboardScreenState extends State<RetailerDashboardScreen>
             _HistoryTab(),
             _BookingsTab(),
             _TakeawayTab(),
+            _ReviewsTab(),
           ],
         ),
       ),
@@ -3382,6 +3385,95 @@ class _TakeawayTabState extends State<_TakeawayTab> {
         ),
             ),
           ],
+        );
+      },
+    );
+  }
+}
+
+class _ReviewsTab extends StatefulWidget {
+  const _ReviewsTab();
+
+  @override
+  State<_ReviewsTab> createState() => _ReviewsTabState();
+}
+
+class _ReviewsTabState extends State<_ReviewsTab> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final p = context.read<RetailerProvider>();
+      if (p.myRestaurant != null) {
+        context.read<ReviewsProvider>().fetchRestaurantReviews(p.myRestaurant!.restaurantId);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ReviewsProvider>(
+      builder: (context, provider, _) {
+        if (provider.isLoading) {
+          return const Center(child: CircularProgressIndicator(color: AppTheme.primary));
+        }
+
+        final reviews = provider.restaurantReviews;
+
+        if (reviews.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.star_outline_rounded, size: 64, color: AppTheme.textMuted),
+                const SizedBox(height: 16),
+                Text('No Reviews Yet', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
+                const SizedBox(height: 8),
+                Text('Customer reviews will appear here.', style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary)),
+              ],
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(20),
+          itemCount: reviews.length,
+          itemBuilder: (context, index) {
+            final review = reviews[index];
+            return Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.divider),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(review.customerName ?? 'Customer', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.textPrimary)),
+                      Row(
+                        children: [
+                          const Icon(Icons.star_rounded, color: Colors.orange, size: 16),
+                          const SizedBox(width: 4),
+                          Text(review.rating.toStringAsFixed(1), style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(review.createdAt.toIso8601String().split('T').first, style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textMuted)),
+                  if (review.reviewText != null && review.reviewText!.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text(review.reviewText!, style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
+                  ],
+                ],
+              ),
+            );
+          },
         );
       },
     );

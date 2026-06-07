@@ -93,6 +93,8 @@ class RestaurantMenuInfo {
   final String? priceCategory;
   final bool hasDineIn;
   final bool hasTakeaway;
+  final double averageRating;
+  final int totalReviews;
 
   const RestaurantMenuInfo({
     required this.restaurantId,
@@ -101,6 +103,8 @@ class RestaurantMenuInfo {
     this.priceCategory,
     this.hasDineIn = true,
     this.hasTakeaway = true,
+    this.averageRating = 4.8,
+    this.totalReviews = 0,
   });
 
   factory RestaurantMenuInfo.fromJson(Map<String, dynamic> json) =>
@@ -113,5 +117,7 @@ class RestaurantMenuInfo {
         priceCategory: json['price_category'],
         hasDineIn: json['has_dine_in'] ?? true,
         hasTakeaway: json['has_takeaway'] ?? true,
+        averageRating: (json['average_rating'] as num?)?.toDouble() ?? 4.8,
+        totalReviews: (json['total_reviews'] as num?)?.toInt() ?? 0,
       );
 }

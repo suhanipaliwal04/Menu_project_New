@@ -12,6 +12,8 @@ class RestaurantModel {
   final bool isOpenManually;
   final String? openingTime;
   final String? closingTime;
+  final double averageRating;
+  final int totalReviews;
 
   const RestaurantModel({
     required this.restaurantId,
@@ -27,6 +29,8 @@ class RestaurantModel {
     this.isOpenManually = true,
     this.openingTime,
     this.closingTime,
+    this.averageRating = 4.8,
+    this.totalReviews = 0,
   });
 
   factory RestaurantModel.fromJson(Map<String, dynamic> json) =>
@@ -46,6 +50,8 @@ class RestaurantModel {
         isOpenManually: json['is_open_manually'] ?? true,
         openingTime: json['opening_time'],
         closingTime: json['closing_time'],
+        averageRating: (json['average_rating'] as num?)?.toDouble() ?? 4.8,
+        totalReviews: (json['total_reviews'] as num?)?.toInt() ?? 0,
       );
 
   String get cuisineDisplay =>

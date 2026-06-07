@@ -214,7 +214,7 @@ class CategoryResultsScreen extends StatelessWidget {
                         const Icon(Icons.star_rounded,
                             color: Color(0xFFE67E22), size: 16),
                         const SizedBox(width: 4),
-                        Text('4.8',
+                        Text(r.averageRating.toStringAsFixed(1),
                             style: GoogleFonts.outfit(
                                 fontSize: 13,
                                 color: AppTheme.textPrimary,
