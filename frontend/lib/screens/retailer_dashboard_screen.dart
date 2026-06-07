@@ -53,6 +53,7 @@ class _RetailerDashboardScreenState extends State<RetailerDashboardScreen>
         p.fetchMenuItems();
         p.fetchSections();
         p.fetchTakeawayOrders();
+        p.fetchBookings();
       }
     });
   }
@@ -260,13 +261,13 @@ class _RetailerDashboardScreenState extends State<RetailerDashboardScreen>
                         Icon(t.icon, size: 15),
                         const SizedBox(width: 5),
                         Text(t.label),
-                        if (t.label == 'Bookings' && (p.dashboardStats?.pendingBookings ?? 0) > 0) ...[
+                        if (t.label == 'Bookings' && p.bookings.where((b) => b.status == 'PENDING').isNotEmpty) ...[
                           const SizedBox(width: 6),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(color: AppTheme.error, borderRadius: BorderRadius.circular(10)),
                             child: Text(
-                              '${p.dashboardStats!.pendingBookings}',
+                              '${p.bookings.where((b) => b.status == 'PENDING').length}',
                               style: GoogleFonts.outfit(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                             ),
                           ),
