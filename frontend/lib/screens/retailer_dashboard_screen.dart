@@ -1743,11 +1743,13 @@ class _UploadTabState extends State<_UploadTab> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        margin: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-            color: AppTheme.surface,
-            borderRadius: BorderRadius.circular(24)),
+      builder: (ctx) => Material(
+        color: Colors.transparent,
+        child: Container(
+          margin: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+              color: AppTheme.surface,
+              borderRadius: BorderRadius.circular(24)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1805,6 +1807,7 @@ class _UploadTabState extends State<_UploadTab> {
             const SizedBox(height: 20),
           ],
         ),
+      ),
       ),
     );
   }

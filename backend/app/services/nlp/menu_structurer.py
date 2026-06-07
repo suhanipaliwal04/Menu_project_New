@@ -289,6 +289,11 @@ Rules:
                 }
                 
                 raw_enriched = json.loads(content)
+                
+                # ENFORCE EXACT LENGTH MATCH
+                if len(raw_enriched) != len(chunk):
+                    raise ValueError(f"LLM returned {len(raw_enriched)} items, expected {len(chunk)}")
+                    
                 enriched_chunk = [
                     {_KEY_MAP.get(k.lower(), k): v for k, v in obj.items()}
                     for obj in raw_enriched
