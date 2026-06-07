@@ -516,9 +516,6 @@ class _CartScreenState extends State<CartScreen> {
           const SizedBox(height: 8),
           Text('Order ID: ${cart.lastOrderId}',
               style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontSize: 14)),
-          const SizedBox(height: 8),
-          Text(cart.paymentMethod.label,
-              style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.w700)),
           const SizedBox(height: 32),
           ElevatedButton(
             onPressed: () {

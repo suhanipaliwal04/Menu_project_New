@@ -134,12 +134,6 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
       _phoneError = null;
     });
 
-    if (_selectedTime.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a time slot'), backgroundColor: AppTheme.error),
-      );
-      return;
-    }
     final nameText = _nameCtrl.text.trim();
     final phoneText = _phoneCtrl.text.trim();
     
@@ -158,7 +152,12 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
       hasError = true;
     }
 
-    if (hasError) {
+    if (hasError || _selectedTime.isEmpty) {
+      if (_selectedTime.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select a time slot'), backgroundColor: AppTheme.error),
+        );
+      }
       return;
     }
 
