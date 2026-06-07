@@ -3435,45 +3435,72 @@ class _ReviewsTabState extends State<_ReviewsTab> {
           );
         }
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(20),
-          itemCount: reviews.length,
-          itemBuilder: (context, index) {
-            final review = reviews[index];
-            return Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppTheme.surface,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.divider),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(review.customerName ?? 'Customer', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.textPrimary)),
-                      Row(
-                        children: [
-                          const Icon(Icons.star_rounded, color: Colors.orange, size: 16),
-                          const SizedBox(width: 4),
-                          Text(review.rating.toStringAsFixed(1), style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
-                        ],
-                      ),
-                    ],
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 20, top: 16),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: () async {
+                    final p = context.read<RetailerProvider>();
+                    if (p.myRestaurant != null) {
+                      await provider.clearRestaurantReviews(p.myRestaurant!.restaurantId);
+                    }
+                  },
+                  icon: const Icon(Icons.delete_sweep_rounded, color: AppTheme.error, size: 18),
+                  label: Text('Clear All', style: GoogleFonts.outfit(color: AppTheme.error, fontWeight: FontWeight.bold)),
+                  style: TextButton.styleFrom(
+                    backgroundColor: AppTheme.error.withValues(alpha: 0.1),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  const SizedBox(height: 8),
-                  Text(review.createdAt.toIso8601String().split('T').first, style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textMuted)),
-                  if (review.reviewText != null && review.reviewText!.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    Text(review.reviewText!, style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
-                  ],
-                ],
+                ),
               ),
-            );
-          },
+            ),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(20),
+                itemCount: reviews.length,
+                itemBuilder: (context, index) {
+                  final review = reviews[index];
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppTheme.divider),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(review.customerName ?? 'Customer', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.textPrimary)),
+                            Row(
+                              children: [
+                                const Icon(Icons.star_rounded, color: Colors.orange, size: 16),
+                                const SizedBox(width: 4),
+                                Text(review.rating.toStringAsFixed(1), style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(review.createdAt.toIso8601String().split('T').first, style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textMuted)),
+                        if (review.reviewText != null && review.reviewText!.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Text(review.reviewText!, style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
+                        ],
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         );
       },
     );

@@ -81,6 +81,7 @@ class ApiService {
   Future<dynamic> get(String path, {Map<String, String?>? params, bool auth = false}) => _get(path, params: params, auth: auth);
   Future<dynamic> post(String path, Map<String, dynamic> body, {bool auth = false}) => _post(path, body, auth: auth);
   Future<dynamic> put(String path, Map<String, dynamic> body) => _put(path, body);
+  Future<void> deleteReq(String path) => _deleteReq(path);
 
 
   dynamic _handle(http.Response res) {

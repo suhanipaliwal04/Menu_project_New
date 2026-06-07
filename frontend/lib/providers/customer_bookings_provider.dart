@@ -26,7 +26,7 @@ class CustomerBookingsProvider extends ChangeNotifier {
 
   void startPolling() {
     _pollTimer?.cancel();
-    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+    _pollTimer = Timer.periodic(const Duration(seconds: 2), (_) {
       loadBookings(isPolling: true);
     });
   }

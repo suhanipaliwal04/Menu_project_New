@@ -28,6 +28,13 @@ class MyBookingsScreen extends StatelessWidget {
         title: Text('My Bookings', style: GoogleFonts.outfit(color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
         actions: [
           IconButton(
+            icon: const Icon(Icons.star_rate_rounded, color: Colors.orange),
+            tooltip: 'Rate the App',
+            onPressed: () {
+              _showAppRatingDialog(context);
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.delete_sweep_rounded, color: AppTheme.error),
             tooltip: 'Clear All Bookings',
             onPressed: () {
@@ -313,6 +320,89 @@ class MyBookingsScreen extends StatelessWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(success ? 'Review submitted successfully!' : 'Failed to submit review.', style: GoogleFonts.outfit()),
+                        backgroundColor: success ? AppTheme.success : AppTheme.error,
+                      ),
+                    );
+                  }
+                },
+                child: Text('Submit', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          );
+        }
+      ),
+    );
+  }
+
+  void _showAppRatingDialog(BuildContext context) {
+    double selectedRating = 0.0;
+    final textCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) {
+          return AlertDialog(
+            backgroundColor: AppTheme.surface,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: Text('Rate Menu Intelligence', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(5, (index) {
+                    return IconButton(
+                      icon: Icon(
+                        index < selectedRating ? Icons.star_rounded : Icons.star_outline_rounded,
+                        color: Colors.orange,
+                        size: 32,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          selectedRating = index + 1.0;
+                        });
+                      },
+                    );
+                  }),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: textCtrl,
+                  maxLines: 3,
+                  style: GoogleFonts.outfit(color: AppTheme.textPrimary),
+                  decoration: InputDecoration(
+                    hintText: 'What do you think about our app?',
+                    hintStyle: GoogleFonts.outfit(color: AppTheme.textMuted),
+                    filled: true,
+                    fillColor: AppTheme.background,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text('Cancel', style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                onPressed: () async {
+                  final provider = context.read<ReviewsProvider>();
+                  final success = await provider.submitAppReview(
+                    rating: selectedRating,
+                    reviewText: textCtrl.text.trim(),
+                    customerName: 'Customer',
+                  );
+                  if (ctx.mounted) {
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(success ? 'Thank you for your feedback!' : 'Failed to submit review.', style: GoogleFonts.outfit()),
                         backgroundColor: success ? AppTheme.success : AppTheme.error,
                       ),
                     );

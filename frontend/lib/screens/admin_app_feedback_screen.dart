@@ -32,6 +32,16 @@ class _AdminAppFeedbackScreenState extends State<AdminAppFeedbackScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text('App Feedback', style: GoogleFonts.outfit(color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_sweep_rounded, color: AppTheme.error),
+            tooltip: 'Clear All Reviews',
+            onPressed: () async {
+              await context.read<ReviewsProvider>().clearAppReviews();
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Consumer<ReviewsProvider>(
         builder: (context, provider, _) {

@@ -86,8 +86,8 @@ class RetailerProvider extends ChangeNotifier {
 
   void _startPolling() {
     _pollTimer?.cancel();
-    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (_myRestaurant?.restaurantId != null) {
+    _pollTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      if (_myRestaurant != null && _isLoggedIn) {
         fetchBookings();
         fetchTakeawayOrders();
         fetchDashboard();

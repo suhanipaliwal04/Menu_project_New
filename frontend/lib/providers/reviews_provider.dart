@@ -111,4 +111,26 @@ class ReviewsProvider extends ChangeNotifier {
       return false;
     }
   }
+
+  Future<bool> clearRestaurantReviews(String restaurantId) async {
+    try {
+      await _api.deleteReq('/reviews/restaurant/$restaurantId');
+      await fetchRestaurantReviews(restaurantId);
+      return true;
+    } catch (e) {
+      debugPrint('Error clearing restaurant reviews: $e');
+      return false;
+    }
+  }
+
+  Future<bool> clearAppReviews() async {
+    try {
+      await _api.deleteReq('/reviews/app');
+      await fetchAppReviews();
+      return true;
+    } catch (e) {
+      debugPrint('Error clearing app reviews: $e');
+      return false;
+    }
+  }
 }
