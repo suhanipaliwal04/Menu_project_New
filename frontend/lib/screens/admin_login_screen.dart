@@ -90,7 +90,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
               Center(
                 child: Image.asset(
                   'assets/images/admin_logo.png',
-                  height: 240,
+                  height: 280,
                   fit: BoxFit.contain,
                 ),
               ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack),

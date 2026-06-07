@@ -626,46 +626,53 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                GestureDetector(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const MyBookingsScreen()),
-                  ),
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      const CircleAvatar(
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    GestureDetector(
+                      onTap: () => _showAppRatingDialog(context),
+                      child: const CircleAvatar(
                         backgroundColor: AppTheme.surfaceAlt,
-                        child: Icon(Icons.bookmarks_rounded, color: AppTheme.primary),
+                        child: Icon(Icons.rate_review_rounded, color: AppTheme.primary),
                       ),
-                      Consumer<CustomerBookingsProvider>(
-                        builder: (context, provider, _) {
-                          if (provider.pendingCount > 0) {
-                            return Positioned(
-                              right: -2,
-                              top: -2,
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: const BoxDecoration(
-                                  color: AppTheme.error,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Text(
-                                  '${provider.pendingCount}',
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const MyBookingsScreen()),
+                      ),
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          const CircleAvatar(
+                            backgroundColor: AppTheme.surfaceAlt,
+                            child: Icon(Icons.bookmarks_rounded, color: AppTheme.primary),
+                          ),
+                          Consumer<CustomerBookingsProvider>(
+                            builder: (context, provider, _) {
+                              if (provider.pendingCount == 0) return const SizedBox.shrink();
+                              return Positioned(
+                                right: -4,
+                                top: -4,
+                                child: Container(
+                                  padding: const EdgeInsets.all(5),
+                                  decoration: const BoxDecoration(
+                                    color: AppTheme.error,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    '${provider.pendingCount}',
+                                    style: GoogleFonts.outfit(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                                   ),
                                 ),
-                              ),
-                            );
-                          }
-                          return const SizedBox.shrink();
-                        },
+                              );
+                            },
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
                 const SizedBox(width: 12),
                 GestureDetector(
@@ -934,11 +941,10 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Row(
               children: [
-                const Icon(Icons.psychology_outlined,
-                    color: AppTheme.primary, size: 24),
+                Image.asset('assets/images/eatbot_logo.png', height: 24, width: 24),
                 const SizedBox(width: 12),
                 Text(
-                  'AI Menu Intelligence',
+                  'eatbot',
                   style: GoogleFonts.outfit(
                     fontWeight: FontWeight.w800,
                     fontSize: 16,

@@ -59,7 +59,7 @@ class MenuIntelligenceApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'Menu Intelligence',
+        title: 'eatbot',
         theme: AppTheme.darkTheme,
         debugShowCheckedModeBanner: false,
         builder: (context, child) {
