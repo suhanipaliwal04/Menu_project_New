@@ -1,6 +1,6 @@
 {
-    "name": "menu_intelligence",
-    "short_name": "menu_intelligence",
+    "name": "eatbot",
+    "short_name": "eatbot",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
