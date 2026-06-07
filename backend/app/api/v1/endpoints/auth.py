@@ -114,6 +114,8 @@ async def register(
             db.commit()
         except Exception as e:
             db.rollback()
+            if "ix_users_email" in str(e) or "unique constraint" in str(e).lower():
+                raise HTTPException(status_code=400, detail="This email is already registered. Please login instead or use a different email.")
             raise HTTPException(status_code=500, detail=f"Failed to create local user record: {e}")
 
     return {
