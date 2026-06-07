@@ -321,7 +321,7 @@ class VoiceAgentProvider extends ChangeNotifier {
         // Also check if time was provided in same utterance
         final time = parsed.params['time'] as String? ??
             _actionHandler.extractTime(query);
-        if (time != null && time.isNotEmpty) {
+        if (time.isNotEmpty) {
           _pendingTime = time;
           _pendingAction = VoiceAction(
             type:   VoiceActionType.bookTable,

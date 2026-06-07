@@ -50,9 +50,9 @@ class SkeletonCard extends StatelessWidget {
           ),
           Container(
             height: 38,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppTheme.surfaceAlt,
-              borderRadius: const BorderRadius.vertical(
+              borderRadius: BorderRadius.vertical(
                   bottom: Radius.circular(24)),
             ),
           ),

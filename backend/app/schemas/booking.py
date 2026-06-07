@@ -22,6 +22,7 @@ class BookingResponse(BookingBase):
     status: str
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    restaurant_name: Optional[str] = None
 
     class Config:
         from_attributes = True

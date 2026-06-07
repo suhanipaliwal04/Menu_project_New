@@ -26,18 +26,34 @@ from sqlalchemy.orm import Session
 
 from app.core.database import SessionLocal
 from app.models.booking import Booking
+from app.models.restaurant import Restaurant
+from datetime import timedelta
 
 logger = logging.getLogger(__name__)
 
-# ── All possible time slots ────────────────────────────────────────────────────
-ALL_SLOTS = [
-    "6:00 PM", "7:00 PM", "8:00 PM", "9:00 PM",
-    "10:00 PM", "11:00 PM",
-]
+# ── Dynamic slot generation ──────────────────────────────────────────────────
+
+def _get_restaurant_slots(restaurant_id: str, db: Session) -> List[str]:
+    restaurant = db.query(Restaurant).filter(Restaurant.restaurant_id == restaurant_id).first()
+    if not restaurant or not restaurant.opening_time or not restaurant.closing_time:
+        return ["6:00 PM", "7:00 PM", "8:00 PM", "9:00 PM", "10:00 PM", "11:00 PM"]
+    
+    slots = []
+    current = datetime.combine(datetime.today(), restaurant.opening_time)
+    closing = datetime.combine(datetime.today(), restaurant.closing_time)
+    
+    if closing < current:
+        closing += timedelta(days=1)
+        
+    while current <= closing:
+        slots.append(current.strftime("%I:%M %p").lstrip('0'))
+        current += timedelta(minutes=60)  # Generate 1-hour interval slots
+        
+    return slots
 
 # ── Slot normalization ─────────────────────────────────────────────────────────
 
-def _normalize_slot(slot: str) -> Optional[str]:
+def _normalize_slot(slot: str, valid_slots: List[str]) -> Optional[str]:
     """
     Normalize user-provided time strings to our standard slot format.
     Handles: "7pm", "7:00pm", "7:00 PM", "7 pm", "19:00" etc.
@@ -72,19 +88,19 @@ def _normalize_slot(slot: str) -> Optional[str]:
             minute = 0
             hour += 1
         candidate = f"{hour}:{minute:02d} {period}"
-        if candidate in ALL_SLOTS:
+        if candidate in valid_slots:
             return candidate
         direct = f"{int(m.group(1))}:{int(m.group(2) or 0):02d} {m.group(3)}"
-        if direct in ALL_SLOTS:
+        if direct in valid_slots:
             return direct
     return None
 
-def _find_slot(raw_time: str) -> Optional[str]:
-    normalized = _normalize_slot(raw_time)
-    if normalized and normalized in ALL_SLOTS:
+def _find_slot(raw_time: str, valid_slots: List[str]) -> Optional[str]:
+    normalized = _normalize_slot(raw_time, valid_slots)
+    if normalized and normalized in valid_slots:
         return normalized
     raw_upper = raw_time.strip().upper()
-    for s in ALL_SLOTS:
+    for s in valid_slots:
         if s.replace(" ", "") == raw_upper.replace(" ", ""):
             return s
     return None
@@ -103,22 +119,23 @@ class DineBookingService:
         Since capacity checks are removed and moved to the admin dashboard,
         we just validate the time slot and accept the booking request.
         """
-        matched_slot = _find_slot(time_slot)
-
-        if matched_slot is None:
-            # Slot is out of operating hours or unrecognized
-            logger.info(f"DineBooking: time '{time_slot}' not recognized.")
-            return {
-                "available": False,
-                "confirmed_slot": None,
-                "reason": "time_unavailable",
-                "alternative_slots": ["7:00 PM", "8:00 PM", "9:00 PM"],
-                "nearby_restaurants": [],
-            }
-
-        date_str = datetime.utcnow().strftime("%d %b %Y")
         db: Session = SessionLocal()
         try:
+            valid_slots = _get_restaurant_slots(restaurant_id, db)
+            matched_slot = _find_slot(time_slot, valid_slots)
+    
+            if matched_slot is None:
+                # Slot is out of operating hours or unrecognized
+                logger.info(f"DineBooking: time '{time_slot}' not recognized.")
+                return {
+                    "available": False,
+                    "confirmed_slot": None,
+                    "reason": "time_unavailable",
+                    "alternative_slots": valid_slots[:3] if valid_slots else ["7:00 PM", "8:00 PM", "9:00 PM"],
+                    "nearby_restaurants": [],
+                }
+    
+            date_str = datetime.utcnow().strftime("%d %b %Y")
             bookings = db.query(Booking).filter(
                 Booking.restaurant_id == restaurant_id,
                 Booking.booking_date == date_str,
@@ -132,7 +149,7 @@ class DineBookingService:
                     "available": False,
                     "confirmed_slot": None,
                     "reason": "time_unavailable",
-                    "alternative_slots": [s for s in ALL_SLOTS if s != matched_slot][:3],
+                    "alternative_slots": [s for s in valid_slots if s != matched_slot][:3],
                     "nearby_restaurants": [],
                 }
         finally:
@@ -160,11 +177,11 @@ class DineBookingService:
         """
         Confirm a table booking by inserting it into the database with PENDING status.
         """
-        matched_slot = _find_slot(time_slot) or time_slot
-        date_str = date_str or datetime.utcnow().strftime("%d %b %Y")
-        
         db: Session = SessionLocal()
         try:
+            valid_slots = _get_restaurant_slots(restaurant_id, db)
+            matched_slot = _find_slot(time_slot, valid_slots) or time_slot
+            date_str = date_str or datetime.utcnow().strftime("%d %b %Y")
             new_booking = Booking(
                 restaurant_id=restaurant_id,
                 party_size=party_size,
@@ -207,6 +224,7 @@ class DineBookingService:
         """
         db: Session = SessionLocal()
         try:
+            valid_slots = _get_restaurant_slots(restaurant_id, db)
             bookings = db.query(Booking).filter(
                 Booking.restaurant_id == restaurant_id,
                 Booking.booking_date == date_str,
@@ -214,13 +232,13 @@ class DineBookingService:
             ).all()
 
             # Group party size by slot
-            slot_capacity = {s: 0 for s in ALL_SLOTS}
+            slot_capacity = {s: 0 for s in valid_slots}
             for b in bookings:
                 if b.time_slot in slot_capacity:
                     slot_capacity[b.time_slot] += b.party_size
 
             result = []
-            for s in ALL_SLOTS:
+            for s in valid_slots:
                 available = slot_capacity[s] < 10
                 result.append({
                     "time_slot": s,

@@ -97,7 +97,7 @@ class CategoryResultsScreen extends StatelessWidget {
                 },
                 backgroundColor: AppTheme.primary,
                 elevation: 4,
-                icon: const Icon(Icons.event_seat_rounded, color: Colors.white),
+                icon: const Icon(Icons.table_restaurant_rounded, color: Colors.white),
                 label: Text('Book a Table', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
               ),
             ],

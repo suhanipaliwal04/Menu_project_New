@@ -1,3 +1,4 @@
+// ignore_for_file: curly_braces_in_flow_control_structures, unused_element
 /// Represents an in-app action that the Voice AI agent wants to perform.
 class VoiceAction {
   final VoiceActionType type;
@@ -29,8 +30,9 @@ class VoiceAction {
 
     if (type == VoiceActionType.scheduleTakeaway) {
       final m = <String>[];
-      if (params['item'] == null || (params['item'] as String).isEmpty) m.add('item');
-      else if (params['time'] == null || (params['time'] as String).isEmpty) m.add('time');
+      if (params['item'] == null || (params['item'] as String).isEmpty) {
+        m.add('item');
+      } else if (params['time'] == null || (params['time'] as String).isEmpty) m.add('time');
       else if (params['time_unavailable'] == true) m.add('alternative_time_confirm');
       else if (params['confirm'] != true) m.add('confirm');
       return m;
@@ -38,8 +40,9 @@ class VoiceAction {
 
     if (type == VoiceActionType.placeOrder) {
       final m = <String>[];
-      if (params['item'] == null || (params['item'] as String).isEmpty) m.add('item');
-      else if (params['confirm'] != true) m.add('confirm');
+      if (params['item'] == null || (params['item'] as String).isEmpty) {
+        m.add('item');
+      } else if (params['confirm'] != true) m.add('confirm');
       return m;
     }
 

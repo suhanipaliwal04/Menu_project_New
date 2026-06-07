@@ -7,7 +7,6 @@ import '../providers/browse_provider.dart';
 import '../models/menu_model.dart';
 import '../widgets/health_badge.dart';
 import '../widgets/veg_indicator.dart';
-import '../core/api_service.dart';
 import '../widgets/voice_fab.dart';
 import '../providers/cart_provider.dart';
 import 'table_booking_screen.dart';
@@ -117,7 +116,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                       heroTag: 'book_table_${widget.restaurantId}',
                       onPressed: () => _showBookingModal(context, restaurant),
                       backgroundColor: AppTheme.primary,
-                      icon: const Icon(Icons.event_seat_rounded, color: Colors.white),
+                      icon: const Icon(Icons.table_restaurant_rounded, color: Colors.white),
                       label: Text('Book a Table', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
                     ),
                 ],
@@ -270,7 +269,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
           ),
         ),
       ),
-      actions: [],
+      actions: const [],
     );
   }
 

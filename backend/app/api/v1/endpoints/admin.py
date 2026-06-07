@@ -81,10 +81,12 @@ def get_dashboard(
         MenuUpload.restaurant_id == restaurant_id
     ).scalar() or 0
 
+    from sqlalchemy import case
+    
     # Count bookings
     booking_stats = db.query(
         sql_func.count(Booking.booking_id),
-        sql_func.count(Booking.booking_id).filter(Booking.status == "PENDING"),
+        sql_func.sum(case((Booking.status == "PENDING", 1), else_=0)),
     ).filter(
         Booking.restaurant_id == restaurant_id
     ).first()

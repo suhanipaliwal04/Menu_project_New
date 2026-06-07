@@ -1,3 +1,4 @@
+// ignore_for_file: unused_element
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -194,15 +195,15 @@ class _CartScreenState extends State<CartScreen> {
               labelStyle: GoogleFonts.outfit(color: AppTheme.textSecondary),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppTheme.divider),
+                borderSide: const BorderSide(color: AppTheme.divider),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppTheme.divider),
+                borderSide: const BorderSide(color: AppTheme.divider),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppTheme.primary),
+                borderSide: const BorderSide(color: AppTheme.primary),
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -226,15 +227,15 @@ class _CartScreenState extends State<CartScreen> {
               labelStyle: GoogleFonts.outfit(color: AppTheme.textSecondary),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppTheme.divider),
+                borderSide: const BorderSide(color: AppTheme.divider),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppTheme.divider),
+                borderSide: const BorderSide(color: AppTheme.divider),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppTheme.primary),
+                borderSide: const BorderSide(color: AppTheme.primary),
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -391,9 +392,9 @@ class _CartScreenState extends State<CartScreen> {
   Widget _buildCheckoutBar(BuildContext context, CartProvider cart) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppTheme.surface,
-        border: const Border(top: BorderSide(color: AppTheme.divider)),
+        border: Border(top: BorderSide(color: AppTheme.divider)),
       ),
       child: SizedBox(
         width: double.infinity,

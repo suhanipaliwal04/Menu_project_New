@@ -1,4 +1,5 @@
 /// Data models for the Admin Dashboard — corresponds to backend admin schemas.
+library;
 
 class DashboardStats {
   final String restaurantId;

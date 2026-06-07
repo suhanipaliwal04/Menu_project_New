@@ -1,6 +1,6 @@
+// ignore_for_file: deprecated_member_use, unused_field, use_build_context_synchronously
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -10,7 +10,6 @@ import '../providers/retailer_provider.dart';
 import '../models/admin_models.dart';
 import '../models/area_model.dart';
 import '../models/restaurant_model.dart';
-import '../core/api_service.dart';
 import 'customer_login_screen.dart';
 import '../providers/reviews_provider.dart';
 
@@ -140,7 +139,7 @@ class _RetailerDashboardScreenState extends State<RetailerDashboardScreen>
           backgroundColor: AppTheme.surface,
           leading: Container(
             margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppTheme.background,
               shape: BoxShape.circle,
             ),
@@ -1517,16 +1516,20 @@ class _EditItemSheetState extends State<_EditItemSheet> {
   Future<void> _save() async {
     setState(() => _loading = true);
     final updates = <String, dynamic>{};
-    if (_nameCtrl.text.trim() != widget.item.itemName)
+    if (_nameCtrl.text.trim() != widget.item.itemName) {
       updates['item_name'] = _nameCtrl.text.trim();
+    }
     final newPrice = double.tryParse(_priceCtrl.text);
-    if (newPrice != null && newPrice != widget.item.price)
+    if (newPrice != null && newPrice != widget.item.price) {
       updates['price'] = newPrice;
-    if (_descCtrl.text.trim() != (widget.item.description ?? ''))
+    }
+    if (_descCtrl.text.trim() != (widget.item.description ?? '')) {
       updates['description'] = _descCtrl.text.trim();
+    }
     if (_isVeg != widget.item.isVeg) updates['is_veg'] = _isVeg;
-    if (_isAvailable != widget.item.isAvailable)
+    if (_isAvailable != widget.item.isAvailable) {
       updates['is_available'] = _isAvailable;
+    }
     final cal = int.tryParse(_calCtrl.text);
     if (cal != widget.item.calories) updates['calories'] = cal;
 
@@ -1785,7 +1788,7 @@ class _UploadTabState extends State<_UploadTab> {
                 decoration: BoxDecoration(
                     color: AppTheme.vegGreen.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12)),
-                child: Icon(Icons.camera_alt_rounded,
+                child: const Icon(Icons.camera_alt_rounded,
                     color: AppTheme.vegGreen, size: 22),
               ),
               title: Text('Take a Photo',
@@ -2117,7 +2120,7 @@ class _SettingsTabState extends State<_SettingsTab> {
   final _cuisineCtrl = TextEditingController();
   String _priceCategory = 'mid-range';
   bool _dirty = false;
-  bool _showSetup = false;
+  final bool _showSetup = false;
 
   // Operational settings
   bool _hasDineIn = true;
@@ -2502,7 +2505,7 @@ class _SettingsTabState extends State<_SettingsTab> {
           _buildToggleOption(
             title: 'Dine-In Bookings',
             subtitle: 'Allow customers to reserve tables online',
-            icon: Icons.event_seat_rounded,
+            icon: Icons.table_restaurant_rounded,
             value: _hasDineIn,
             onChanged: (val) => setState(() {
               _hasDineIn = val;
@@ -3034,7 +3037,7 @@ class _BookingsTabState extends State<_BookingsTab> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.event_seat_rounded, size: 56, color: AppTheme.textMuted),
+                const Icon(Icons.table_restaurant_rounded, size: 56, color: AppTheme.textMuted),
                 const SizedBox(height: 12),
                 Text('No Bookings Yet', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
                 const SizedBox(height: 6),

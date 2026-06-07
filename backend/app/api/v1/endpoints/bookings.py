@@ -69,7 +69,23 @@ def get_restaurant_bookings(
         query = query.filter(Booking.status == status_filter)
         
     bookings = query.order_by(Booking.created_at.desc()).all()
-    return bookings
+    results = []
+    for b in bookings:
+        b_dict = {
+            "booking_id": b.booking_id,
+            "restaurant_id": b.restaurant_id,
+            "restaurant_name": b.restaurant.restaurant_name if b.restaurant else None,
+            "party_size": b.party_size,
+            "time_slot": b.time_slot,
+            "booking_date": b.booking_date,
+            "customer_name": b.customer_name,
+            "customer_phone": b.customer_phone,
+            "status": b.status,
+            "created_at": b.created_at,
+            "updated_at": b.updated_at,
+        }
+        results.append(b_dict)
+    return results
 
 @router.put("/admin/bookings/{booking_id}", response_model=BookingResponse)
 def update_booking_status(
@@ -106,7 +122,23 @@ def get_customer_bookings(
     Get booking details for a list of booking IDs stored locally by the customer.
     """
     bookings = db.query(Booking).filter(Booking.booking_id.in_(request.booking_ids)).order_by(Booking.created_at.desc()).all()
-    return bookings
+    results = []
+    for b in bookings:
+        b_dict = {
+            "booking_id": b.booking_id,
+            "restaurant_id": b.restaurant_id,
+            "restaurant_name": b.restaurant.restaurant_name if b.restaurant else None,
+            "party_size": b.party_size,
+            "time_slot": b.time_slot,
+            "booking_date": b.booking_date,
+            "customer_name": b.customer_name,
+            "customer_phone": b.customer_phone,
+            "status": b.status,
+            "created_at": b.created_at,
+            "updated_at": b.updated_at,
+        }
+        results.append(b_dict)
+    return results
 
 @router.delete("/admin/restaurants/{restaurant_id}/bookings", response_model=dict)
 def clear_restaurant_bookings(

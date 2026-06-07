@@ -511,7 +511,7 @@ class RetailerProvider extends ChangeNotifier {
 
   // ── Upload History ─────────────────────────────────────────────────────────
 
-  List<UploadHistoryItem> _uploadHistory = [];
+  final List<UploadHistoryItem> _uploadHistory = [];
   List<UploadHistoryItem> get uploadHistory =>
       List.unmodifiable(_uploadHistory);
 

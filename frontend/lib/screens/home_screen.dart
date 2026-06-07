@@ -1,3 +1,4 @@
+// ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,7 +11,6 @@ import '../core/theme.dart';
 import '../providers/chat_provider.dart';
 import '../providers/browse_provider.dart';
 import '../providers/cart_provider.dart';
-import '../providers/voice_agent_provider.dart';
 import '../providers/favorites_provider.dart';
 import '../models/restaurant_model.dart';
 import 'results_screen.dart';
@@ -542,7 +542,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
               backgroundColor: AppTheme.primary,
-              icon: const Icon(Icons.event_seat_rounded, color: Colors.white),
+              icon: const Icon(Icons.table_restaurant_rounded, color: Colors.white),
               label: Text('Book a Table', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
             ),
           ],
@@ -1083,7 +1083,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Stack(
                       children: [
                         Container(
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             image: DecorationImage(
                               image: NetworkImage(imageUrl),
                               fit: BoxFit.cover,
@@ -1170,7 +1170,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-          ).animate(delay: Duration(milliseconds: 50)).fadeIn().slideX(begin: 0.1, end: 0),
+          ).animate(delay: const Duration(milliseconds: 50)).fadeIn().slideX(begin: 0.1, end: 0),
         );
       },
     );

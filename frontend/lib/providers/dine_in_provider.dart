@@ -59,7 +59,7 @@ class DineInProvider extends ChangeNotifier {
       notifyListeners();
       
       // Fallback response for network errors
-      return DineAvailabilityResponse(
+      return const DineAvailabilityResponse(
         available: false,
         confirmedSlot: null,
         reason: 'error',
