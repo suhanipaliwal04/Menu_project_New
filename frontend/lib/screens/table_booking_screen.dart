@@ -228,7 +228,7 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
               color: Color(0xFF1A3A2A),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.table_restaurant_rounded, color: Color(0xFF2ECC71), size: 56),
+            child: const Icon(Icons.deck_rounded, color: Color(0xFF2ECC71), size: 56),
           ).animate().scale(begin: const Offset(0.5, 0.5), end: const Offset(1.0, 1.0), curve: Curves.elasticOut, duration: 800.ms),
           const SizedBox(height: 24),
 
@@ -479,7 +479,7 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.table_restaurant_rounded),
+                        const Icon(Icons.deck_rounded),
                         const SizedBox(width: 10),
                         Text('Confirm Booking', style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 16)),
                       ],

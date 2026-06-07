@@ -13,7 +13,7 @@ from app.schemas.booking import BookingCreate, BookingUpdate, BookingResponse
 from pydantic import BaseModel
 
 class CustomerBookingsRequest(BaseModel):
-    booking_ids: List[uuid.UUID]
+    booking_ids: List[str]
 
 router = APIRouter()
 
@@ -121,7 +121,17 @@ def get_customer_bookings(
     """
     Get booking details for a list of booking IDs stored locally by the customer.
     """
-    bookings = db.query(Booking).filter(Booking.booking_id.in_(request.booking_ids)).order_by(Booking.created_at.desc()).all()
+    valid_uuids = []
+    for bid in request.booking_ids:
+        try:
+            valid_uuids.append(uuid.UUID(bid))
+        except ValueError:
+            pass
+            
+    if not valid_uuids:
+        return []
+        
+    bookings = db.query(Booking).filter(Booking.booking_id.in_(valid_uuids)).order_by(Booking.created_at.desc()).all()
     results = []
     for b in bookings:
         b_dict = {

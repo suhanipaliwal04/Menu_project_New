@@ -105,6 +105,21 @@ def get_restaurant_menu(restaurant_id: uuid.UUID, db: Session = Depends(get_db))
     if not restaurant:
         raise HTTPException(status_code=404, detail="Restaurant not found")
     
+    average_rating = 0.0
+    total_reviews = 0
+    
+    from app.models.review import RestaurantReview
+    from sqlalchemy import func
+    
+    result = db.query(
+        func.avg(RestaurantReview.rating),
+        func.count(RestaurantReview.review_id)
+    ).filter(RestaurantReview.restaurant_id == restaurant.restaurant_id).first()
+    
+    if result and result[1] > 0:
+        average_rating = round(float(result[0]), 1)
+        total_reviews = result[1]
+    
     menu_data = {
         "restaurant": {
             "restaurant_id": restaurant.restaurant_id,
@@ -112,7 +127,9 @@ def get_restaurant_menu(restaurant_id: uuid.UUID, db: Session = Depends(get_db))
             "cuisine_type": restaurant.cuisine_type,
             "price_category": restaurant.price_category,
             "has_dine_in": getattr(restaurant, "has_dine_in", True),
-            "has_takeaway": getattr(restaurant, "has_takeaway", True)
+            "has_takeaway": getattr(restaurant, "has_takeaway", True),
+            "average_rating": average_rating,
+            "total_reviews": total_reviews
         },
         "sections": []
     }

@@ -116,7 +116,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                       heroTag: 'book_table_${widget.restaurantId}',
                       onPressed: () => _showBookingModal(context, restaurant),
                       backgroundColor: AppTheme.primary,
-                      icon: const Icon(Icons.table_restaurant_rounded, color: Colors.white),
+                      icon: const Icon(Icons.deck_rounded, color: Colors.white),
                       label: Text('Book a Table', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
                     ),
                 ],
@@ -244,7 +244,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
           fit: StackFit.expand,
           children: [
             Image.asset(
-              'assets/images/doodle_1.png',
+              'assets/images/aesthetic_header.png',
               fit: BoxFit.cover,
             ),
             Container(

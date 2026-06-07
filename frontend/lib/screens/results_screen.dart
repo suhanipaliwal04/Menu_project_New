@@ -118,7 +118,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 );
               },
               backgroundColor: AppTheme.primary,
-              icon: const Icon(Icons.table_restaurant_rounded, color: Colors.white),
+              icon: const Icon(Icons.deck_rounded, color: Colors.white),
               label: Text('Book a Table', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
             ),
           ],

@@ -2505,7 +2505,7 @@ class _SettingsTabState extends State<_SettingsTab> {
           _buildToggleOption(
             title: 'Dine-In Bookings',
             subtitle: 'Allow customers to reserve tables online',
-            icon: Icons.table_restaurant_rounded,
+            icon: Icons.deck_rounded,
             value: _hasDineIn,
             onChanged: (val) => setState(() {
               _hasDineIn = val;
@@ -3037,7 +3037,7 @@ class _BookingsTabState extends State<_BookingsTab> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.table_restaurant_rounded, size: 56, color: AppTheme.textMuted),
+                const Icon(Icons.deck_rounded, size: 56, color: AppTheme.textMuted),
                 const SizedBox(height: 12),
                 Text('No Bookings Yet', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
                 const SizedBox(height: 6),
