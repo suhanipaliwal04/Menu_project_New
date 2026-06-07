@@ -653,6 +653,10 @@ class VoiceAgentProvider extends ChangeNotifier {
         },
       );
 
+      if (_pendingTakeawayItem != null) {
+        _cartProvider.removeItemByName(_pendingTakeawayItem!);
+      }
+
       _resetTakeaway();
       _lastAiReply = reply;
       _history.add(ConversationTurn(isUser: false, text: reply));

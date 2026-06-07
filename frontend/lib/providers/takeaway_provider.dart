@@ -66,8 +66,6 @@ class TakeawayProvider extends ChangeNotifier {
     _state = TakeawayState.checking;
     notifyListeners();
 
-    await Future.delayed(const Duration(milliseconds: 350));
-
     TakeawayAvailabilityResponse result;
 
     // Test Case 2 trigger: already checked by capability pre-check, but just in case

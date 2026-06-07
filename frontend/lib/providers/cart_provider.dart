@@ -119,6 +119,19 @@ class CartProvider extends ChangeNotifier {
     return item;
   }
 
+  void removeItemByName(String name) {
+    final normalised = name.toLowerCase().trim();
+    final item = _items.where((i) => i.name.toLowerCase().trim() == normalised).firstOrNull;
+    if (item != null) {
+      if (item.quantity > 1) {
+        item.quantity--;
+      } else {
+        _items.remove(item);
+      }
+      notifyListeners();
+    }
+  }
+
   void removeItem(String id) {
     _items.removeWhere((i) => i.id == id);
     notifyListeners();
@@ -173,6 +186,7 @@ class CartProvider extends ChangeNotifier {
         );
         _lastOrderId = res['order_id'] ?? 'ORD${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
         _orderPlaced = true;
+        _items.clear();
         notifyListeners();
         return true;
       } catch (e) {
@@ -182,6 +196,7 @@ class CartProvider extends ChangeNotifier {
     } else {
       _lastOrderId = 'ORD${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
       _orderPlaced = true;
+      _items.clear();
       notifyListeners();
       return true;
     }
