@@ -112,12 +112,11 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                   ),
                   const SizedBox(width: 16),
                   if (restaurant.hasDineIn)
-                    FloatingActionButton.extended(
+                    FloatingActionButton(
                       heroTag: 'book_table_${widget.restaurantId}',
                       onPressed: () => _showBookingModal(context, restaurant),
                       backgroundColor: AppTheme.primary,
-                      icon: const Icon(Icons.deck_rounded, color: Colors.white),
-                      label: Text('Book a Table', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
+                      child: const Icon(Icons.deck_rounded, color: Colors.white),
                     ),
                 ],
               ),

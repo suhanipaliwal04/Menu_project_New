@@ -105,7 +105,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
               ],
             ),
             const SizedBox(width: 16),
-            FloatingActionButton.extended(
+            FloatingActionButton(
               heroTag: 'book_table_results',
               onPressed: () {
                 context.read<BrowseProvider>().loadRestaurants(orderType: 'Dine In');
@@ -118,8 +118,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 );
               },
               backgroundColor: AppTheme.primary,
-              icon: const Icon(Icons.deck_rounded, color: Colors.white),
-              label: Text('Book a Table', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
+              child: const Icon(Icons.deck_rounded, color: Colors.white),
             ),
           ],
         ),

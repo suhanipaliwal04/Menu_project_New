@@ -83,7 +83,7 @@ class CategoryResultsScreen extends StatelessWidget {
             ],
             if (categoryName != 'Takeaway') ...[
               const SizedBox(width: 16),
-              FloatingActionButton.extended(
+              FloatingActionButton(
                 heroTag: 'book_table_category',
                 onPressed: () {
                   context.read<BrowseProvider>().loadRestaurants(orderType: 'Dine In');
@@ -97,8 +97,7 @@ class CategoryResultsScreen extends StatelessWidget {
                 },
                 backgroundColor: AppTheme.primary,
                 elevation: 4,
-                icon: const Icon(Icons.deck_rounded, color: Colors.white),
-                label: Text('Book a Table', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
+                child: const Icon(Icons.deck_rounded, color: Colors.white),
               ),
             ],
           ],

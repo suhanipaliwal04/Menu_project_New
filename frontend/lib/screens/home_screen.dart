@@ -529,7 +529,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             const SizedBox(width: 16),
-            FloatingActionButton.extended(
+            FloatingActionButton(
               heroTag: 'book_table_home',
               onPressed: () {
                 context.read<BrowseProvider>().loadRestaurants(orderType: 'Dine In');
@@ -542,8 +542,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
               backgroundColor: AppTheme.primary,
-              icon: const Icon(Icons.deck_rounded, color: Colors.white),
-              label: Text('Book a Table', style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: Colors.white)),
+              child: const Icon(Icons.deck_rounded, color: Colors.white),
             ),
           ],
         ),
@@ -944,13 +943,13 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Row(
               children: [
-                Image.asset('assets/images/eatbot_logo.png', height: 42, width: 42),
-                const SizedBox(width: 12),
+                Image.asset('assets/images/eatbot_logo.png', height: 64, width: 64),
+                const SizedBox(width: 16),
                 Text(
                   'eatbot',
                   style: GoogleFonts.outfit(
                     fontWeight: FontWeight.w800,
-                    fontSize: 22,
+                    fontSize: 32,
                     letterSpacing: -0.5,
                     color: AppTheme.textPrimary,
                   ),
