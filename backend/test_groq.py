@@ -1,7 +1,7 @@
 import json
 from groq import Groq
 
-client = Groq(api_key='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')
+client = Groq(api_key='[ENCRYPTION_KEY]')
 
 items = ['Eggs benedict - $5', 'Waffle fresh berries - $6', 'Porridge with cherries - $5', 'Poached egg sandwiches - $5', 'Banana and blackberry toast - $11']
 
