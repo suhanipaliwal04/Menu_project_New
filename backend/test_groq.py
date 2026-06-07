@@ -8,7 +8,7 @@ items = ['Eggs benedict - $5', 'Waffle fresh berries - $6', 'Porridge with cherr
 item_lines = '\n'.join([f'{j+1}. {it}' for j, it in enumerate(items)])
 
 prompt = f"""You are a strict food classification system. Below are {len(items)} menu items extracted from a restaurant menu.
-Restaurant: Unknown
+Restaurant: Unknown,
 
 Items (item name — price — category status):
 {item_lines}
