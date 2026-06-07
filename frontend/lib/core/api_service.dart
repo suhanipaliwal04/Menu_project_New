@@ -556,6 +556,24 @@ class ApiService {
     return _handle(response) as Map<String, dynamic>;
   }
 
+  /// DELETE /admin/restaurants/{id}/bookings — Clear all bookings.
+  Future<Map<String, dynamic>> clearAdminBookings(String restaurantId) async {
+    final uri = Uri.parse(
+        '$_base/bookings/admin/restaurants/$restaurantId/bookings');
+    final response =
+        await _client.delete(uri, headers: _authHeaders).timeout(_timeout);
+    return _handle(response) as Map<String, dynamic>;
+  }
+
+  /// DELETE /admin/restaurants/{id}/orders — Clear all orders.
+  Future<Map<String, dynamic>> clearAdminOrders(String restaurantId) async {
+    final uri = Uri.parse(
+        '$_base/orders/admin/restaurants/$restaurantId/orders');
+    final response =
+        await _client.delete(uri, headers: _authHeaders).timeout(_timeout);
+    return _handle(response) as Map<String, dynamic>;
+  }
+
   /// PUT /restaurants/{id} — Update restaurant profile (name, phone, address, etc.)
   Future<Map<String, dynamic>> updateRestaurant(
     String restaurantId,

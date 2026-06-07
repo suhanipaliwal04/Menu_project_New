@@ -25,6 +25,35 @@ class MyBookingsScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text('My Bookings', style: GoogleFonts.outfit(color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_sweep_rounded, color: AppTheme.error),
+            tooltip: 'Clear All Bookings',
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text('Clear All Bookings', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                  content: Text('Are you sure you want to clear all your bookings history from this device?', style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text('Cancel', style: GoogleFonts.outfit(color: AppTheme.textPrimary)),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
+                      onPressed: () {
+                        context.read<CustomerBookingsProvider>().clearAll();
+                        Navigator.pop(context);
+                      },
+                      child: Text('Clear All', style: GoogleFonts.outfit(color: Colors.white)),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Consumer<CustomerBookingsProvider>(
         builder: (context, provider, _) {

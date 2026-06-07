@@ -177,3 +177,26 @@ def get_order_by_id(order_id: str, db):
         "updated_at": row[8],
         "items": items
     }
+
+@router.delete("/admin/restaurants/{restaurant_id}/orders", response_model=dict)
+def clear_admin_orders(restaurant_id: uuid.UUID, admin=Depends(get_current_restaurant_admin), db=Depends(get_db)):
+    try:
+        # First delete all order items associated with these orders
+        db.execute(text("""
+            DELETE FROM order_items
+            WHERE order_id IN (
+                SELECT order_id FROM orders WHERE restaurant_id = :rid
+            )
+        """), {"rid": str(restaurant_id)})
+        
+        # Then delete the orders
+        db.execute(text("""
+            DELETE FROM orders
+            WHERE restaurant_id = :rid
+        """), {"rid": str(restaurant_id)})
+        
+        db.commit()
+        return {"detail": "All takeaway orders cleared successfully"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../core/api_service.dart';
@@ -11,6 +12,24 @@ class CustomerBookingsProvider extends ChangeNotifier {
   List<dynamic> _orders = [];
   bool _isLoading = false;
   String? _error;
+  Timer? _pollTimer;
+
+  CustomerBookingsProvider() {
+    startPolling();
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
+  }
+
+  void startPolling() {
+    _pollTimer?.cancel();
+    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      loadBookings(isPolling: true);
+    });
+  }
 
   List<dynamic> get bookings => _bookings;
   List<dynamic> get orders => _orders;
@@ -29,10 +48,12 @@ class CustomerBookingsProvider extends ChangeNotifier {
   }
 
   /// Loads locally stored booking IDs and fetches their details from backend
-  Future<void> loadBookings() async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
+  Future<void> loadBookings({bool isPolling = false}) async {
+    if (!isPolling) {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+    }
 
     try {
       final idsString = await _storage.read(key: 'customer_booking_ids');
@@ -58,6 +79,19 @@ class CustomerBookingsProvider extends ChangeNotifier {
           _orders = await _apiService.getCustomerOrders(orderIds);
         }
       }
+      
+      // Sort in descending order (newest first)
+      _bookings.sort((a, b) {
+        final dateA = DateTime.tryParse(a['created_at'] ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final dateB = DateTime.tryParse(b['created_at'] ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return dateB.compareTo(dateA);
+      });
+      _orders.sort((a, b) {
+        final dateA = DateTime.tryParse(a['created_at'] ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final dateB = DateTime.tryParse(b['created_at'] ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return dateB.compareTo(dateA);
+      });
+      
     } catch (e) {
       _error = 'Failed to load bookings: $e';
     } finally {
@@ -120,6 +154,20 @@ class CustomerBookingsProvider extends ChangeNotifier {
       }
     } catch (e) {
       _error = 'Failed to save order ID: $e';
+      notifyListeners();
+    }
+  }
+
+  /// Clears all local booking and order IDs
+  Future<void> clearAll() async {
+    try {
+      await _storage.delete(key: 'customer_booking_ids');
+      await _storage.delete(key: 'customer_order_ids');
+      _bookings.clear();
+      _orders.clear();
+      notifyListeners();
+    } catch (e) {
+      _error = 'Failed to clear records: $e';
       notifyListeners();
     }
   }

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../core/api_service.dart';
@@ -75,6 +76,25 @@ class RetailerProvider extends ChangeNotifier {
   Map<String, dynamic>? _lastUploadResult;
   Map<String, dynamic>? get lastUploadResult => _lastUploadResult;
 
+  Timer? _pollTimer;
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startPolling() {
+    _pollTimer?.cancel();
+    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (_myRestaurant?.restaurantId != null) {
+        fetchBookings();
+        fetchTakeawayOrders();
+        fetchDashboard();
+      }
+    });
+  }
+
   // ── App Init — restore session from secure storage ─────────────────────────
 
   /// Call this once from main.dart or RetailerLoginScreen.initState()
@@ -130,6 +150,7 @@ class RetailerProvider extends ChangeNotifier {
       await fetchMe();
 
       _setState(RetailerState.success);
+      _startPolling();
       return true;
     } on ApiException catch (e) {
       _errorMessage = e.message;
@@ -154,6 +175,7 @@ class RetailerProvider extends ChangeNotifier {
       if (restaurantId != null) {
         await _storage.write(key: _restaurantIdKey, value: restaurantId);
         _myRestaurant = await _api.getRestaurant(restaurantId);
+        _startPolling();
         notifyListeners();
       }
     } on ApiException catch (e) {
@@ -168,6 +190,7 @@ class RetailerProvider extends ChangeNotifier {
   }
 
   Future<void> _clearSession() async {
+    _pollTimer?.cancel();
     await _storage.deleteAll();
     _api.setAuthToken(null);
     _isLoggedIn = false;
@@ -530,6 +553,22 @@ class RetailerProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> clearAllBookings() async {
+    final id = _myRestaurant?.restaurantId;
+    if (id == null) return false;
+    try {
+      await _api.clearAdminBookings(id);
+      _bookings = [];
+      await fetchDashboard();
+      notifyListeners();
+      return true;
+    } catch (_) {
+      _errorMessage = 'Failed to clear bookings.';
+      notifyListeners();
+      return false;
+    }
+  }
+
   // ── Takeaway Orders ────────────────────────────────────────────────────────
 
   Future<void> fetchTakeawayOrders({String? status}) async {
@@ -564,6 +603,21 @@ class RetailerProvider extends ChangeNotifier {
       return false;
     } catch (_) {
       _errorMessage = 'Failed to update order status.';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> clearAllTakeawayOrders() async {
+    final id = _myRestaurant?.restaurantId;
+    if (id == null) return false;
+    try {
+      await _api.clearAdminOrders(id);
+      _takeawayOrders = [];
+      notifyListeners();
+      return true;
+    } catch (_) {
+      _errorMessage = 'Failed to clear takeaway orders.';
       notifyListeners();
       return false;
     }

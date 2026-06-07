@@ -107,3 +107,24 @@ def get_customer_bookings(
     """
     bookings = db.query(Booking).filter(Booking.booking_id.in_(request.booking_ids)).order_by(Booking.created_at.desc()).all()
     return bookings
+
+@router.delete("/admin/restaurants/{restaurant_id}/bookings", response_model=dict)
+def clear_restaurant_bookings(
+    restaurant_id: uuid.UUID,
+    current_user: uuid.UUID = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Clear all bookings for a specific restaurant. Only the owner can do this.
+    """
+    restaurant = db.query(Restaurant).filter(Restaurant.restaurant_id == restaurant_id).first()
+    if not restaurant:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+        
+    if restaurant.owner_id != current_user:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
+        
+    db.query(Booking).filter(Booking.restaurant_id == restaurant_id).delete(synchronize_session=False)
+    db.commit()
+    
+    return {"detail": "All bookings cleared successfully"}
