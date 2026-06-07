@@ -110513,7 +110513,7 @@ s=q}for(;;)switch(s){case 0:n.d=!0
 n.F()
 q=3
 s=6
-return A.n(n.a.h9(0,"reviews/restaurant/"+a),$async$zq)
+return A.n(n.a.h9(0,"/reviews/restaurant/"+a),$async$zq)
 case 6:m=c
 k=J.d7(t.j.a(m),new A.at2(),t.i3)
 k=A.a1(k,k.$ti.i("ai.E"))
@@ -110542,7 +110542,7 @@ ac3(a,b,c,d){var s=0,r=A.w(t.y),q,p=2,o=[],n=this,m,l,k
 var $async$wG=A.r(function(e,f){if(e===1){o.push(f)
 s=p}for(;;)switch(s){case 0:p=4
 s=7
-return A.n(n.a.on("reviews/restaurant",A.ah(["restaurant_id",c,"rating",b,"review_text",d,"customer_name",a],t.N,t.z),!1),$async$wG)
+return A.n(n.a.on("/reviews/restaurant",A.ah(["restaurant_id",c,"rating",b,"review_text",d,"customer_name",a],t.N,t.z),!1),$async$wG)
 case 7:s=8
 return A.n(n.zq(c),$async$wG)
 case 8:q=!0
@@ -110571,7 +110571,7 @@ s=q}for(;;)switch(s){case 0:n.d=!0
 n.F()
 q=3
 s=6
-return A.n(n.a.h9(0,"reviews/app"),$async$Gv)
+return A.n(n.a.h9(0,"/reviews/app"),$async$Gv)
 case 6:m=b
 k=J.d7(t.j.a(m),new A.at1(),t.i3)
 k=A.a1(k,k.$ti.i("ai.E"))
@@ -110600,7 +110600,7 @@ ac1(a,b,c){var s=0,r=A.w(t.y),q,p=2,o=[],n=this,m,l,k
 var $async$C2=A.r(function(d,e){if(d===1){o.push(e)
 s=p}for(;;)switch(s){case 0:p=4
 s=7
-return A.n(n.a.on("reviews/app",A.ah(["rating",b,"review_text",c,"customer_name",a],t.N,t.z),!1),$async$C2)
+return A.n(n.a.on("/reviews/app",A.ah(["rating",b,"review_text",c,"customer_name",a],t.N,t.z),!1),$async$C2)
 case 7:q=!0
 s=1
 break
