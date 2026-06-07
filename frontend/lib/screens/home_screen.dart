@@ -1170,7 +1170,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
   void _showAppRatingDialog(BuildContext context) {
-    double selectedRating = 5.0;
+    double selectedRating = 0.0;
     final textCtrl = TextEditingController();
 
     showDialog(
@@ -1231,7 +1231,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   final success = await provider.submitAppReview(
                     rating: selectedRating,
                     reviewText: textCtrl.text.trim(),
-                    customerName: context.read<AuthProvider>().phone ?? 'Customer',
+                    customerName: 'Customer',
                   );
                   if (ctx.mounted) {
                     Navigator.pop(ctx);

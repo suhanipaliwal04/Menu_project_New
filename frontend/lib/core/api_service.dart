@@ -77,6 +77,12 @@ class ApiService {
     _handle(response);
   }
 
+  // Generic public wrappers
+  Future<dynamic> get(String path, {Map<String, String?>? params, bool auth = false}) => _get(path, params: params, auth: auth);
+  Future<dynamic> post(String path, Map<String, dynamic> body, {bool auth = false}) => _post(path, body, auth: auth);
+  Future<dynamic> put(String path, Map<String, dynamic> body) => _put(path, body);
+
+
   dynamic _handle(http.Response res) {
     if (res.statusCode >= 200 && res.statusCode < 300) {
       final body = res.body;

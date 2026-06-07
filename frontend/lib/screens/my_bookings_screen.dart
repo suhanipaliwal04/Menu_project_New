@@ -244,7 +244,7 @@ class MyBookingsScreen extends StatelessWidget {
   }
 
   void _showRatingDialog(BuildContext context, String restaurantId, String restaurantName, String customerName) {
-    double selectedRating = 5.0;
+    double selectedRating = 0.0;
     final textCtrl = TextEditingController();
 
     showDialog(

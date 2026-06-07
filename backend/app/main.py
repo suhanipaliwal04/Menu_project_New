@@ -82,9 +82,12 @@ async def health_check():
 
 @app.get("/run-migration")
 async def run_migration():
-    """TEMPORARY: Run DB migration to add operational columns. DELETE after use."""
-    from app.core.database import SessionLocal
+    """TEMPORARY: Run DB migration to add operational columns and new tables."""
+    from app.core.database import SessionLocal, init_db
     from sqlalchemy import text
+    
+    # Initialize all new tables (like reviews)
+    init_db()
     
     sqls = [
         "ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS has_dine_in BOOLEAN DEFAULT true",
