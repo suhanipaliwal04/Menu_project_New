@@ -12,6 +12,7 @@ import '../widgets/voice_fab.dart';
 import '../providers/cart_provider.dart';
 import 'table_booking_screen.dart';
 import 'cart_screen.dart';
+import 'restaurant_reviews_screen.dart';
 
 class RestaurantDetailScreen extends StatefulWidget {
   final String restaurantId;
@@ -243,8 +244,8 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(
-              'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1200',
+            Image.asset(
+              'assets/images/doodle_1.png',
               fit: BoxFit.cover,
             ),
             Container(
@@ -294,25 +295,38 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                decoration: BoxDecoration(
-                  color: AppTheme.accent.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.accent.withValues(alpha: 0.2)),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Text(r.averageRating.toStringAsFixed(1), style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 16, color: AppTheme.accent)),
-                        const SizedBox(width: 4),
-                        const Icon(Icons.star_rounded, size: 18, color: AppTheme.accent),
-                      ],
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => RestaurantReviewsScreen(
+                        restaurantId: r.restaurantId,
+                        restaurantName: r.restaurantName,
+                      ),
                     ),
-                    const SizedBox(height: 2),
-                    Text('${r.totalReviews} ratings', style: GoogleFonts.outfit(fontSize: 10, color: AppTheme.accent, fontWeight: FontWeight.bold)),
-                  ],
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.accent.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.accent.withValues(alpha: 0.2)),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Text(r.averageRating.toStringAsFixed(1), style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 16, color: AppTheme.accent)),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.star_rounded, size: 18, color: AppTheme.accent),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text('${r.totalReviews} ratings', style: GoogleFonts.outfit(fontSize: 10, color: AppTheme.accent, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
                 ),
               ),
             ],

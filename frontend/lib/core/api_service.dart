@@ -169,6 +169,12 @@ class ApiService {
     return data.map((e) => RestaurantModel.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  /// GET /reviews/restaurant/{id}
+  Future<List<Map<String, dynamic>>> getRestaurantReviews(String restaurantId) async {
+    final data = await _get('/reviews/restaurant/$restaurantId') as List<dynamic>;
+    return data.cast<Map<String, dynamic>>();
+  }
+
   // ── Bookings (REST API) ───────────────────────────────────────────────────────
 
   /// POST /bookings/

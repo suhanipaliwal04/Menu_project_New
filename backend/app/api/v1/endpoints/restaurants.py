@@ -260,7 +260,7 @@ def delete_restaurant(
 
 def _restaurant_with_area(restaurant: Restaurant, area, db: Session = None) -> dict:
     """Build a RestaurantResponse-compatible dict with joined area info."""
-    average_rating = 4.8
+    average_rating = 0.0
     total_reviews = 0
     
     if db:
