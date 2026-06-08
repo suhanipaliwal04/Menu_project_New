@@ -99,8 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
     },
     {
       'name': 'Chinese',
-      'url':
-          'https://images.unsplash.com/photo-1585032226651-759b368d7246?q=80&w=200'
+      'url': 'assets/images/cat_chinese.png'
     },
     {
       'name': 'Curries',
@@ -109,8 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
     },
     {
       'name': 'Desserts',
-      'url':
-          'https://images.unsplash.com/photo-1551024601-bec78aea704b?q=80&w=200'
+      'url': 'assets/images/cat_desserts.png'
     },
   ];
 
@@ -894,7 +892,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             image: DecorationImage(
-                              image: NetworkImage(cat['url']),
+                              image: cat['url'].toString().startsWith('http')
+                                  ? NetworkImage(cat['url']) as ImageProvider
+                                  : AssetImage(cat['url']),
                               fit: BoxFit.cover,
                             ),
                           ),
