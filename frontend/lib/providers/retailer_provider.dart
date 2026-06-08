@@ -439,11 +439,13 @@ class RetailerProvider extends ChangeNotifier {
       return true;
     } on ApiException catch (e) {
       _isUploading = false;
+      _lastUploadResult = null;
       _errorMessage = e.message;
       notifyListeners();
       return false;
     } catch (e) {
       _isUploading = false;
+      _lastUploadResult = null;
       _errorMessage = 'Upload failed: ${e.toString()}';
       notifyListeners();
       return false;
