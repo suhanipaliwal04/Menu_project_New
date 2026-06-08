@@ -955,7 +955,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const Spacer(),
-                const Icon(Icons.auto_awesome, color: AppTheme.primary, size: 18),
               ],
             ),
             const SizedBox(height: 16),
