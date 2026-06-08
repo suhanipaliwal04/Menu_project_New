@@ -113086,7 +113086,7 @@ $1(a){var s=this
 return new A.qZ(new A.aHx(s.a,s.b,s.c,s.d),null)},
 $S:167}
 A.aHx.prototype={
-$2(a,b){var s,r,q,p,o,n,m,l,k,j=this,i=null,h=A.O(16),g=A.j("Rate Menu Intelligence",i,i,i,i,i,A.i().$2$color$fontWeight(B.t,B.q),i,i,i),f=J.nU(5,t.l)
+$2(a,b){var s,r,q,p,o,n,m,l,k,j=this,i=null,h=A.O(16),g=A.j("Rate eatbot",i,i,i,i,i,A.i().$2$color$fontWeight(B.t,B.q),i,i,i),f=J.nU(5,t.l)
 for(s=j.a,r=s.a,q=0;q<5;++q)f[q]=A.d8(i,i,i,A.d3(q<r?B.dA:B.kA,B.e8,i,32),i,i,new A.aHu(s,b,q),i,i,i,i)
 r=A.ac(f,B.k,B.as,B.h,0,i)
 p=j.b
