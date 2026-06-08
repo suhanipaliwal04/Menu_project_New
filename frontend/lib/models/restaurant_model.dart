@@ -57,6 +57,12 @@ class RestaurantModel {
   String get cuisineDisplay =>
       cuisineType?.join(', ') ?? 'Various Cuisines';
 
+  String get displayLocation {
+    if (address != null && address!.isNotEmpty) return address!;
+    if (areaId.isNotEmpty) return areaId;
+    return 'Unknown Location';
+  }
+
   String get priceCategoryDisplay {
     switch (priceCategory) {
       case 'budget': return '₹ Budget';
