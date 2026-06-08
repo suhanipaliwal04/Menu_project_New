@@ -1138,6 +1138,24 @@ class _HomeScreenState extends State<HomeScreen> {
                                 fontWeight: FontWeight.w800,
                                 fontSize: 15,
                                 color: AppTheme.textPrimary)),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on, size: 12, color: AppTheme.textSecondary),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                r.displayLocation,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.outfit(
+                                  color: AppTheme.textSecondary,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                         const SizedBox(height: 4),
                         Row(
                           children: [
