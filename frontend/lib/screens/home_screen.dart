@@ -1209,7 +1209,7 @@ class _HomeScreenState extends State<HomeScreen> {
           return AlertDialog(
             backgroundColor: AppTheme.surface,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: Text('Rate Menu Intelligence', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+            title: Text('Rate eatbot', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [

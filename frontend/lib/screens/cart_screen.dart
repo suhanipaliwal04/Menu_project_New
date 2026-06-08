@@ -483,8 +483,6 @@ class _CartScreenState extends State<CartScreen> {
                   fontSize: 20,
                   fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
-          Text('Use voice commands to add items!',
-              style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontSize: 14)),
           const SizedBox(height: 28),
           ElevatedButton.icon(
             onPressed: () => Navigator.pop(context),
