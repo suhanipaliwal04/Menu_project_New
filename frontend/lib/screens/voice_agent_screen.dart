@@ -249,7 +249,7 @@ class _VoiceAgentScreenState extends State<VoiceAgentScreen>
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '"Book me a table"\n"I want something healthy"\n"Show me trending places"',
+                  '"I want a spicy pizza"\n"I want something healthy"\n"Show me desserts nearby"',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.outfit(
                     color: Colors.white30,
