@@ -539,12 +539,14 @@ class ApiService {
     required XFile imageFile,
     required String restaurantId,
     String mode = 'replace',
+    String extractionMethod = 'paddleocr',
   }) async {
     final uri = Uri.parse(
         '$_base${AppConstants.adminEndpoint}/restaurants/$restaurantId/menu/upload');
     final request = http.MultipartRequest('POST', uri);
     request.headers.addAll(_authHeaders..remove('Content-Type'));
     request.fields['mode'] = mode;
+    request.fields['extraction_method'] = extractionMethod;
 
     final ext = imageFile.name.split('.').last.toLowerCase();
     final contentType = ext == 'pdf'

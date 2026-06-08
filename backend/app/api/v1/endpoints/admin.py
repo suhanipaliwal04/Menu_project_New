@@ -400,6 +400,7 @@ async def admin_upload_menu(
     restaurant_id: uuid.UUID,
     file: UploadFile = File(...),
     mode: str = Form("replace"),
+    extraction_method: str = Form("paddleocr"),
     current_user: uuid.UUID = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -409,8 +410,10 @@ async def admin_upload_menu(
     **mode** (form field):
     - `"replace"` (default) — clears existing menu sections/items before saving new ones.
     - `"append"` — adds new items alongside the existing menu.
-
-    This reuses the full OCR + LLM enrichment pipeline from the menus endpoint.
+    
+    **extraction_method** (form field):
+    - `"paddleocr"` (default) — standard local OCR
+    - `"vision"` — directly use Gemini Vision LLM
     """
     # Validate restaurant exists AND user owns it
     restaurant = _verify_ownership(restaurant_id, current_user, db)
@@ -451,58 +454,83 @@ async def admin_upload_menu(
         db.add(upload)
         db.commit()
 
-        # ── Step 1: OCR — routes to Google Vision (cloud) or PaddleOCR (local) ──
-        if settings.OCR_ENGINE == "google_vision" and settings.GOOGLE_VISION_API_KEY:
-            # ── Cloud path: lightweight REST call, works on Render free tier ──
-            from app.services.ocr.google_vision_ocr import extract_text_google_vision
-            raw_text = extract_text_google_vision(str(file_path), settings.GOOGLE_VISION_API_KEY)
-            # Parse raw text into structured items using the text-based parser
-            from app.services.ocr.menu_layout_parser import parse_menu_from_text
-            parsed_items = parse_menu_from_text(raw_text)
-        else:
-            # ── Local path: PaddleOCR (requires heavy dependencies) ─────────
-            from app.services.ocr.ocr_engine import get_ocr_engine
-            import cv2
-            img = cv2.imread(str(file_path))
-            if img is None:
-                raise ValueError(f"Could not read image: {file_path}")
-            ocr_engine = get_ocr_engine()
-            raw_ocr_result = ocr_engine.ocr.ocr(img)
-            from app.services.ocr.menu_layout_parser import parse_menu
-            parsed_items = parse_menu(raw_ocr_result)
-
-        upload.ocr_result = {"status": "ocr_completed", "engine": settings.OCR_ENGINE}
-        db.commit()
-
-        logger.info(f"[Admin Upload] OCR extracted {len(parsed_items)} items")
-
-        if not parsed_items:
-            upload.ocr_status = "completed"
-            upload.error_message = "No menu items detected in the image"
-            upload.processed_at = datetime.utcnow()
+        # ── Step 1 & 3: Extraction and Structuring ─────────────────────────
+        if extraction_method == "vision":
+            from app.services.ocr.vision_llm_extractor import get_vision_extractor
+            extractor = get_vision_extractor()
+            enriched_items = extractor.extract_menu(str(file_path), restaurant.restaurant_name)
+            
+            upload.ocr_result = {"status": "vision_completed", "engine": "gemini-1.5-pro"}
+            upload.structured_data = {"enriched_items": enriched_items}
             db.commit()
-            return {
-                "upload_id": upload_id,
-                "status": "completed",
-                "message": "No menu items detected in image",
-                "mode": mode,
-                "restaurant_name": restaurant.restaurant_name,
-                "items_count": 0,
-                "embedded_count": 0,
-            }
+            
+            logger.info(f"[Admin Upload] Vision LLM extracted and enriched {len(enriched_items)} items directly.")
+            
+            if not enriched_items:
+                upload.ocr_status = "completed"
+                upload.error_message = "No menu items detected in the image"
+                upload.processed_at = datetime.utcnow()
+                db.commit()
+                return {
+                    "upload_id": upload_id,
+                    "status": "completed",
+                    "message": "No menu items detected in image",
+                    "mode": mode,
+                    "restaurant_name": restaurant.restaurant_name,
+                    "items_count": 0,
+                    "embedded_count": 0,
+                }
+        else:
+            # ── Standard OCR path ──
+            if settings.OCR_ENGINE == "google_vision" and settings.GOOGLE_VISION_API_KEY:
+                from app.services.ocr.google_vision_ocr import extract_text_google_vision
+                raw_text = extract_text_google_vision(str(file_path), settings.GOOGLE_VISION_API_KEY)
+                from app.services.ocr.menu_layout_parser import parse_menu_from_text
+                parsed_items = parse_menu_from_text(raw_text)
+            else:
+                # ── Local path: PaddleOCR (requires heavy dependencies) ─────────
+                from app.services.ocr.ocr_engine import get_ocr_engine
+                import cv2
+                img = cv2.imread(str(file_path))
+                if img is None:
+                    raise ValueError(f"Could not read image: {file_path}")
+                ocr_engine = get_ocr_engine()
+                raw_ocr_result = ocr_engine.ocr.ocr(img)
+                from app.services.ocr.menu_layout_parser import parse_menu
+                parsed_items = parse_menu(raw_ocr_result)
 
-        # ── Step 3: LLM enrichment ──────────────────────────────────────────
-        from app.services.nlp.menu_structurer import get_menu_structurer
+            upload.ocr_result = {"status": "ocr_completed", "engine": settings.OCR_ENGINE}
+            db.commit()
 
-        structurer = get_menu_structurer()
-        enriched_items = structurer.enrich(
-            parsed_items=parsed_items,
-            restaurant_name=restaurant.restaurant_name,
-        )
-        logger.info(f"[Admin Upload] LLM enriched {len(enriched_items)} items")
+            logger.info(f"[Admin Upload] OCR extracted {len(parsed_items)} items")
 
-        upload.structured_data = {"enriched_items": enriched_items}
-        db.commit()
+            if not parsed_items:
+                upload.ocr_status = "completed"
+                upload.error_message = "No menu items detected in the image"
+                upload.processed_at = datetime.utcnow()
+                db.commit()
+                return {
+                    "upload_id": upload_id,
+                    "status": "completed",
+                    "message": "No menu items detected in image",
+                    "mode": mode,
+                    "restaurant_name": restaurant.restaurant_name,
+                    "items_count": 0,
+                    "embedded_count": 0,
+                }
+
+            # ── Step 3: LLM enrichment ──────────────────────────────────────────
+            from app.services.nlp.menu_structurer import get_menu_structurer
+
+            structurer = get_menu_structurer()
+            enriched_items = structurer.enrich(
+                parsed_items=parsed_items,
+                restaurant_name=restaurant.restaurant_name,
+            )
+            logger.info(f"[Admin Upload] LLM enriched {len(enriched_items)} items")
+
+            upload.structured_data = {"enriched_items": enriched_items}
+            db.commit()
 
         # ── Step 4: Replace mode — clear old menu ───────────────────────────
         if mode == "replace":
