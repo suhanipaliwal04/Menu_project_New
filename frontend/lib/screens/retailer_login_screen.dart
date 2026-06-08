@@ -121,7 +121,7 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
               Center(
                   child: Image.asset(
                     'assets/images/restaurant_logo.png',
-                    height: 280,
+                    height: 300,
                     fit: BoxFit.contain,
                   ),
               ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack),
