@@ -1,6 +1,7 @@
 class RestaurantModel {
   final String restaurantId;
   final String areaId;
+  final String? areaName;
   final String restaurantName;
   final List<String>? cuisineType;
   final String? priceCategory;
@@ -18,6 +19,7 @@ class RestaurantModel {
   const RestaurantModel({
     required this.restaurantId,
     required this.areaId,
+    this.areaName,
     required this.restaurantName,
     this.cuisineType,
     this.priceCategory,
@@ -37,6 +39,7 @@ class RestaurantModel {
       RestaurantModel(
         restaurantId: json['restaurant_id']?.toString() ?? '',
         areaId: json['area_id']?.toString() ?? '',
+        areaName: json['area_name']?.toString(),
         restaurantName: json['restaurant_name'] ?? '',
         cuisineType: (json['cuisine_type'] as List<dynamic>?)
             ?.map((e) => e.toString())
@@ -58,8 +61,8 @@ class RestaurantModel {
       cuisineType?.join(', ') ?? 'Various Cuisines';
 
   String get displayLocation {
+    if (areaName != null && areaName!.isNotEmpty) return areaName!;
     if (address != null && address!.isNotEmpty) return address!;
-    if (areaId.isNotEmpty) return areaId;
     return 'Unknown Location';
   }
 
