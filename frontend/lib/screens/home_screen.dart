@@ -42,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _activePopularTab = 'Trending';
   String _selectedCity = 'Nagpur';
   String _selectedArea = 'Sitabuldi';
+  String? _selectedAreaId;
 
   @override
   void initState() {
@@ -441,6 +442,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     itemBuilder: (context, index) {
                       final String areaName = useFallback ? fallbackAreas[index]['name']! : provider.areas[index].areaName;
                       final String cityName = useFallback ? fallbackAreas[index]['city']! : provider.areas[index].city;
+                      final String areaId = useFallback ? fallbackAreas[index]['id']! : provider.areas[index].areaId;
                       
                       return ListTile(
                         leading: Container(
@@ -457,10 +459,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           setState(() {
                             _selectedArea = areaName;
                             _selectedCity = cityName;
+                            _selectedAreaId = areaId;
                           });
                           Navigator.pop(ctx);
-                          // Refresh restaurants based on city
-                          provider.loadRestaurants(city: cityName);
+                          // Refresh restaurants based on selected area
+                          provider.loadRestaurants(areaId: areaId, orderType: _selectedTab);
                         },
                       );
                     },
@@ -532,7 +535,7 @@ class _HomeScreenState extends State<HomeScreen> {
             FloatingActionButton(
               heroTag: 'book_table_home',
               onPressed: () {
-                context.read<BrowseProvider>().loadRestaurants(orderType: 'Dine In');
+                context.read<BrowseProvider>().loadRestaurants(orderType: 'Dine In', areaId: _selectedAreaId);
                 context.read<CartProvider>().setOrderType('Dine In');
                 Navigator.push(
                   context,
@@ -810,7 +813,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: GestureDetector(
               onTap: () {
                 setState(() => _selectedTab = name);
-                context.read<BrowseProvider>().loadRestaurants(orderType: name);
+                context.read<BrowseProvider>().loadRestaurants(orderType: name, areaId: _selectedAreaId);
                 context.read<CartProvider>().setOrderType(name);
                 Navigator.push(
                   context,
