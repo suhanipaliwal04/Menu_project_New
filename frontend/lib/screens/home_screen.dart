@@ -1180,6 +1180,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showAppRatingDialog(BuildContext context) {
     double selectedRating = 0.0;
     final textCtrl = TextEditingController();
+    final nameCtrl = TextEditingController();
 
     showDialog(
       context: context,
@@ -1211,6 +1212,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 16),
                 TextField(
+                  controller: nameCtrl,
+                  style: GoogleFonts.outfit(color: AppTheme.textPrimary),
+                  decoration: InputDecoration(
+                    hintText: 'Your Name (Optional)',
+                    hintStyle: GoogleFonts.outfit(color: AppTheme.textMuted),
+                    filled: true,
+                    fillColor: AppTheme.background,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
                   controller: textCtrl,
                   maxLines: 3,
                   style: GoogleFonts.outfit(color: AppTheme.textPrimary),
@@ -1236,10 +1249,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 onPressed: () async {
                   final provider = context.read<ReviewsProvider>();
+                  final name = nameCtrl.text.trim();
                   final success = await provider.submitAppReview(
                     rating: selectedRating,
                     reviewText: textCtrl.text.trim(),
-                    customerName: 'Customer',
+                    customerName: name.isNotEmpty ? name : 'Customer',
                   );
                   if (ctx.mounted) {
                     Navigator.pop(ctx);
