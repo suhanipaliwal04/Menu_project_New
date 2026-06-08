@@ -33803,7 +33803,7 @@ q=s[1]
 s=s[2]
 p=b[2]
 return A.b([o*m+l*k+j*n,o*r+l*q+j*s,o*p[0]+l*p[1]+j*p[2]],t.n)},
-baY(){return"https://eatbot-lifa.onrender.com/api/v1"},
+baY(){return"http://localhost:8000/api/v1"},
 baZ(a){if(a==null)return B.P
 if(a>=7)return B.LR
 if(a>=4)return B.rw
@@ -108160,7 +108160,7 @@ s=o==null?s:o}catch(n){}throw A.f(new A.dO(s,m))},
 Hn(){var s=0,r=A.v(t.y),q,p=2,o=[],n=this,m,l,k,j,i
 var $async$Hn=A.p(function(a,b){if(a===1){o.push(b)
 s=p}for(;;)switch(s){case 0:p=4
-m=A.eA(A.ei("https://eatbot-lifa.onrender.com/api/v1","/api/v1","")+"/health",0,null)
+m=A.eA(A.ei("http://localhost:8000/api/v1","/api/v1","")+"/health",0,null)
 k=t.N
 s=7
 return A.l(n.b.O1("GET",m,A.ah(["Content-Type","application/json","Accept","application/json"],k,k)).kH(0,B.d7),$async$Hn)
@@ -110443,12 +110443,14 @@ d=o.pop()
 f=A.a2(d)
 if(f instanceof A.dO){l=f
 n.ax=!1
+n.CW=null
 n.c=l.a
 n.F()
 q=!1
 s=1
 break}else{k=f
 n.ax=!1
+n.CW=null
 n.c="Upload failed: "+J.bd(k)
 n.F()
 q=!1
