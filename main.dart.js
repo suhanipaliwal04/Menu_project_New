@@ -112485,7 +112485,7 @@ a1D(a,b){return this.a1E(a,b,!1)},
 aiK(a,b){var s=null,r=A.dP(s,s,B.o,s,s,s,s,s,s,B.e,s,s,s,s,new A.b7(A.O(16),B.w),s,s,s,s,s)
 return A.W(s,A.cm(A.e4(A.ac(A.b([B.RK,B.bA,A.j("Place Order",s,s,s,s,s,A.i().$2$fontSize$fontWeight(15,B.Y),s,s,s)],t.p),B.k,B.as,B.h,0,s),new A.aCT(this,b,a),r),56,1/0),B.i,s,s,B.Io,s,s,s,B.Ok,s,s,s)},
 aiN(a){var s=null
-return A.bT(A.af(A.b([B.a8H,B.W,A.j("Your cart is empty",s,s,s,s,s,A.i().$3$color$fontSize$fontWeight(B.t,20,B.q),s,s,s),B.ak,A.j("Use voice commands to add items!",s,s,s,s,s,A.i().$2$color$fontSize(B.v,14),s,s,s),B.hk,A.aWC(B.e6,B.Gu,new A.aCU(a),s)],t.p),B.k,B.f,B.Z,0,B.r),s,s)},
+return A.bT(A.af(A.b([B.a8H,B.W,A.j("Your cart is empty",s,s,s,s,s,A.i().$3$color$fontSize$fontWeight(B.t,20,B.q),s,s,s),B.ak,B.hk,A.aWC(B.e6,B.Gu,new A.aCU(a),s)],t.p),B.k,B.f,B.Z,0,B.r),s,s)},
 aj7(a,b){var s=null,r=A.kC(A.by(A.W(s,B.R8,B.i,s,s,B.r1,s,s,s,B.da,s,s,s),s,s,s),B.AS,B.hL,s,A.b2(8e5,0,0),B.dF),q=A.j("Order Placed! \ud83c\udf89",s,s,s,s,s,A.i().$3$color$fontSize$fontWeight(B.t,26,B.bH),s,s,s),p=A.j("Order ID: "+A.n(b.d),s,s,s,s,s,A.i().$2$color$fontSize(B.v,14),s,s,s),o=A.dP(s,s,B.o,s,s,s,s,s,s,B.e,s,s,B.OC,s,new A.b7(A.O(14),B.w),s,s,s,s,s)
 return A.bT(A.af(A.b([r,B.bf,q,B.ak,p,B.eh,A.e4(A.j("Back to Home",s,s,s,s,s,A.i().$1$fontWeight(B.Y),s,s,s),new A.aCV(b,a),o)],t.p),B.k,B.f,B.Z,0,B.r),s,s)}}
 A.aD0.prototype={
