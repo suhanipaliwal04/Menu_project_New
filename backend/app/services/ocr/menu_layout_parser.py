@@ -275,11 +275,17 @@ def parse_menu(ocr_result: List) -> List[Dict[str, Any]]:
     if not page:
         return []
 
+    # Calculate dynamic confidence threshold
+    # If the page is generally poor/blurry, we lower the threshold to retain more text.
+    valid_confs = [line[1][1] for line in page if line[1][1] > 0]
+    avg_conf = sum(valid_confs) / len(valid_confs) if valid_confs else 0.0
+    dynamic_threshold = 0.30 if avg_conf < 0.70 else MIN_CONFIDENCE
+
     # Flatten & filter tokens
     tokens: List[Dict] = []
     for line in page:
         bbox, (text, conf) = line[0], line[1]
-        if conf < MIN_CONFIDENCE or _is_noise(text):
+        if conf < dynamic_threshold or _is_noise(text):
             continue
         tokens.append({
             'text':     text,
