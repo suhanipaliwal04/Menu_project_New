@@ -112042,7 +112042,7 @@ k=o.c
 if(k==null)k="Login failed"
 j.c7(A.d9(null,null,null,B.A,B.aV,B.x,null,A.j(k,null,null,null,null,null,A.i().$0(),null,null,null),null,B.a7,null,null,null,null,null,null,null,new A.b7(A.O(12),B.w),null,null))}case 1:return A.t(q,r)}})
 return A.u($async$DR,r)},
-E(a){var s=null,r=A.i2(s,s,s,!0,!0,B.G,s,1,s,s,0,!1,s,!1,s,s,new A.ar(B.bn,A.W(s,A.d8(s,s,s,B.uP,s,s,new A.aAs(a),s,s,s,s),B.i,s,s,B.r_,s,s,s,s,s,s,s),s),s,!0,s,s,s,s,s,s,s,s,s,1,s,!0),q=A.kC(A.by(A.bT(A.TU("assets/images/admin_logo.png",B.mx,280,s),s,s),s,s,s),s,B.fE,s,A.b2(4e5,0,0),s),p=A.bY(A.by(A.j("Sign in with your Supabase admin account.",s,s,s,s,s,A.i().$2$color$fontSize(B.v,14),B.bM,s,s),s,s,s),A.b2(3e5,0,0),s),o=A.O(16),n=A.aY(B.E,-1,B.p,1),m=A.b([new A.bD(0,B.a0,B.B.ah(0.03),B.ea,8)],t.V),l=A.i().$1$color(B.t),k=A.d3(B.us,B.v,s,20),j=t.p
+E(a){var s=null,r=A.i2(s,s,s,!0,!0,B.G,s,1,s,s,0,!1,s,!1,s,s,new A.ar(B.bn,A.W(s,A.d8(s,s,s,B.uP,s,s,new A.aAs(a),s,s,s,s),B.i,s,s,B.r_,s,s,s,s,s,s,s),s),s,!0,s,s,s,s,s,s,s,s,s,1,s,!0),q=A.kC(A.by(A.bT(A.TU("assets/images/admin_logo.png",B.mx,300,s),s,s),s,s,s),s,B.fE,s,A.b2(4e5,0,0),s),p=A.bY(A.by(A.j("Sign in with your Supabase admin account.",s,s,s,s,s,A.i().$2$color$fontSize(B.v,14),B.bM,s,s),s,s,s),A.b2(3e5,0,0),s),o=A.O(16),n=A.aY(B.E,-1,B.p,1),m=A.b([new A.bD(0,B.a0,B.B.ah(0.03),B.ea,8)],t.V),l=A.i().$1$color(B.t),k=A.d3(B.us,B.v,s,20),j=t.p
 return A.f8(r,s,A.bT(A.fp(A.af(A.b([q,B.ak,p,B.bf,A.e8(A.bY(A.by(A.W(s,A.dS(s,B.aq,!1,s,!0,B.x,s,A.e2(),this.d,s,s,s,s,s,2,A.e5(s,B.c2,s,s,s,s,s,s,!0,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,A.i().$1$color(B.P),"Admin Email",s,s,k,s,s,s,s,s,s,!0,!0,!1,s,s,s,s,s,s,s,s,s,s,s,s,s,s),B.y,!0,s,!0,s,!1,s,B.as,s,s,s,s,B.pL,s,s,s,1,s,s,!1,"\u2022",s,s,s,s,s,!1,s,s,!1,s,!0,s,B.a9,s,s,s,s,s,s,s,s,s,s,s,l,!0,B.a2,s,B.aG,s,s,s,s),B.i,s,s,new A.V(B.e,s,n,o,m,s,B.m),s,s,s,B.cp,s,s,s),s,s,s),A.b2(0,400,0),s),0.2,s,0),B.W,this.aj9(500),B.pA,A.cm(new A.aAt(this),t.Q),B.bf,A.bY(A.by(A.ac(A.b([B.tT,new A.ar(B.eO,A.j("Secured by Supabase Auth",s,s,s,s,s,A.i().$2$color$fontSize(B.P,11),s,s,s),s),B.tT],j),B.l,B.f,B.h,0,s),s,s,s),A.b2(7e5,0,0),s)],j),B.ba,B.ar,B.h,0,B.r),s,B.y,B.im,s,s,B.T),s,s),!0,s,s)},
 aj9(a){var s=this,r=null,q=A.O(16),p=A.aY(B.E,-1,B.p,1),o=A.b([new A.bD(0,B.a0,B.B.ah(0.03),B.ea,8)],t.V),n=s.f,m=A.i().$1$color(B.t),l=A.i().$1$color(B.P)
 return A.e8(A.bY(A.by(A.W(r,A.dS(r,B.aq,!1,r,!0,B.x,r,A.e2(),s.e,r,r,r,r,r,2,A.e5(r,B.c2,r,r,r,r,r,r,!0,r,r,r,r,r,r,r,r,r,r,r,r,r,r,r,r,r,r,r,r,r,l,"Password",r,r,B.uL,r,r,r,r,r,r,!0,!0,!1,r,r,r,r,r,r,r,r,A.d8(r,r,r,A.d3(s.f?B.on:B.oo,B.v,r,20),r,r,new A.aAq(s),r,r,r,r),r,r,r,r,r),B.y,!0,r,!0,r,!1,r,B.as,r,r,r,r,r,r,r,r,1,r,r,n,"\u2022",r,r,r,r,r,!1,r,r,!1,r,!0,r,B.a9,r,r,r,r,r,r,r,r,r,r,r,m,!0,B.a2,r,B.aG,r,r,r,r),B.i,r,r,new A.V(B.e,r,p,q,o,r,B.m),r,r,r,B.cp,r,r,r),r,r,r),A.b2(0,a,0),r),0.2,r,0)}}
@@ -112657,7 +112657,7 @@ A.aXh(k,A.d6(new A.aDU(),null,t.z))}case 4:if(!l&&p.c!=null){k=p.c.W(t.J).f
 o=n.c
 k.c7(A.d9(null,null,null,B.A,null,B.x,null,A.j(o==null?"Authentication failed":o,null,null,null,null,null,null,null,null,null),null,B.a7,null,null,null,null,null,null,null,null,null,null))}case 1:return A.t(q,r)}})
 return A.u($async$xi,r)},
-E(a){var s,r,q,p,o,n,m,l=this,k=null,j=A.bq(a,!0,t.W0).b===B.hF,i=A.kC(A.by(A.bT(A.TU("assets/images/eatbot_logo.png",B.mx,280,k),k,k),k,k,k),k,B.fE,A.b2(2e5,0,0),A.b2(5e5,0,0),k),h=l.d?"Create an Account":"Welcome Back"
+E(a){var s,r,q,p,o,n,m,l=this,k=null,j=A.bq(a,!0,t.W0).b===B.hF,i=A.kC(A.by(A.bT(A.TU("assets/images/eatbot_logo.png",B.mx,300,k),k,k),k,k,k),k,B.fE,A.b2(2e5,0,0),A.b2(5e5,0,0),k),h=l.d?"Create an Account":"Welcome Back"
 h=A.j(h,k,k,k,k,k,A.i().$3$color$fontSize$fontWeight(B.t,24,B.q),k,k,k)
 s=A.i().$1$color(B.t)
 r=B.d.aM(229.5)
@@ -115084,7 +115084,7 @@ if(k==null)k="Login failed"
 j.c7(A.d9(null,null,null,B.A,B.aV,B.x,null,A.j(k,null,null,null,null,null,A.i().$0(),null,null,null),null,B.a7,null,null,null,null,null,null,null,null,null,null))
 case 9:case 4:case 1:return A.t(q,r)}})
 return A.u($async$tX,r)},
-E(a){var s,r,q,p,o,n,m=this,l=null,k=A.i2(l,l,l,!0,!0,B.G,l,1,l,l,0,!1,l,!1,l,l,new A.ar(B.bn,A.W(l,A.d8(l,l,l,B.uP,l,l,new A.aO6(a),l,l,l,l),B.i,l,l,B.r_,l,l,l,l,l,l,l),l),l,!0,l,l,l,l,l,l,l,l,l,1,l,!0),j=A.kC(A.by(A.bT(A.TU("assets/images/restaurant_logo.png",B.mx,280,l),l,l),l,l,l),l,B.fE,l,A.b2(4e5,0,0),l),i=m.r?"Register to list your restaurant.":"Manage your restaurant, upload menus & more."
+E(a){var s,r,q,p,o,n,m=this,l=null,k=A.i2(l,l,l,!0,!0,B.G,l,1,l,l,0,!1,l,!1,l,l,new A.ar(B.bn,A.W(l,A.d8(l,l,l,B.uP,l,l,new A.aO6(a),l,l,l,l),B.i,l,l,B.r_,l,l,l,l,l,l,l),l),l,!0,l,l,l,l,l,l,l,l,l,1,l,!0),j=A.kC(A.by(A.bT(A.TU("assets/images/restaurant_logo.png",B.mx,300,l),l,l),l,l,l),l,B.fE,l,A.b2(4e5,0,0),l),i=m.r?"Register to list your restaurant.":"Manage your restaurant, upload menus & more."
 i=A.bY(A.by(A.j(i,l,l,l,l,l,A.i().$2$color$fontSize(B.v,14),B.bM,l,l),l,l,l),A.b2(3e5,0,0),l)
 s=A.O(16)
 r=A.aY(B.E,-1,B.p,1)
