@@ -69,11 +69,11 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                 Center(
                   child: Image.asset(
                     'assets/images/eatbot_logo.png',
-                    height: 360,
+                    height: 200,
                     fit: BoxFit.contain,
                   ),
                 ).animate().scale(delay: 200.ms, duration: 500.ms, curve: Curves.easeOutBack),
-                const SizedBox(height: 48),
+                const SizedBox(height: 24),
   
                 // Title
                 Text(

@@ -90,7 +90,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
               Center(
                 child: Image.asset(
                   'assets/images/admin_logo.png',
-                  height: 360,
+                  height: 200,
                   fit: BoxFit.contain,
                 ),
               ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack),
@@ -100,7 +100,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.textSecondary),
               ).animate().fadeIn(delay: 300.ms),
-              const SizedBox(height: 48),
+              const SizedBox(height: 24),
 
               _buildInputField(
                 controller: _emailCtrl,
