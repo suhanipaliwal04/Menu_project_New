@@ -2023,6 +2023,16 @@ class _UploadTabState extends State<_UploadTab> {
             _modeSelector(p),
             const SizedBox(height: 20),
 
+            // Extraction Method selector
+            Text('Extraction Method',
+                style: GoogleFonts.outfit(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textSecondary)),
+            const SizedBox(height: 10),
+            _extractionSelector(p),
+            const SizedBox(height: 20),
+
             // Image picker area
             GestureDetector(
               onTap: _showSourcePicker,
@@ -2169,6 +2179,32 @@ class _UploadTabState extends State<_UploadTab> {
             selected: p.uploadMode == 'append',
             onTap: () => p.setUploadMode('append'),
             color: AppTheme.success,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _extractionSelector(RetailerProvider p) {
+    return Row(
+      children: [
+        Expanded(
+          child: _modeOption(
+            label: '📷 Standard OCR',
+            subtitle: 'Fast, local processing',
+            selected: p.extractionMethod == 'paddleocr',
+            onTap: () => p.setExtractionMethod('paddleocr'),
+            color: AppTheme.primary,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _modeOption(
+            label: '✨ AI Vision',
+            subtitle: 'Gemini Pro (Accurate)',
+            selected: p.extractionMethod == 'vision',
+            onTap: () => p.setExtractionMethod('vision'),
+            color: const Color(0xFF9C27B0), // Purple for AI
           ),
         ),
       ],

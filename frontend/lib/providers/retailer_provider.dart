@@ -75,6 +75,8 @@ class RetailerProvider extends ChangeNotifier {
   bool get isUploading => _isUploading;
   String? _uploadMode = 'replace'; // 'replace' | 'append'
   String? get uploadMode => _uploadMode;
+  String? _extractionMethod = 'paddleocr'; // 'paddleocr' | 'vision'
+  String? get extractionMethod => _extractionMethod;
   Map<String, dynamic>? _lastUploadResult;
   Map<String, dynamic>? get lastUploadResult => _lastUploadResult;
 
@@ -396,6 +398,11 @@ class RetailerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setExtractionMethod(String method) {
+    _extractionMethod = method;
+    notifyListeners();
+  }
+
   Future<bool> uploadMenuImage(XFile imageFile) async {
     final id = _myRestaurant?.restaurantId;
     if (id == null) return false;
@@ -410,6 +417,7 @@ class RetailerProvider extends ChangeNotifier {
         imageFile: imageFile,
         restaurantId: id,
         mode: _uploadMode ?? 'replace',
+        extractionMethod: _extractionMethod ?? 'paddleocr',
       );
       _lastUploadResult = result;
       _isUploading = false;

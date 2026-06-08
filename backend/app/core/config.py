@@ -42,6 +42,7 @@ class Settings(BaseSettings):
     LLM_TEMPERATURE: float = 0.3
     HUGGINGFACE_API_KEY: Optional[str] = None
     GROQ_API_KEY: Optional[str] = None
+    GEMINI_API_KEY: Optional[str] = None
     LLM_PROVIDER: Optional[str] = None
     
     # Embeddings
