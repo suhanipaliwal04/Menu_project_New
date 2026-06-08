@@ -1,7 +1,8 @@
 """
-Vision LLM Extractor - Map menu images directly to structured JSON using Gemini Pro.
+Vision LLM Extractor - Map menu images directly to structured JSON using Gemini 2.5 Pro Vision.
 """
 
+import os
 import base64
 import json
 import logging
@@ -18,6 +19,11 @@ class VisionLLMExtractor:
         self.api_key = settings.GEMINI_API_KEY
         if not self.api_key:
             logger.warning("GEMINI_API_KEY is not configured.")
+        self.api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.api_key}"
+
+    def _encode_image(self, image_path: str) -> str:
+        with open(image_path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode('utf-8')
 
     def extract_menu(self, image_path: str, restaurant_name: str) -> List[Dict[str, Any]]:
         """
@@ -27,21 +33,15 @@ class VisionLLMExtractor:
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY is not set in environment variables.")
 
-        # Read and encode the image
         img_path = Path(image_path)
         if not img_path.exists():
             raise FileNotFoundError(f"Image not found at {image_path}")
 
-        with open(img_path, "rb") as f:
-            encoded_image = base64.b64encode(f.read()).decode("utf-8")
-        
         try:
-            logger.info(f"Extracting menu using OpenRouter Vision ({self.model})...")
+            logger.info("Extracting menu using Gemini Vision LLM...")
             
-            # Encode image to base64
             base64_image = self._encode_image(image_path)
             
-            # Construct the prompt
             prompt = f"""You are a strict data extractor for a restaurant menu digitizer.
 Below is an image of a menu for the restaurant '{restaurant_name}'.
 
@@ -68,37 +68,49 @@ CRITICAL RULES:
 4. Return ONLY the raw JSON array.
 """
 
-            headers = {
-                "Authorization": f"Bearer {self.api_key}",
-                "HTTP-Referer": "http://localhost:8000",
-                "X-Title": "Menu Digitizer",
-                "Content-Type": "application/json"
-            }
-
             payload = {
-                "model": self.model,
-                "messages": [
+                "contents": [
                     {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": prompt},
-                            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
+                        "parts": [
+                            {"text": prompt},
+                            {
+                                "inlineData": {
+                                    "mimeType": "image/jpeg",
+                                    "data": base64_image
+                                }
+                            }
                         ]
                     }
                 ],
-                "temperature": 0.1
+                "generationConfig": {
+                    "temperature": 0.1,
+                    "responseMimeType": "application/json"
+                }
             }
+
+            headers = {"Content-Type": "application/json"}
 
             response = requests.post(self.api_url, headers=headers, json=payload, timeout=60)
             
             if response.status_code != 200:
-                logger.error(f"OpenRouter API failed: {response.text}")
-                raise RuntimeError(f"OpenRouter API error: {response.status_code} {response.text}")
+                logger.error(f"Gemini API failed: {response.text}")
+                raise RuntimeError(f"Gemini API error: {response.status_code} {response.text}")
 
             result_json = response.json()
-            text_response = result_json['choices'][0]['message']['content']
+            
+            # Handle unexpected or empty responses safely
+            if "candidates" not in result_json or not result_json["candidates"]:
+                raise RuntimeError("Gemini API returned an empty response.")
+                
+            content_parts = result_json['candidates'][0].get('content', {}).get('parts', [])
+            if not content_parts or 'text' not in content_parts[0]:
+                raise RuntimeError("Gemini API failed to extract text from the image.")
+                
+            text_response = content_parts[0]['text']
 
-            # Clean markdown formatting if model still adds it
+            if not text_response:
+                raise RuntimeError("Vision API returned empty content.")
+
             text_response = text_response.strip()
             if text_response.startswith("```json"):
                 text_response = text_response[7:]
@@ -109,21 +121,24 @@ CRITICAL RULES:
                 
             parsed_items = json.loads(text_response.strip())
             
-            # Ensure price is float
             for item in parsed_items:
                 try:
                     item["price"] = float(item.get("price", 0))
                 except (ValueError, TypeError):
                     item["price"] = 0.0
                     
+            logger.info(f"Successfully extracted {len(parsed_items)} items via Gemini Vision.")
             return parsed_items
             
         except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to call Gemini API: {e}")
+            logger.error(f"Failed to call Vision API: {e}")
             raise RuntimeError(f"Vision API request failed: {e}")
         except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse JSON from Gemini: {e}")
+            logger.error(f"Failed to parse JSON from Vision API: {e}")
             raise ValueError("Vision API returned invalid JSON.")
+        except Exception as e:
+            logger.error(f"Failed extraction: {e}")
+            raise
 
 # Singleton
 _extractor = None
