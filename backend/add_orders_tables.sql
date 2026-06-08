@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS orders (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-
+//
 COMMENT ON TABLE orders IS 'Takeaway orders pending fulfillment';
 
 -- Order items table: Items within an order
