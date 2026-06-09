@@ -862,67 +862,78 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCategories() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader('In the mood for?'),
-        SizedBox(
-          height: 100,
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            scrollDirection: Axis.horizontal,
-            itemCount: _categories.length,
-            itemBuilder: (context, i) {
-              final cat = _categories[i];
-              return GestureDetector(
-                onTap: () {
-                  _queryCtrl.text = cat['name'];
-                  _search();
-                },
-                child: Container(
-                  width: 80,
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Column(
-                    children: [
-                      Container(
-                        height: 68,
-                        width: 68,
-                        padding: const EdgeInsets.all(3),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppTheme.primary.withValues(alpha: 0.5),
-                            width: 2,
-                          ),
-                        ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            image: DecorationImage(
-                              image: cat['url'].toString().startsWith('http')
-                                  ? NetworkImage(cat['url']) as ImageProvider
-                                  : AssetImage(cat['url']),
-                              fit: BoxFit.cover,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenWidth = constraints.maxWidth;
+        // Calculate dynamic width to always show ~5.2 items on screen like the reference photo
+        final itemWidth = screenWidth * 0.19; 
+        final iconSize = itemWidth * 0.85;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionHeader('In the mood for?'),
+            SizedBox(
+              height: iconSize + 32, // Icon height + spacing + text height
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                scrollDirection: Axis.horizontal,
+                itemCount: _categories.length,
+                itemBuilder: (context, i) {
+                  final cat = _categories[i];
+                  return GestureDetector(
+                    onTap: () {
+                      _queryCtrl.text = cat['name'];
+                      _search();
+                    },
+                    child: Container(
+                      width: itemWidth,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Column(
+                        children: [
+                          Container(
+                            height: iconSize,
+                            width: iconSize,
+                            padding: const EdgeInsets.all(3),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppTheme.primary.withValues(alpha: 0.5),
+                                width: 2,
+                              ),
+                            ),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                image: DecorationImage(
+                                  image: cat['url'].toString().startsWith('http')
+                                      ? NetworkImage(cat['url']) as ImageProvider
+                                      : AssetImage(cat['url']),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
+                          const SizedBox(height: 6),
+                          Text(
+                            cat['name'],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis, // Prevent text overflow on small screens
+                            style: GoogleFonts.outfit(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.textPrimary),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        cat['name'],
-                        style: GoogleFonts.outfit(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.textPrimary),
-                      ),
-                    ],
-                  ),
-                ),
-              ).animate(delay: Duration(milliseconds: 50 * i)).fadeIn().scale();
-            },
-          ),
-        ),
-      ],
+                    ),
+                  ).animate(delay: Duration(milliseconds: 50 * i)).fadeIn().scale();
+                },
+              ),
+            ),
+          ],
+        );
+      }
     );
   }
 
