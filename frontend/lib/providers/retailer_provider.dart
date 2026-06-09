@@ -486,6 +486,8 @@ class RetailerProvider extends ChangeNotifier {
     bool? isOpenManually,
     String? openingTime,
     String? closingTime,
+    int? slotDurationMins,
+    int? maxDineInPerSlot,
   }) async {
     _state = RetailerState.loading;
     notifyListeners();
@@ -505,6 +507,8 @@ class RetailerProvider extends ChangeNotifier {
       if (isOpenManually != null) 'is_open_manually': isOpenManually,
       if (openingTime != null) 'opening_time': openingTime,
       if (closingTime != null) 'closing_time': closingTime,
+      if (slotDurationMins != null) 'slot_duration_mins': slotDurationMins,
+      if (maxDineInPerSlot != null) 'max_dine_in_per_slot': maxDineInPerSlot,
     };
 
     if (updates.isEmpty) return true;

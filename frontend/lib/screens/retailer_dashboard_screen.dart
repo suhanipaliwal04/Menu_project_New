@@ -2325,6 +2325,8 @@ class _SettingsTabState extends State<_SettingsTab> {
   bool _isOpenManually = true;
   TimeOfDay? _openingTime;
   TimeOfDay? _closingTime;
+  final _slotDurationCtrl = TextEditingController(text: '30');
+  final _maxDineInCtrl = TextEditingController(text: '5');
 
   // Setup (new restaurant) fields
   final _setupNameCtrl = TextEditingController();
@@ -2371,6 +2373,8 @@ class _SettingsTabState extends State<_SettingsTab> {
       _isOpenManually = r.isOpenManually;
       _openingTime = _parseTime(r.openingTime);
       _closingTime = _parseTime(r.closingTime);
+      _slotDurationCtrl.text = r.slotDurationMins.toString();
+      _maxDineInCtrl.text = r.maxDineInPerSlot.toString();
 
       if (!_locationsLoaded) {
         _locationsLoaded = true;
@@ -2391,6 +2395,8 @@ class _SettingsTabState extends State<_SettingsTab> {
     _setupAddressCtrl.dispose();
     _setupPhoneCtrl.dispose();
     _setupCuisineCtrl.dispose();
+    _slotDurationCtrl.dispose();
+    _maxDineInCtrl.dispose();
     super.dispose();
   }
 
@@ -2415,6 +2421,8 @@ class _SettingsTabState extends State<_SettingsTab> {
       isOpenManually: _isOpenManually,
       openingTime: _formatTime(_openingTime),
       closingTime: _formatTime(_closingTime),
+      slotDurationMins: int.tryParse(_slotDurationCtrl.text.trim()) ?? 30,
+      maxDineInPerSlot: int.tryParse(_maxDineInCtrl.text.trim()) ?? 5,
       areaId: _editSelectedArea?.areaId,
     );
 
@@ -2782,6 +2790,37 @@ class _SettingsTabState extends State<_SettingsTab> {
                   label: 'Closing Time',
                   time: _closingTime,
                   onTap: () => _selectTime(false),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Capacity Limits',
+            style: GoogleFonts.outfit(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _formField(
+                  _slotDurationCtrl,
+                  'Slot Duration (mins)',
+                  Icons.timer_rounded,
+                  type: TextInputType.number,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _formField(
+                  _maxDineInCtrl,
+                  'Max Dine-in per Slot',
+                  Icons.table_restaurant_rounded,
+                  type: TextInputType.number,
                 ),
               ),
             ],
