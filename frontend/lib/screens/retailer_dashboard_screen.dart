@@ -2325,7 +2325,7 @@ class _SettingsTabState extends State<_SettingsTab> {
   bool _isOpenManually = true;
   TimeOfDay? _openingTime;
   TimeOfDay? _closingTime;
-  final _slotDurationCtrl = TextEditingController(text: '30');
+  final _slotDurationCtrl = TextEditingController(text: '15');
   final _maxDineInCtrl = TextEditingController(text: '5');
 
   // Setup (new restaurant) fields
@@ -2421,7 +2421,7 @@ class _SettingsTabState extends State<_SettingsTab> {
       isOpenManually: _isOpenManually,
       openingTime: _formatTime(_openingTime),
       closingTime: _formatTime(_closingTime),
-      slotDurationMins: int.tryParse(_slotDurationCtrl.text.trim()) ?? 30,
+      slotDurationMins: int.tryParse(_slotDurationCtrl.text.trim()) ?? 15,
       maxDineInPerSlot: int.tryParse(_maxDineInCtrl.text.trim()) ?? 5,
       areaId: _editSelectedArea?.areaId,
     );

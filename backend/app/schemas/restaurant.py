@@ -52,7 +52,7 @@ class RestaurantResponse(RestaurantBase):
     is_open_manually: bool = True
     opening_time: Optional[time] = None
     closing_time: Optional[time] = None
-    slot_duration_mins: int = 30
+    slot_duration_mins: int = 15
     max_dine_in_per_slot: int = 5
     average_rating: float = 4.8
     total_reviews: int = 0

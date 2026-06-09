@@ -28,7 +28,7 @@ class Restaurant(Base):
     is_open_manually = Column(Boolean, default=True)
     opening_time = Column(Time, nullable=True)
     closing_time = Column(Time, nullable=True)
-    slot_duration_mins = Column(Integer, default=30)
+    slot_duration_mins = Column(Integer, default=15)
     max_dine_in_per_slot = Column(Integer, default=5)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -482,7 +482,7 @@ class _SortMenu extends StatelessWidget {
         _popItem('relevance', '⭐ Relevance'),
         _popItem('price_asc', '₹ Price: Low to High'),
         _popItem('price_desc', '₹ Price: High to Low'),
-        _popItem('health', '⭐ Rating'),
+        _popItem('health', '💚 Health Score'),
       ],
     );
   }

@@ -35,7 +35,7 @@ class RestaurantModel {
     this.closingTime,
     this.averageRating = 4.8,
     this.totalReviews = 0,
-    this.slotDurationMins = 30,
+    this.slotDurationMins = 15,
     this.maxDineInPerSlot = 5,
   });
 
@@ -59,7 +59,7 @@ class RestaurantModel {
         closingTime: json['closing_time'],
         averageRating: (json['average_rating'] as num?)?.toDouble() ?? 4.8,
         totalReviews: (json['total_reviews'] as num?)?.toInt() ?? 0,
-        slotDurationMins: (json['slot_duration_mins'] as num?)?.toInt() ?? 30,
+        slotDurationMins: (json['slot_duration_mins'] as num?)?.toInt() ?? 15,
         maxDineInPerSlot: (json['max_dine_in_per_slot'] as num?)?.toInt() ?? 5,
       );
 
