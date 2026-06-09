@@ -254,12 +254,23 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 12),
             // Profile Settings
             GestureDetector(
-              onTap: () {
+              onTap: () async {
                 Navigator.pop(ctx);
-                Navigator.push(
+                await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const CustomerSettingsScreen()),
                 );
+                if (!mounted) return;
+                final authProvider = context.read<AuthProvider>();
+                if (authProvider.city != null && authProvider.city!.isNotEmpty && authProvider.city != _selectedCity) {
+                  setState(() {
+                    _selectedCity = authProvider.city!;
+                    _selectedArea = 'Select Area';
+                    _selectedAreaId = null;
+                  });
+                  final provider = context.read<BrowseProvider>();
+                  provider.loadAreas(city: _selectedCity);
+                }
               },
               child: Container(
                 padding: const EdgeInsets.all(18),
@@ -459,7 +470,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     fontWeight: FontWeight.w800,
                     color: AppTheme.textPrimary)),
             const SizedBox(height: 6),
-            Text('Nagpur locations',
+            Text('$_selectedCity locations',
                 style: GoogleFonts.outfit(
                     color: AppTheme.textSecondary, fontSize: 13)),
             const SizedBox(height: 24),
