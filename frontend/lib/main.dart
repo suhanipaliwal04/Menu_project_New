@@ -64,10 +64,11 @@ class MenuIntelligenceApp extends StatelessWidget {
         theme: AppTheme.darkTheme,
         debugShowCheckedModeBanner: false,
         builder: (context, child) {
-          return Consumer<AuthProvider>(
-            builder: (ctx, auth, _) {
-              String bgPath = 'assets/images/eatbot_bg.png';
-              if (auth.role == 'restaurant_admin') {
+          final mediaQueryData = MediaQuery.of(context);
+          return MediaQuery(
+            data: mediaQueryData.copyWith(textScaler: const TextScaler.linear(1.0)),
+            child: Consumer<AuthProvider>(
+              builder: (ctx, auth, _) {
                 bgPath = 'assets/images/restaurant_bg.png';
               } else if (auth.role == 'system_admin') {
                 bgPath = 'assets/images/admin_bg.png';
