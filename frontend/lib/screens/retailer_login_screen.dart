@@ -111,8 +111,10 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
         ),
       ),
       body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(32),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 450),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -216,6 +218,7 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
               ).animate().fadeIn(delay: 750.ms),
             ],
           ),
+        ),
         ),
       ),
     );
