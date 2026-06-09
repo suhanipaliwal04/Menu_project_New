@@ -11,6 +11,7 @@ import 'admin_approvals_screen.dart';
 import 'upload_screen.dart';
 import 'customer_login_screen.dart';
 import 'admin_app_feedback_screen.dart';
+import 'admin_locations_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -196,8 +197,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
                 _buildModuleCard(
                   context: context,
+                  title: 'Locations Management',
+                  subtitle: 'Manage functional States and Cities',
+                  icon: Icons.location_city_rounded,
+                  color: Colors.teal,
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminLocationsScreen())),
+                  delay: 320,
+                ),
+                const SizedBox(height: 12),
+                _buildModuleCard(
+                  context: context,
                   title: 'Areas Management',
-                  subtitle: 'View and create neighborhoods and cities',
+                  subtitle: 'View and create neighborhoods',
                   icon: Icons.map_rounded,
                   color: const Color(0xFF3498DB),
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminAreasScreen())),

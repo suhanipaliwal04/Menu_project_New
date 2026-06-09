@@ -17,7 +17,7 @@ from app.core.auth import get_current_user
 from app.core.config import settings
 from app.models.restaurant import Restaurant
 from app.models.user import User
-from app.schemas.auth import UserInfo
+from app.schemas.auth import UserInfo, UpdateProfileRequest
 
 router = APIRouter()
 
@@ -239,6 +239,46 @@ def get_me(
         phone_number=local_user.phone_number if local_user else None,
         state=local_user.state if local_user else None,
         city=local_user.city if local_user else None,
+        restaurant_id=restaurant.restaurant_id if restaurant else None,
+        restaurant_name=restaurant.restaurant_name if restaurant else None,
+    )
+
+@router.put("/me", response_model=UserInfo)
+def update_me(
+    data: UpdateProfileRequest,
+    current_user: uuid.UUID = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Updates the current authenticated user's profile info.
+    """
+    local_user = db.query(User).filter(User.user_id == current_user).first()
+    if not local_user:
+        raise HTTPException(status_code=404, detail="User not found.")
+        
+    if data.full_name is not None:
+        local_user.full_name = data.full_name
+    if data.phone_number is not None:
+        local_user.phone_number = data.phone_number
+    if data.state is not None:
+        local_user.state = data.state
+    if data.city is not None:
+        local_user.city = data.city
+        
+    db.commit()
+    db.refresh(local_user)
+    
+    restaurant = db.query(Restaurant).filter(
+        Restaurant.owner_id == current_user
+    ).first()
+    
+    return UserInfo(
+        user_id=current_user,
+        email=local_user.email,
+        full_name=local_user.full_name,
+        phone_number=local_user.phone_number,
+        state=local_user.state,
+        city=local_user.city,
         restaurant_id=restaurant.restaurant_id if restaurant else None,
         restaurant_name=restaurant.restaurant_name if restaurant else None,
     )

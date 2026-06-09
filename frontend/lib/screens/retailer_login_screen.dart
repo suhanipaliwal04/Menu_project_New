@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../core/theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/retailer_provider.dart';
+import '../providers/location_provider.dart';
 import 'retailer_dashboard_screen.dart';
 
 class RetailerLoginScreen extends StatefulWidget {
@@ -20,10 +21,22 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
   final _passCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
-  final _stateCtrl = TextEditingController();
-  final _cityCtrl = TextEditingController();
+  
+  String? _selectedStateId;
+  String? _selectedStateName;
+  String? _selectedCityId;
+  String? _selectedCityName;
+
   bool _obscurePassword = true;
   bool _isSignUp = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<LocationProvider>().fetchStates();
+    });
+  }
 
   @override
   void dispose() {
@@ -50,7 +63,7 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
     }
 
     if (_isSignUp) {
-      if (_nameCtrl.text.isEmpty || _phoneCtrl.text.isEmpty || _stateCtrl.text.isEmpty || _cityCtrl.text.isEmpty) {
+      if (_nameCtrl.text.isEmpty || _phoneCtrl.text.isEmpty || _selectedStateName == null || _selectedCityName == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Please fill all fields for sign up', style: GoogleFonts.outfit()),
@@ -60,7 +73,7 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
         );
         return;
       }
-      final success = await authProvider.register(email, pass, 'restaurant-admin', _nameCtrl.text.trim(), _phoneCtrl.text.trim(), _stateCtrl.text.trim(), _cityCtrl.text.trim());
+      final success = await authProvider.register(email, pass, 'restaurant-admin', _nameCtrl.text.trim(), _phoneCtrl.text.trim(), _selectedStateName!, _selectedCityName!);
       if (!mounted) return;
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -177,18 +190,79 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
                   delay: 520,
                 ),
                 const SizedBox(height: 16),
-                _buildInputField(
-                  controller: _stateCtrl,
-                  icon: Icons.map_rounded,
-                  hint: 'State',
-                  delay: 530,
-                ),
-                const SizedBox(height: 16),
-                _buildInputField(
-                  controller: _cityCtrl,
-                  icon: Icons.location_city_rounded,
-                  hint: 'City',
-                  delay: 540,
+                Consumer<LocationProvider>(
+                  builder: (context, locationProv, child) {
+                    return Column(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppTheme.surface,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppTheme.divider),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: _selectedStateId,
+                              hint: Text('State', style: GoogleFonts.outfit(color: AppTheme.textMuted)),
+                              isExpanded: true,
+                              dropdownColor: AppTheme.surface,
+                              style: GoogleFonts.outfit(color: AppTheme.textPrimary),
+                              icon: const Icon(Icons.arrow_drop_down, color: AppTheme.textSecondary),
+                              items: locationProv.states.map((s) {
+                                return DropdownMenuItem<String>(
+                                  value: s['state_id'],
+                                  child: Text(s['state_name']),
+                                );
+                              }).toList(),
+                              onChanged: (val) {
+                                setState(() {
+                                  _selectedStateId = val;
+                                  _selectedStateName = locationProv.states.firstWhere((s) => s['state_id'] == val)['state_name'];
+                                  _selectedCityId = null;
+                                  _selectedCityName = null;
+                                });
+                                if (_selectedStateName != null) {
+                                  locationProv.fetchCities(_selectedStateName!);
+                                }
+                              },
+                            ),
+                          ),
+                        ).animate().fadeIn(delay: 530.ms).slideY(begin: 0.2, end: 0),
+                        const SizedBox(height: 16),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppTheme.surface,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppTheme.divider),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: _selectedCityId,
+                              hint: Text('City', style: GoogleFonts.outfit(color: AppTheme.textMuted)),
+                              isExpanded: true,
+                              dropdownColor: AppTheme.surface,
+                              style: GoogleFonts.outfit(color: AppTheme.textPrimary),
+                              icon: const Icon(Icons.arrow_drop_down, color: AppTheme.textSecondary),
+                              items: locationProv.cities.map((c) {
+                                return DropdownMenuItem<String>(
+                                  value: c['city_id'],
+                                  child: Text(c['city_name']),
+                                );
+                              }).toList(),
+                              onChanged: locationProv.cities.isEmpty ? null : (val) {
+                                setState(() {
+                                  _selectedCityId = val;
+                                  _selectedCityName = locationProv.cities.firstWhere((c) => c['city_id'] == val)['city_name'];
+                                });
+                              },
+                            ),
+                          ),
+                        ).animate().fadeIn(delay: 540.ms).slideY(begin: 0.2, end: 0),
+                      ],
+                    );
+                  },
                 ),
               ],
 

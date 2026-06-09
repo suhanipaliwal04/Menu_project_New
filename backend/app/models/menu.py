@@ -38,6 +38,7 @@ class MenuItem(Base):
     is_available = Column(Boolean, default=True)
     calories = Column(Integer)
     health_score = Column(Integer)
+    original_health_score = Column(Integer)
     health_label = Column(String(20))
     spice_level = Column(String(20))
     allergens = Column(ARRAY(String(100)))

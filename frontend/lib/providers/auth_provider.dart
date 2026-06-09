@@ -131,6 +131,40 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateProfile(String fullName, String phone, String state, String city) async {
+    _state = AuthState.loading;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final res = await _api.updateMe({
+        'full_name': fullName,
+        'phone_number': phone,
+        'state': state,
+        'city': city,
+      });
+
+      _fullName = res['full_name'];
+      _phone = res['phone_number'];
+      _userState = res['state'];
+      _city = res['city'];
+
+      if (_fullName != null) await _storage.write(key: _fullNameKey, value: _fullName);
+      if (_phone != null) await _storage.write(key: _phoneKey, value: _phone);
+      if (_userState != null) await _storage.write(key: _stateKey, value: _userState);
+      if (_city != null) await _storage.write(key: _cityKey, value: _city);
+
+      _state = AuthState.success;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _state = AuthState.error;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<void> logout() async {
     await _storage.delete(key: _tokenKey);
     await _storage.delete(key: _userIdKey);

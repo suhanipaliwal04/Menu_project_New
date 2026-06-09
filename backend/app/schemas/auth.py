@@ -17,3 +17,9 @@ class UserInfo(BaseModel):
     city: Optional[str] = None
     restaurant_id: Optional[uuid.UUID] = None
     restaurant_name: Optional[str] = None
+
+class UpdateProfileRequest(BaseModel):
+    full_name: Optional[str] = None
+    phone_number: Optional[str] = None
+    state: Optional[str] = None
+    city: Optional[str] = None

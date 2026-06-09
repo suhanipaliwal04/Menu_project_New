@@ -22,6 +22,7 @@ import 'admin_login_screen.dart';
 import 'retailer_login_screen.dart';
 import 'customer_login_screen.dart';
 import 'my_bookings_screen.dart';
+import 'customer_settings_screen.dart';
 import '../widgets/voice_fab.dart';
 import '../providers/auth_provider.dart';
 import '../providers/customer_bookings_provider.dart';
@@ -246,6 +247,48 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const Icon(Icons.chevron_right_rounded,
                         color: AppTheme.textMuted),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Profile Settings
+            GestureDetector(
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CustomerSettingsScreen()),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: AppTheme.surface,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppTheme.divider),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.teal.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(Icons.manage_accounts_rounded, color: Colors.teal, size: 24),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Profile Settings', style: GoogleFonts.outfit(fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
+                          Text('Update your personal details', style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded, color: AppTheme.textMuted),
                   ],
                 ),
               ),

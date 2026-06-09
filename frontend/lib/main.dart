@@ -19,6 +19,7 @@ import 'providers/favorites_provider.dart';
 import 'providers/customer_bookings_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/reviews_provider.dart';
+import 'providers/location_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,6 +50,7 @@ class MenuIntelligenceApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => TakeawayProvider()),
         ChangeNotifierProvider(create: (_) => FavoritesProvider()),
         ChangeNotifierProvider(create: (_) => ReviewsProvider()),
+        ChangeNotifierProvider(create: (_) => LocationProvider()),
         ChangeNotifierProxyProvider3<CartProvider, DineInProvider, TakeawayProvider, VoiceAgentProvider>(
           create: (ctx) => VoiceAgentProvider(
             ctx.read<CartProvider>(),
