@@ -529,77 +529,76 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const VoiceFab(),
-                  const SizedBox(width: 16),
-                  Consumer<CartProvider>(
-                    builder: (context, cart, _) {
-                      return FloatingActionButton(
-                        heroTag: 'cart_fab_home',
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const CartScreen()),
-                          );
-                        },
-                        backgroundColor: AppTheme.surfaceAlt,
-                        elevation: 4,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          clipBehavior: Clip.none,
-                          children: [
-                            const Icon(Icons.shopping_bag_outlined, color: AppTheme.textPrimary, size: 26),
-                            if (cart.items.isNotEmpty)
-                              Positioned(
-                                right: -8,
-                                top: -8,
-                                child: Container(
-                                  padding: const EdgeInsets.all(5),
-                                  decoration: const BoxDecoration(
-                                    color: AppTheme.primary,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Text(
-                                    '${cart.items.length}',
-                                    style: GoogleFonts.outfit(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                                  ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const VoiceFab(),
+                const SizedBox(width: 16),
+                Consumer<CartProvider>(
+                  builder: (context, cart, _) {
+                    return FloatingActionButton(
+                      heroTag: 'cart_fab_home',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const CartScreen()),
+                        );
+                      },
+                      backgroundColor: AppTheme.surfaceAlt,
+                      elevation: 4,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        clipBehavior: Clip.none,
+                        children: [
+                          const Icon(Icons.shopping_bag_outlined, color: AppTheme.textPrimary, size: 26),
+                          if (cart.items.isNotEmpty)
+                            Positioned(
+                              right: -8,
+                              top: -8,
+                              child: Container(
+                                padding: const EdgeInsets.all(5),
+                                decoration: const BoxDecoration(
+                                  color: AppTheme.primary,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  '${cart.items.length}',
+                                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                                 ),
                               ),
-                          ],
-                        ),
-                      );
-                    },
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(width: 16),
+            FloatingActionButton(
+              heroTag: 'book_table_home',
+              onPressed: () {
+                context.read<BrowseProvider>().loadRestaurants(orderType: 'Dine In', areaId: _selectedAreaId);
+                context.read<CartProvider>().setOrderType('Dine In');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const CategoryResultsScreen(categoryName: 'Dine In'),
                   ),
-                ],
-              ),
-              const SizedBox(width: 16),
-              FloatingActionButton(
-                heroTag: 'book_table_home',
-                onPressed: () {
-                  context.read<BrowseProvider>().loadRestaurants(orderType: 'Dine In', areaId: _selectedAreaId);
-                  context.read<CartProvider>().setOrderType('Dine In');
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const CategoryResultsScreen(categoryName: 'Dine In'),
-                    ),
-                  );
-                },
-                backgroundColor: AppTheme.primary,
-                child: const Icon(Icons.deck_rounded, color: Colors.white),
-              ),
-            ],
-          ),
+                );
+              },
+              backgroundColor: AppTheme.primary,
+              child: const Icon(Icons.deck_rounded, color: Colors.white),
+            ),
+          ],
         ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: CustomScrollView(
         slivers: [
           _buildAppBar(),
@@ -750,7 +749,7 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         CarouselSlider(
           options: CarouselOptions(
-            height: 200, // Reduced further so the whole carousel fits on a short screen
+            height: 260,
             viewportFraction: 0.82,
             enlargeCenterPage: true,
             autoPlay: true,
