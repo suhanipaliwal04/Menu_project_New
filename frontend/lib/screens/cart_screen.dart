@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../core/theme.dart';
 import '../providers/cart_provider.dart';
 import '../providers/customer_bookings_provider.dart';
+import '../core/api_service.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -21,11 +22,65 @@ class _CartScreenState extends State<CartScreen> {
   String? _nameError;
   String? _phoneError;
 
-  final List<String> _timeSlots = [
-    'ASAP',
-    '12:00 PM', '12:30 PM', '1:00 PM', '1:30 PM',
-    '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM'
-  ];
+  List<String> _timeSlots = ['ASAP'];
+  bool _isLoadingSlots = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final cart = context.read<CartProvider>();
+      if (cart.items.isNotEmpty) {
+        setState(() => _isLoadingSlots = true);
+        try {
+          final res = await ApiService().getRestaurant(cart.items.first.restaurantId);
+          _generateSlots(res.openingTime, res.closingTime, res.slotDurationMins);
+        } catch (_) {}
+        if (mounted) setState(() => _isLoadingSlots = false);
+      }
+    });
+  }
+
+  void _generateSlots(String? openingStr, String? closingStr, int durationMins) {
+    if (openingStr == null || closingStr == null) return;
+    
+    TimeOfDay parseTime(String t) {
+      final parts = t.split(' ');
+      final hm = parts[0].split(':');
+      int h = int.parse(hm[0]);
+      int m = int.parse(hm[1]);
+      if (parts[1].toUpperCase() == 'PM' && h != 12) h += 12;
+      if (parts[1].toUpperCase() == 'AM' && h == 12) h = 0;
+      return TimeOfDay(hour: h, minute: m);
+    }
+    
+    final open = parseTime(openingStr);
+    final close = parseTime(closingStr);
+    
+    DateTime now = DateTime.now();
+    DateTime startTime = DateTime(now.year, now.month, now.day, open.hour, open.minute);
+    DateTime endTime = DateTime(now.year, now.month, now.day, close.hour, close.minute);
+    
+    if (endTime.isBefore(startTime)) {
+      endTime = endTime.add(const Duration(days: 1));
+    }
+    
+    List<String> slots = ['ASAP'];
+    while (startTime.isBefore(endTime) || startTime.isAtSameMomentAs(endTime)) {
+      final h = startTime.hour;
+      final m = startTime.minute.toString().padLeft(2, '0');
+      final period = h >= 12 ? 'PM' : 'AM';
+      int displayHour = h > 12 ? h - 12 : (h == 0 ? 12 : h);
+      slots.add('$displayHour:$m $period');
+      startTime = startTime.add(Duration(minutes: durationMins));
+    }
+    
+    if (mounted) {
+      setState(() {
+        _timeSlots = slots;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -251,7 +306,9 @@ class _CartScreenState extends State<CartScreen> {
           const SizedBox(height: 12),
           Text('Time Slot', style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
           const SizedBox(height: 8),
-          Wrap(
+          _isLoadingSlots 
+            ? const Padding(padding: EdgeInsets.all(8.0), child: CircularProgressIndicator(strokeWidth: 2))
+            : Wrap(
             spacing: 8,
             runSpacing: 8,
             children: _timeSlots.map((slot) {

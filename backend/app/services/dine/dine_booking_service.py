@@ -38,6 +38,8 @@ def _get_restaurant_slots(restaurant_id: str, db: Session) -> List[str]:
     if not restaurant or not restaurant.opening_time or not restaurant.closing_time:
         return ["6:00 PM", "7:00 PM", "8:00 PM", "9:00 PM", "10:00 PM", "11:00 PM"]
     
+    slot_duration = getattr(restaurant, "slot_duration_mins", 15)
+    
     slots = []
     current = datetime.combine(datetime.today(), restaurant.opening_time)
     closing = datetime.combine(datetime.today(), restaurant.closing_time)
@@ -47,7 +49,7 @@ def _get_restaurant_slots(restaurant_id: str, db: Session) -> List[str]:
         
     while current <= closing:
         slots.append(current.strftime("%I:%M %p").lstrip('0'))
-        current += timedelta(minutes=60)  # Generate 1-hour interval slots
+        current += timedelta(minutes=slot_duration)
         
     return slots
 
@@ -142,9 +144,12 @@ class DineBookingService:
                 Booking.time_slot == matched_slot,
                 Booking.status.in_(["PENDING", "CONFIRMED"])
             ).all()
-            total_seats = sum(b.party_size for b in bookings)
-            if total_seats + party_size > 10:
-                logger.info(f"DineBooking: '{matched_slot}' full for {party_size} at '{restaurant_name}' (Current: {total_seats}/10)")
+            restaurant = db.query(Restaurant).filter(Restaurant.restaurant_id == restaurant_id).first()
+            max_capacity = getattr(restaurant, "max_dine_in_per_slot", 5) if restaurant else 5
+
+            num_bookings = len(bookings)
+            if num_bookings >= max_capacity:
+                logger.info(f"DineBooking: '{matched_slot}' full for {party_size} at '{restaurant_name}' (Current: {num_bookings}/{max_capacity})")
                 return {
                     "available": False,
                     "confirmed_slot": None,
@@ -220,7 +225,7 @@ class DineBookingService:
         date_str: str,
     ) -> List[Dict[str, Any]]:
         """
-        Return a list of slots and whether they are available (capacity = 10 seats per 1-hour slot).
+        Return a list of slots and whether they are available (capacity = max_dine_in_per_slot bookings per slot).
         """
         db: Session = SessionLocal()
         try:
@@ -231,19 +236,22 @@ class DineBookingService:
                 Booking.status.in_(["PENDING", "CONFIRMED"])
             ).all()
 
-            # Group party size by slot
-            slot_capacity = {s: 0 for s in valid_slots}
+            restaurant = db.query(Restaurant).filter(Restaurant.restaurant_id == restaurant_id).first()
+            max_capacity = getattr(restaurant, "max_dine_in_per_slot", 5) if restaurant else 5
+
+            # Group bookings by slot
+            slot_booking_count = {s: 0 for s in valid_slots}
             for b in bookings:
-                if b.time_slot in slot_capacity:
-                    slot_capacity[b.time_slot] += b.party_size
+                if b.time_slot in slot_booking_count:
+                    slot_booking_count[b.time_slot] += 1
 
             result = []
             for s in valid_slots:
-                available = slot_capacity[s] < 10
+                available = slot_booking_count[s] < max_capacity
                 result.append({
                     "time_slot": s,
                     "available": available,
-                    "seats_booked": slot_capacity[s]
+                    "seats_booked": slot_booking_count[s]
                 })
             return result
         finally:

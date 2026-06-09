@@ -258,7 +258,7 @@ class _TableBookingScreenState extends State<TableBookingScreen> {
                   children: [
                     const Icon(Icons.confirmation_number_rounded, color: AppTheme.primary, size: 18),
                     const SizedBox(width: 8),
-                    Text('Booking ID: $_bookingId', style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.w700, fontSize: 15)),
+                    Flexible(child: Text('Booking ID: $_bookingId', style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.w700, fontSize: 15), overflow: TextOverflow.ellipsis)),
                   ],
                 ),
               ],
