@@ -85,7 +85,12 @@ class MenuIntelligenceApp extends StatelessWidget {
                       opacity: 0.40, // Increased opacity slightly as requested
                     ),
                   ),
-                  child: child,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 480),
+                      child: child,
+                    ),
+                  ),
                 );
               },
             ),

@@ -81,10 +81,8 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
         ),
       ),
       body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 450),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(32),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -162,7 +160,6 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
               ]).animate().fadeIn(delay: 700.ms),
             ],
           ),
-        ),
         ),
       ),
     );

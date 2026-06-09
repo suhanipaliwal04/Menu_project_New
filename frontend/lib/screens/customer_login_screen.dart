@@ -70,11 +70,9 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
 
     return Scaffold(
       body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 450),
-          child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -232,7 +230,6 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
               ],
             ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, end: 0),
           ),
-        ),
         ),
       );
   }
