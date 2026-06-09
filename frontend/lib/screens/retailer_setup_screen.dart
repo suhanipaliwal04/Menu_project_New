@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../core/theme.dart';
 import '../models/area_model.dart';
 import '../providers/retailer_provider.dart';
+import '../services/location_service.dart';
 import 'retailer_dashboard_screen.dart';
 
 class RetailerSetupScreen extends StatefulWidget {
@@ -20,6 +21,8 @@ class _RetailerSetupScreenState extends State<RetailerSetupScreen> {
   final _addressCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _cuisinesCtrl = TextEditingController();
+  final _latCtrl = TextEditingController();
+  final _lngCtrl = TextEditingController();
 
   AreaModel? _selectedArea;
   String _priceCategory = 'mid-range';
@@ -41,6 +44,8 @@ class _RetailerSetupScreenState extends State<RetailerSetupScreen> {
     _addressCtrl.dispose();
     _phoneCtrl.dispose();
     _cuisinesCtrl.dispose();
+    _latCtrl.dispose();
+    _lngCtrl.dispose();
     _pageController.dispose();
     super.dispose();
   }
@@ -89,6 +94,8 @@ class _RetailerSetupScreenState extends State<RetailerSetupScreen> {
       cuisines: cuisinesList,
       address: _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
       phone: _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
+      latitude: double.tryParse(_latCtrl.text.trim()),
+      longitude: double.tryParse(_lngCtrl.text.trim()),
     );
 
     if (!mounted) return;
@@ -308,6 +315,57 @@ class _RetailerSetupScreenState extends State<RetailerSetupScreen> {
             controller: _addressCtrl,
             hint: 'e.g. 12 MG Road, Near Clock Tower',
             icon: Icons.location_on_rounded,
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _fieldLabel('Latitude'),
+                    _textField(
+                      controller: _latCtrl,
+                      hint: 'e.g. 18.5204',
+                      icon: Icons.map_rounded,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _fieldLabel('Longitude'),
+                    _textField(
+                      controller: _lngCtrl,
+                      hint: 'e.g. 73.8567',
+                      icon: Icons.map_rounded,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: () async {
+              try {
+                final pos = await LocationService.getCurrentLocation();
+                if (pos != null) {
+                  _latCtrl.text = pos.latitude.toString();
+                  _lngCtrl.text = pos.longitude.toString();
+                  _showSnack('Location updated successfully!');
+                }
+              } catch (e) {
+                _showSnack(e.toString());
+              }
+            },
+            icon: const Icon(Icons.my_location_rounded),
+            label: Text('Use My Current Location', style: GoogleFonts.outfit()),
           ),
         ],
       ),

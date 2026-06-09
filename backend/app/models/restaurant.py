@@ -1,7 +1,7 @@
 """
 Restaurant Model
 """
-from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, ARRAY, func, Text, Time, Integer
+from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, ARRAY, func, Text, Time, Integer, Float
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import uuid
@@ -19,6 +19,8 @@ class Restaurant(Base):
     cuisine_type = Column(ARRAY(String(100)))
     price_category = Column(String(20))
     address = Column(Text)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
     phone = Column(String(20))
     is_active = Column(Boolean, default=True)
     

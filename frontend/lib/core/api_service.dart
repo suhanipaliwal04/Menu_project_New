@@ -158,12 +158,16 @@ class ApiService {
     String? city,
     String? cuisine,
     String? orderType,
+    double? userLat,
+    double? userLng,
   }) async {
     final params = <String, String>{};
     if (areaId != null) params['area_id'] = areaId;
     if (city != null) params['city'] = city;
     if (cuisine != null) params['cuisine'] = cuisine;
     if (orderType != null) params['order_type'] = orderType;
+    if (userLat != null) params['user_lat'] = userLat.toString();
+    if (userLng != null) params['user_lng'] = userLng.toString();
 
     final data = await _get(AppConstants.restaurantsEndpoint, params: params)
         as List<dynamic>;

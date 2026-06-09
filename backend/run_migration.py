@@ -14,15 +14,8 @@ headers = {
 }
 
 migrations = [
-    "ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS has_dine_in BOOLEAN DEFAULT true",
-    "ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS has_takeaway BOOLEAN DEFAULT true",
-    "ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS is_open_manually BOOLEAN DEFAULT true",
-    "ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS opening_time TIME",
-    "ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS closing_time TIME",
-    "UPDATE restaurants SET has_dine_in = true WHERE has_dine_in IS NULL",
-    "UPDATE restaurants SET has_takeaway = true WHERE has_takeaway IS NULL",
-    "UPDATE restaurants SET is_open_manually = true WHERE is_open_manually IS NULL",
-    "ALTER TABLE bookings ADD COLUMN IF NOT EXISTS booking_date VARCHAR(50)",
+    "ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION",
+    "ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION",
 ]
 
 print("Running migrations via Supabase REST API (HTTPS)...")
@@ -44,7 +37,7 @@ with httpx.Client(timeout=30.0) as client:
                     headers={**headers, "Prefer": "return=minimal"},
                     content=sql.encode(),
                 )
-                print(f"  [{resp2.status_code}] {sql[:60]}... → {resp2.text[:80]}")
+                print(f"  [{resp2.status_code}] {sql[:60]}... -> {resp2.text[:80]}")
         except Exception as e:
             print(f"  ERROR: {e}")
 
@@ -52,12 +45,12 @@ with httpx.Client(timeout=30.0) as client:
     resp = client.get(
         f"{SUPABASE_URL}/rest/v1/restaurants",
         headers=headers,
-        params={"select": "restaurant_name,owner_id,has_dine_in,has_takeaway,is_open_manually"},
+        params={"select": "restaurant_name,owner_id,has_dine_in,has_takeaway,is_open_manually,latitude,longitude"},
     )
     if resp.status_code == 200:
         rows = resp.json()
         print(f"\nRestaurants ({len(rows)} found):")
         for r in rows:
-            print(f"  {r.get('restaurant_name')} | Owner: {r.get('owner_id')} | DineIn: {r.get('has_dine_in')} | Takeaway: {r.get('has_takeaway')} | Open: {r.get('is_open_manually')}")
+            print(f"  {r.get('restaurant_name')} | Owner: {r.get('owner_id')} | Lat: {r.get('latitude')} | Lng: {r.get('longitude')}")
     else:
         print(f"\nVerification failed: {resp.status_code} {resp.text}")

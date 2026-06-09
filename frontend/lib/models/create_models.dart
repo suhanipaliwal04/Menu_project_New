@@ -28,6 +28,8 @@ class CreateRestaurantRequest {
   final String? priceCategory;
   final String? address;
   final String? phone;
+  final double? latitude;
+  final double? longitude;
 
   const CreateRestaurantRequest({
     required this.restaurantName,
@@ -36,6 +38,8 @@ class CreateRestaurantRequest {
     this.priceCategory,
     this.address,
     this.phone,
+    this.latitude,
+    this.longitude,
   });
 
   Map<String, dynamic> toJson() => {
@@ -47,5 +51,7 @@ class CreateRestaurantRequest {
           'price_category': priceCategory,
         if (address != null && address!.isNotEmpty) 'address': address,
         if (phone != null && phone!.isNotEmpty) 'phone': phone,
+        if (latitude != null) 'latitude': latitude,
+        if (longitude != null) 'longitude': longitude,
       };
 }

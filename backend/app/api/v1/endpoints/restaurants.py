@@ -15,6 +15,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 import uuid
+import math
 
 from app.core.database import get_db
 from app.core.auth import get_current_user
@@ -35,6 +36,8 @@ def list_restaurants(
     city: str | None = None,
     cuisine: str | None = None,
     order_type: str | None = None,
+    user_lat: float | None = None,
+    user_lng: float | None = None,
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db)
@@ -78,6 +81,33 @@ def list_restaurants(
                     open_restaurants.append(r)
         else:
             open_restaurants.append(r)
+            
+    # Location filtering
+    if user_lat is not None and user_lng is not None:
+        nearby_restaurants = []
+        for r in open_restaurants:
+            if r.latitude is not None and r.longitude is not None:
+                # Haversine formula
+                R = 6371.0 # Earth radius in kilometers
+                lat1 = math.radians(user_lat)
+                lon1 = math.radians(user_lng)
+                lat2 = math.radians(r.latitude)
+                lon2 = math.radians(r.longitude)
+                
+                dlon = lon2 - lon1
+                dlat = lat2 - lat1
+                
+                a = math.sin(dlat / 2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2)**2
+                c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+                distance = R * c
+                
+                if distance <= 2.0:
+                    r.distance = round(distance, 2)
+                    nearby_restaurants.append(r)
+        
+        # Sort by distance
+        nearby_restaurants.sort(key=lambda x: getattr(x, "distance", 999.0))
+        open_restaurants = nearby_restaurants
             
     return [_restaurant_with_area(r, r.area, db) for r in open_restaurants]
 
@@ -298,6 +328,8 @@ def _restaurant_with_area(restaurant: Restaurant, area, db: Session = None) -> d
         "phone": restaurant.phone,
         "area_id": restaurant.area_id,
         "owner_id": restaurant.owner_id,
+        "latitude": getattr(restaurant, "latitude", None),
+        "longitude": getattr(restaurant, "longitude", None),
         "is_active": restaurant.is_active,
         "has_dine_in": getattr(restaurant, "has_dine_in", True),
         "has_takeaway": getattr(restaurant, "has_takeaway", True),
@@ -311,6 +343,7 @@ def _restaurant_with_area(restaurant: Restaurant, area, db: Session = None) -> d
         "area_name": area.area_name if area else None,
         "average_rating": average_rating,
         "total_reviews": total_reviews,
+        "distance": getattr(restaurant, "distance", None),
         "city": area.city if area else None,
         "created_at": restaurant.created_at,
         "updated_at": restaurant.updated_at,

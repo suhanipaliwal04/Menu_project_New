@@ -224,6 +224,8 @@ class RetailerProvider extends ChangeNotifier {
     List<String>? cuisines,
     String? address,
     String? phone,
+    double? latitude,
+    double? longitude,
   }) async {
     _setState(RetailerState.loading);
     _errorMessage = null;
@@ -236,6 +238,8 @@ class RetailerProvider extends ChangeNotifier {
           cuisineType: cuisines,
           address: address,
           phone: phone,
+          latitude: latitude,
+          longitude: longitude,
         ),
       );
       if (_myRestaurant != null) {
@@ -490,6 +494,8 @@ class RetailerProvider extends ChangeNotifier {
     int? maxDineInPerSlot,
     int? maxCapacity,
     int? takeawaySlotDurationMins,
+    double? latitude,
+    double? longitude,
   }) async {
     _state = RetailerState.loading;
     notifyListeners();
@@ -513,6 +519,8 @@ class RetailerProvider extends ChangeNotifier {
       if (maxDineInPerSlot != null) 'max_dine_in_per_slot': maxDineInPerSlot,
       if (maxCapacity != null) 'max_capacity': maxCapacity,
       if (takeawaySlotDurationMins != null) 'takeaway_slot_duration_mins': takeawaySlotDurationMins,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
     };
 
     if (updates.isEmpty) return true;

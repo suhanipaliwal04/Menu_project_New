@@ -2316,6 +2316,8 @@ class _SettingsTabState extends State<_SettingsTab> {
   final _phoneCtrl = TextEditingController();
   final _addressCtrl = TextEditingController();
   final _cuisineCtrl = TextEditingController();
+  final _latCtrl = TextEditingController();
+  final _lngCtrl = TextEditingController();
   String _priceCategory = 'mid-range';
   bool _dirty = false;
   final bool _showSetup = false;
@@ -2336,6 +2338,8 @@ class _SettingsTabState extends State<_SettingsTab> {
   final _setupAddressCtrl = TextEditingController();
   final _setupPhoneCtrl = TextEditingController();
   final _setupCuisineCtrl = TextEditingController();
+  final _setupLatCtrl = TextEditingController();
+  final _setupLngCtrl = TextEditingController();
   String _setupPriceCategory = 'mid-range';
   AreaModel? _selectedArea;
 
@@ -2370,6 +2374,8 @@ class _SettingsTabState extends State<_SettingsTab> {
       _phoneCtrl.text = r.phone ?? '';
       _addressCtrl.text = r.address ?? '';
       _cuisineCtrl.text = r.cuisineType?.join(', ') ?? '';
+      _latCtrl.text = r.latitude?.toString() ?? '';
+      _lngCtrl.text = r.longitude?.toString() ?? '';
       _priceCategory = r.priceCategory ?? 'mid-range';
       _hasDineIn = r.hasDineIn;
       _hasTakeaway = r.hasTakeaway;
@@ -2400,6 +2406,10 @@ class _SettingsTabState extends State<_SettingsTab> {
     _setupAddressCtrl.dispose();
     _setupPhoneCtrl.dispose();
     _setupCuisineCtrl.dispose();
+    _latCtrl.dispose();
+    _lngCtrl.dispose();
+    _setupLatCtrl.dispose();
+    _setupLngCtrl.dispose();
     _slotDurationCtrl.dispose();
     _takeawaySlotDurationCtrl.dispose();
     _maxDineInCtrl.dispose();
@@ -2433,6 +2443,8 @@ class _SettingsTabState extends State<_SettingsTab> {
       maxDineInPerSlot: int.tryParse(_maxDineInCtrl.text.trim()) ?? 5,
       maxCapacity: int.tryParse(_maxCapacityCtrl.text.trim()) ?? 100,
       areaId: _editSelectedArea?.areaId,
+      latitude: double.tryParse(_latCtrl.text.trim()),
+      longitude: double.tryParse(_lngCtrl.text.trim()),
     );
 
     if (mounted) {
@@ -2520,6 +2532,18 @@ class _SettingsTabState extends State<_SettingsTab> {
             _formField(
                 _addressCtrl, 'Street Address', Icons.location_on_rounded,
                 maxLines: 2),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: _formField(_latCtrl, 'Latitude', Icons.map_rounded, type: const TextInputType.numberWithOptions(decimal: true)),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _formField(_lngCtrl, 'Longitude', Icons.map_rounded, type: const TextInputType.numberWithOptions(decimal: true)),
+                ),
+              ],
+            ),
             const SizedBox(height: 10),
             _buildEditLocationSelectors(p),
             const SizedBox(height: 10),
@@ -2646,6 +2670,18 @@ class _SettingsTabState extends State<_SettingsTab> {
           const SizedBox(height: 10),
           _formField(_setupAddressCtrl, 'Address', Icons.location_on_rounded,
               maxLines: 2),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _formField(_setupLatCtrl, 'Latitude', Icons.map_rounded, type: const TextInputType.numberWithOptions(decimal: true)),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _formField(_setupLngCtrl, 'Longitude', Icons.map_rounded, type: const TextInputType.numberWithOptions(decimal: true)),
+              ),
+            ],
+          ),
           const SizedBox(height: 10),
           _formField(_setupCuisineCtrl, 'Cuisine Types (comma separated)',
               Icons.restaurant_menu_rounded),

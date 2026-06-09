@@ -13,6 +13,7 @@ import '../providers/browse_provider.dart';
 import '../providers/cart_provider.dart';
 import '../providers/favorites_provider.dart';
 import '../models/restaurant_model.dart';
+import '../services/location_service.dart';
 import 'results_screen.dart';
 import 'restaurant_detail_screen.dart';
 import 'voice_agent_screen.dart';
@@ -474,6 +475,36 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: GoogleFonts.outfit(
                     color: AppTheme.textSecondary, fontSize: 13)),
             const SizedBox(height: 24),
+            OutlinedButton.icon(
+              onPressed: () async {
+                try {
+                  final pos = await LocationService.getCurrentLocation();
+                  if (pos != null) {
+                    setState(() {
+                      _selectedArea = 'Current Location';
+                      _selectedCity = 'Within 2km';
+                      _selectedAreaId = null;
+                    });
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                      context.read<BrowseProvider>().loadRestaurants(
+                        orderType: _selectedTab,
+                        userLat: pos.latitude,
+                        userLng: pos.longitude,
+                      );
+                    }
+                  }
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                }
+              },
+              icon: const Icon(Icons.my_location_rounded),
+              label: Text('Use My Current Location (Within 2km)', style: GoogleFonts.outfit()),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+              ),
+            ),
+            const SizedBox(height: 16),
             Consumer<BrowseProvider>(
               builder: (context, provider, _) {
                 if (provider.areasState == BrowseState.loading) {
@@ -1219,6 +1250,27 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ],
                         ),
+                        if (r.distance != null) ...[
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              const Icon(Icons.directions_walk_rounded, size: 12, color: AppTheme.primary),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  '${r.distance!.toStringAsFixed(1)} km away',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.outfit(
+                                    color: AppTheme.primary,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                         const SizedBox(height: 4),
                         Row(
                           children: [

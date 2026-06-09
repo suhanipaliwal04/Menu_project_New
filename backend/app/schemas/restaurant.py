@@ -13,6 +13,8 @@ class RestaurantBase(BaseModel):
     cuisine_type: Optional[List[str]] = None
     price_category: Optional[str] = None
     address: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     phone: Optional[str] = None
 
 
@@ -60,6 +62,7 @@ class RestaurantResponse(RestaurantBase):
     takeaway_slot_duration_mins: int = 15
     average_rating: float = 4.8
     total_reviews: int = 0
+    distance: Optional[float] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
