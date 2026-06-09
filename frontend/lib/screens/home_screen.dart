@@ -706,7 +706,7 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         CarouselSlider(
           options: CarouselOptions(
-            height: 340, // More square-ish height
+            height: 240, // Reduced height so "Popular Near You" becomes visible on shorter screens
             viewportFraction: 0.82,
             enlargeCenterPage: true,
             autoPlay: true,
@@ -930,7 +930,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return GestureDetector(
       onTap: () => _searchFocus.requestFocus(),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16), // Reduced padding
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [Color(0xFFF5E6D3), Color(0xFFFDF5E6)],
@@ -953,13 +953,13 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Row(
               children: [
-                Image.asset('assets/images/eatbot_logo.png', height: 64, width: 64),
-                const SizedBox(width: 16),
+                Image.asset('assets/images/eatbot_logo.png', height: 52, width: 52), // Smaller logo
+                const SizedBox(width: 12),
                 Text(
                   'eatbot',
                   style: GoogleFonts.outfit(
                     fontWeight: FontWeight.w800,
-                    fontSize: 32,
+                    fontSize: 28, // Slightly smaller text
                     letterSpacing: -0.5,
                     color: AppTheme.textPrimary,
                   ),
@@ -967,7 +967,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const Spacer(),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12), // Reduced spacing
             TextField(
               controller: _queryCtrl,
               focusNode: _searchFocus,
@@ -980,7 +980,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 fillColor: Colors.white.withValues(alpha: 0.85),
                 filled: true,
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Reduced padding
                 prefixIcon: IconButton(
                   icon: const Icon(Icons.mic_none_rounded, color: AppTheme.primary, size: 20),
                   onPressed: _showVoiceSearch,
