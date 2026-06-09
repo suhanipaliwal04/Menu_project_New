@@ -113244,7 +113244,7 @@ q=t.xQ.a(k.h(a,m))
 p=A.bK(k.h(a,"quote"))
 if(J.d(k.h(a,m),B.R))o=B.bO
 else o=J.d(k.h(a,m),B.fy)?B.fl:B.dN
-return A.W(n,A.ef(B.bu,A.b([r,A.hP(56,new A.dQ(q,n,n,A.e8(A.bZ(A.by(A.j(p,n,n,n,n,n,t.em.a(k.h(a,"font")),o,n,n),n,n,n),n,A.b2(8e5,0,0)),0.2,n,0),n),n,n,20,20,n,n)],t.p),B.x,B.aY,n),B.h,n,n,new A.V(n,j,n,l,s,n,B.m),n,n,n,n,n,n,1/0)},
+return A.W(n,A.ef(B.bu,A.b([r,A.hP(76,new A.dQ(q,n,n,A.e8(A.bZ(A.by(A.j(p,n,n,n,n,n,t.em.a(k.h(a,"font")),o,n,n),n,n,n),n,A.b2(8e5,0,0)),0.2,n,0),n),n,n,20,20,n,n)],t.p),B.x,B.aY,n),B.h,n,n,new A.V(n,j,n,l,s,n,B.m),n,n,n,n,n,n,1/0)},
 $S:736}
 A.aHu.prototype={
 $1(a){var s,r,q,p,o,n,m=null,l=J.aw(a),k=l.h(a,"name"),j=l.h(a,"icon")
