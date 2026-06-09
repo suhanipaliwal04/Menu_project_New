@@ -3,7 +3,7 @@ Query Parser — converts raw user text into structured search filters.
 
 Two-stage approach:
   1. Rule-based pass (fast, no API call): regex + keyword matching
-  2. LLM pass (Groq llama-3.1-8b-instant, ~200ms): fills in what rules miss for complex queries
+  2. LLM pass (Groq llama-3.3-70b-versatile, ~200ms): fills in what rules miss for complex queries
 
 Output schema:
   {
@@ -58,7 +58,7 @@ _LOW_CAL_WORDS    = {"low calorie", "low-calorie", "fewer calories",
                      "less calories", "diet", "light"}
 _VEG_WORDS        = {"veg", "vegetarian", "veggie", "vegan", "jain", "plant", "plant-based", "no meat",
                      "without meat"}
-_NONVEG_WORDS     = {"non-veg", "nonveg", "chicken", "mutton", "fish",
+_NONVEG_WORDS     = {"non-veg", "non veg","non vegan", "nonveg", "chicken", "mutton", "fish",
                      "prawn", "seafood", "meat", "egg"}
 
 
@@ -139,23 +139,19 @@ def _rule_parse(query: str) -> Dict[str, Any]:
     return result
 
 
-def _llm_parse(query: str, rule_result: Dict[str, Any]) -> Dict[str, Any]:
+def _llm_parse(query: str) -> Dict[str, Any]:
     """
-    Use Groq (llama-3.1-8b-instant) to fill in filters that rules missed.
-    Only called when at least one key filter is still None.
-    Returns merged result (LLM overrides None-valued rule fields only).
+    Use Groq (llama-3.3-70b-versatile) as the primary filter parser.
     Groq responds in ~200ms vs HuggingFace's ~5-8s.
     """
     groq_key = getattr(settings, "GROQ_API_KEY", None)
     if not groq_key:
-        logger.debug("QueryParser: No GROQ_API_KEY, skipping LLM parse.")
-        return rule_result
+        raise ValueError("No GROQ_API_KEY")
 
     try:
         from groq import Groq
     except ImportError:
-        logger.warning("groq SDK not installed — skipping LLM parse.")
-        return rule_result
+        raise ImportError("groq SDK not installed")
 
     prompt = f"""You are a precise restaurant search query parser. Extract filters from the user's query.
 
@@ -167,6 +163,8 @@ Return ONLY a JSON object (no extra text):
   "max_calories": integer or null,
   "min_health_score": integer 1-10 or null,
   "section_name": string or null,
+  "exclude_keywords": list of strings,
+  "min_rating": float or null,
   "semantic_query": "cleaned query"
 }}
 
@@ -177,12 +175,13 @@ CRITICAL RULES:
 4. min_health_score: 6 if "healthy", 7 if "very healthy". `null` otherwise.
 5. min_rating: The lower limit for review ratings, e.g. 4.0 if "above 4 stars". `null` if not mentioned.
 6. section_name: Match to a category like "North Indian", "Chinese", "Desserts", etc. `null` if not mentioned.
-7. semantic_query: The remaining food intent with prices/dietary words removed.
-8. CONFIDENCE: If you are not 100% sure about a filter, set it to `null`. It's better to have fewer hard filters than incorrect ones.
+7. exclude_keywords: List of words the user explicitly wants to avoid (e.g., "without paneer" -> ["paneer"]). Empty list [] if none.
+8. semantic_query: The remaining food intent with prices/dietary words removed.
+9. CONFIDENCE: If you are not 100% sure about a filter, set it to `null`. It's better to have fewer hard filters than incorrect ones.
 
 EXAMPLES:
-Q: "something over 200 rs"
-{{"is_veg": null, "max_price": null, "min_price": 200, "max_calories": null, "min_health_score": null, "section_name": null, "semantic_query": "something"}}
+Q: "something over 200 rs without paneer"
+{{"is_veg": null, "max_price": null, "min_price": 200, "max_calories": null, "min_health_score": null, "section_name": null, "exclude_keywords": ["paneer"], "min_rating": null, "semantic_query": "something"}}
 
 Q: "healthy veg food under 300"
 {{"is_veg": true, "max_price": 300, "min_price": null, "max_calories": null, "min_health_score": 6, "section_name": null, "semantic_query": "food"}}
@@ -199,7 +198,7 @@ Q: "{query}"
     try:
         client = Groq(api_key=groq_key)
         response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=300,
             temperature=0.1,
@@ -210,28 +209,27 @@ Q: "{query}"
 
         match = re.search(r'\{.*\}', raw, re.DOTALL)
         if not match:
-            return rule_result
+            raise ValueError("No JSON found in LLM response")
 
         llm_result = json.loads(match.group(0))
 
-        # Merge: LLM overrides only where rule_result has None
-        merged = dict(rule_result)
-        for key in ("is_veg", "max_price", "min_price", "max_calories",
-                    "min_health_score", "min_rating", "section_name", "semantic_query"):
-            if merged.get(key) is None and llm_result.get(key) is not None:
-                merged[key] = llm_result[key]
+        # Ensure all required keys exist
+        for k in ("is_veg", "max_price", "min_price", "max_calories", "min_health_score", "min_rating", "section_name", "semantic_query"):
+            if k not in llm_result:
+                llm_result[k] = None
+        if "exclude_keywords" not in llm_result:
+            llm_result["exclude_keywords"] = []
 
-        return merged
+        return llm_result
 
     except Exception as e:
-        logger.warning(f"QueryParser Groq LLM pass failed: {e}. Using rule-based result.")
-        return rule_result
+        raise RuntimeError(f"LLM pass failed: {e}")
 
 
 class QueryParser:
     """
     Parse a natural language query into structured search filters.
-    Uses fast rules first, then optionally calls Groq llama-3.1-8b-instant (~200ms)
+    Uses fast rules first, then optionally calls Groq llama-3.3-70b-versatile (~200ms)
     for complex/colloquial queries that rule-based parsing misses.
     """
 
@@ -240,21 +238,19 @@ class QueryParser:
 
     def parse(self, query: str) -> Dict[str, Any]:
         """
-        Returns a filter dict:
-          semantic_query, is_veg, max_price, min_price,
-          max_calories, min_health_score, section_name
+        Returns a filter dict. Uses LLM as primary parser if enabled.
+        Falls back to fast rule-based parsing if LLM fails or is disabled.
         """
+        if self.use_llm:
+            try:
+                result = _llm_parse(query)
+                logger.info(f"QueryParser (LLM Primary): '{query}' → {result}")
+                return result
+            except Exception as e:
+                logger.warning(f"QueryParser LLM failed: {e}. Falling back to rules.")
+
         result = _rule_parse(query)
-
-        # Only call LLM if at least most filter keys are still None
-        # (avoids wasting an API call when rules already extracted everything)
-        none_count = sum(1 for k in ("is_veg", "max_price", "section_name")
-                         if result[k] is None)
-
-        if self.use_llm and none_count >= 2:
-            result = _llm_parse(query, result)
-
-        logger.info(f"QueryParser: '{query}' → {result}")
+        logger.info(f"QueryParser (Rules Fallback): '{query}' → {result}")
         return result
 
 
