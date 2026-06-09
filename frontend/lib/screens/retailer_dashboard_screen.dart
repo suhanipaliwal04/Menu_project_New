@@ -2,6 +2,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -2500,7 +2501,13 @@ class _SettingsTabState extends State<_SettingsTab> {
             const SizedBox(height: 10),
             _formField(
                 _phoneCtrl, 'Phone Number', Icons.phone_rounded,
-                type: TextInputType.phone),
+                type: TextInputType.phone,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                ],
+                prefixText: '+91 ',
+            ),
             const SizedBox(height: 10),
             _formField(
                 _addressCtrl, 'Street Address', Icons.location_on_rounded,
@@ -2621,7 +2628,13 @@ class _SettingsTabState extends State<_SettingsTab> {
           _buildAreaDropdown(p),
           const SizedBox(height: 10),
           _formField(_setupPhoneCtrl, 'Phone', Icons.phone_rounded,
-              type: TextInputType.phone),
+              type: TextInputType.phone,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+              ],
+              prefixText: '+91 ',
+          ),
           const SizedBox(height: 10),
           _formField(_setupAddressCtrl, 'Address', Icons.location_on_rounded,
               maxLines: 2),
@@ -2965,6 +2978,8 @@ class _SettingsTabState extends State<_SettingsTab> {
     IconData icon, {
     TextInputType type = TextInputType.text,
     int maxLines = 1,
+    List<TextInputFormatter>? inputFormatters,
+    String? prefixText,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -2976,6 +2991,7 @@ class _SettingsTabState extends State<_SettingsTab> {
         controller: ctrl,
         keyboardType: type,
         maxLines: maxLines,
+        inputFormatters: inputFormatters,
         onChanged: (_) => setState(() => _dirty = true),
         style: GoogleFonts.outfit(color: AppTheme.textPrimary, fontSize: 14),
         decoration: InputDecoration(
@@ -2983,6 +2999,7 @@ class _SettingsTabState extends State<_SettingsTab> {
           labelStyle: GoogleFonts.outfit(
               color: AppTheme.textSecondary, fontSize: 13),
           prefixIcon: Icon(icon, color: AppTheme.textSecondary, size: 20),
+          prefixText: prefixText,
           border: InputBorder.none,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

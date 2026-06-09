@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -254,7 +255,14 @@ class _AddRestaurantBottomSheetState extends State<_AddRestaurantBottomSheet> {
                     const SizedBox(height: 16),
                     _buildField('Address', 'Full street address', _addressCtrl),
                     const SizedBox(height: 16),
-                    _buildField('Phone', 'e.g. 9876543210', _phoneCtrl, keyboardType: TextInputType.phone),
+                    _buildField('Phone', 'e.g. 9876543210', _phoneCtrl, 
+                        keyboardType: TextInputType.phone,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(10),
+                        ],
+                        prefixText: '+91 ',
+                    ),
                     const SizedBox(height: 32),
                   ],
                 ),
@@ -280,7 +288,7 @@ class _AddRestaurantBottomSheetState extends State<_AddRestaurantBottomSheet> {
     );
   }
 
-  Widget _buildField(String label, String hint, TextEditingController ctrl, {TextInputType? keyboardType}) {
+  Widget _buildField(String label, String hint, TextEditingController ctrl, {TextInputType? keyboardType, List<TextInputFormatter>? inputFormatters, String? prefixText}) {
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.surface,
@@ -290,10 +298,12 @@ class _AddRestaurantBottomSheetState extends State<_AddRestaurantBottomSheet> {
       child: TextField(
         controller: ctrl,
         keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
         style: GoogleFonts.outfit(color: AppTheme.textPrimary),
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
+          prefixText: prefixText,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),

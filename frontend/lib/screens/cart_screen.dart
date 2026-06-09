@@ -1,5 +1,6 @@
 // ignore_for_file: unused_element
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -275,6 +276,10 @@ class _CartScreenState extends State<CartScreen> {
           TextField(
             controller: _phoneCtrl,
             keyboardType: TextInputType.phone,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(10),
+            ],
             decoration: InputDecoration(
               labelText: 'Phone Number',
               errorText: _phoneError,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -212,9 +213,14 @@ class _RetailerSetupScreenState extends State<RetailerSetupScreen> {
           _fieldLabel('Phone Number'),
           _textField(
             controller: _phoneCtrl,
-            hint: 'e.g. 98765 43210',
+            hint: 'e.g. 9876543210',
             icon: Icons.phone_rounded,
             keyboardType: TextInputType.phone,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(10),
+            ],
+            prefixText: '+91 ',
           ),
         ],
       ),
@@ -463,6 +469,8 @@ class _RetailerSetupScreenState extends State<RetailerSetupScreen> {
     required String hint,
     required IconData icon,
     TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    String? prefixText,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -474,11 +482,13 @@ class _RetailerSetupScreenState extends State<RetailerSetupScreen> {
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
         style: GoogleFonts.outfit(color: AppTheme.textPrimary),
         decoration: InputDecoration(
           border: InputBorder.none,
           hintText: hint,
           hintStyle: GoogleFonts.outfit(color: AppTheme.textMuted, fontSize: 14),
+          prefixText: prefixText,
           icon: Icon(icon, color: AppTheme.textSecondary, size: 20),
           contentPadding: const EdgeInsets.symmetric(vertical: 12),
         ),

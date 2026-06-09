@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -188,6 +189,11 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
                   hint: 'Phone Number',
                   keyboardType: TextInputType.phone,
                   delay: 520,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(10),
+                  ],
+                  prefixText: '+91 ',
                 ),
                 const SizedBox(height: 16),
                 Consumer<LocationProvider>(
@@ -347,6 +353,8 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
     required String hint,
     TextInputType? keyboardType,
     required int delay,
+    List<TextInputFormatter>? inputFormatters,
+    String? prefixText,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -358,12 +366,14 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
         style: GoogleFonts.outfit(color: AppTheme.textPrimary),
         decoration: InputDecoration(
           border: InputBorder.none,
           icon: Icon(icon, color: AppTheme.textSecondary, size: 20),
           hintText: hint,
           hintStyle: GoogleFonts.outfit(color: AppTheme.textMuted),
+          prefixText: prefixText,
         ),
       ),
     ).animate().fadeIn(delay: Duration(milliseconds: delay)).slideY(begin: 0.2, end: 0);
