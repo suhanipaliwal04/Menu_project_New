@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../core/theme.dart';
@@ -117,9 +118,15 @@ class _CustomerSettingsScreenState extends State<CustomerSettingsScreen> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: _phoneCtrl,
+                    keyboardType: TextInputType.phone,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(10),
+                    ],
                     style: GoogleFonts.outfit(color: AppTheme.textPrimary),
                     decoration: InputDecoration(
                       labelText: 'Phone Number',
+                      prefixText: '+91 ',
                       prefixIcon: const Icon(Icons.phone, color: Colors.grey),
                       filled: true,
                       fillColor: AppTheme.surface,

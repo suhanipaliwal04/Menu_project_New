@@ -2327,6 +2327,7 @@ class _SettingsTabState extends State<_SettingsTab> {
   TimeOfDay? _openingTime;
   TimeOfDay? _closingTime;
   final _slotDurationCtrl = TextEditingController(text: '15');
+  final _takeawaySlotDurationCtrl = TextEditingController(text: '15');
   final _maxDineInCtrl = TextEditingController(text: '5');
   final _maxCapacityCtrl = TextEditingController(text: '100');
 
@@ -2376,6 +2377,7 @@ class _SettingsTabState extends State<_SettingsTab> {
       _openingTime = _parseTime(r.openingTime);
       _closingTime = _parseTime(r.closingTime);
       _slotDurationCtrl.text = r.slotDurationMins.toString();
+      _takeawaySlotDurationCtrl.text = r.takeawaySlotDurationMins.toString();
       _maxDineInCtrl.text = r.maxDineInPerSlot.toString();
       _maxCapacityCtrl.text = r.maxCapacity.toString();
 
@@ -2399,6 +2401,7 @@ class _SettingsTabState extends State<_SettingsTab> {
     _setupPhoneCtrl.dispose();
     _setupCuisineCtrl.dispose();
     _slotDurationCtrl.dispose();
+    _takeawaySlotDurationCtrl.dispose();
     _maxDineInCtrl.dispose();
     _maxCapacityCtrl.dispose();
     super.dispose();
@@ -2426,6 +2429,7 @@ class _SettingsTabState extends State<_SettingsTab> {
       openingTime: _formatTime(_openingTime),
       closingTime: _formatTime(_closingTime),
       slotDurationMins: int.tryParse(_slotDurationCtrl.text.trim()) ?? 15,
+      takeawaySlotDurationMins: int.tryParse(_takeawaySlotDurationCtrl.text.trim()) ?? 15,
       maxDineInPerSlot: int.tryParse(_maxDineInCtrl.text.trim()) ?? 5,
       maxCapacity: int.tryParse(_maxCapacityCtrl.text.trim()) ?? 100,
       areaId: _editSelectedArea?.areaId,
@@ -2821,14 +2825,23 @@ class _SettingsTabState extends State<_SettingsTab> {
             ),
           ),
           const SizedBox(height: 16),
+          _formField(
+            _takeawaySlotDurationCtrl,
+            'Takeaway Slot Duration (mins)',
+            Icons.access_time_rounded,
+            type: TextInputType.number,
+            enabled: _hasTakeaway,
+          ),
+          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: _formField(
                   _slotDurationCtrl,
-                  'Slot Duration (mins)',
+                  'Dine-in Slot Duration (mins)',
                   Icons.timer_rounded,
                   type: TextInputType.number,
+                  enabled: _hasDineIn,
                 ),
               ),
               const SizedBox(width: 16),
@@ -2838,6 +2851,7 @@ class _SettingsTabState extends State<_SettingsTab> {
                   'Max Dine-in per Slot',
                   Icons.table_restaurant_rounded,
                   type: TextInputType.number,
+                  enabled: _hasDineIn,
                 ),
               ),
             ],
@@ -2848,6 +2862,7 @@ class _SettingsTabState extends State<_SettingsTab> {
             'Total Restaurant Capacity (Total people allowed)',
             Icons.groups_rounded,
             type: TextInputType.number,
+            enabled: _hasDineIn,
           ),
         ],
       ),
@@ -2991,14 +3006,18 @@ class _SettingsTabState extends State<_SettingsTab> {
     int maxLines = 1,
     List<TextInputFormatter>? inputFormatters,
     String? prefixText,
+    bool enabled = true,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.divider),
-      ),
+    return Opacity(
+      opacity: enabled ? 1.0 : 0.4,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTheme.divider),
+        ),
       child: TextField(
+        enabled: enabled,
         controller: ctrl,
         keyboardType: type,
         maxLines: maxLines,
@@ -3015,6 +3034,7 @@ class _SettingsTabState extends State<_SettingsTab> {
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
+      ),
       ),
     );
   }

@@ -31,6 +31,7 @@ class Restaurant(Base):
     slot_duration_mins = Column(Integer, default=15)
     max_dine_in_per_slot = Column(Integer, default=5)
     max_capacity = Column(Integer, default=100)
+    takeaway_slot_duration_mins = Column(Integer, default=15)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

@@ -489,6 +489,7 @@ class RetailerProvider extends ChangeNotifier {
     int? slotDurationMins,
     int? maxDineInPerSlot,
     int? maxCapacity,
+    int? takeawaySlotDurationMins,
   }) async {
     _state = RetailerState.loading;
     notifyListeners();
@@ -511,6 +512,7 @@ class RetailerProvider extends ChangeNotifier {
       if (slotDurationMins != null) 'slot_duration_mins': slotDurationMins,
       if (maxDineInPerSlot != null) 'max_dine_in_per_slot': maxDineInPerSlot,
       if (maxCapacity != null) 'max_capacity': maxCapacity,
+      if (takeawaySlotDurationMins != null) 'takeaway_slot_duration_mins': takeawaySlotDurationMins,
     };
 
     if (updates.isEmpty) return true;

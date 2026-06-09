@@ -35,7 +35,7 @@ class _CartScreenState extends State<CartScreen> {
         setState(() => _isLoadingSlots = true);
         try {
           final res = await ApiService().getRestaurant(cart.items.first.restaurantId);
-          _generateSlots(res.openingTime, res.closingTime, res.slotDurationMins);
+          _generateSlots(res.openingTime, res.closingTime, res.takeawaySlotDurationMins);
         } catch (_) {}
         if (mounted) setState(() => _isLoadingSlots = false);
       }

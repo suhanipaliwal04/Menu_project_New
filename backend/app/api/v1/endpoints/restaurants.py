@@ -307,6 +307,7 @@ def _restaurant_with_area(restaurant: Restaurant, area, db: Session = None) -> d
         "slot_duration_mins": getattr(restaurant, "slot_duration_mins", 15),
         "max_dine_in_per_slot": getattr(restaurant, "max_dine_in_per_slot", 5),
         "max_capacity": getattr(restaurant, "max_capacity", 100),
+        "takeaway_slot_duration_mins": getattr(restaurant, "takeaway_slot_duration_mins", 15),
         "area_name": area.area_name if area else None,
         "average_rating": average_rating,
         "total_reviews": total_reviews,

@@ -18,6 +18,7 @@ class RestaurantModel {
   final int slotDurationMins;
   final int maxDineInPerSlot;
   final int maxCapacity;
+  final int takeawaySlotDurationMins;
 
   const RestaurantModel({
     required this.restaurantId,
@@ -39,6 +40,7 @@ class RestaurantModel {
     this.slotDurationMins = 15,
     this.maxDineInPerSlot = 5,
     this.maxCapacity = 100,
+    this.takeawaySlotDurationMins = 15,
   });
 
   factory RestaurantModel.fromJson(Map<String, dynamic> json) =>
@@ -64,6 +66,7 @@ class RestaurantModel {
         slotDurationMins: (json['slot_duration_mins'] as num?)?.toInt() ?? 15,
         maxDineInPerSlot: (json['max_dine_in_per_slot'] as num?)?.toInt() ?? 5,
         maxCapacity: (json['max_capacity'] as num?)?.toInt() ?? 100,
+        takeawaySlotDurationMins: (json['takeaway_slot_duration_mins'] as num?)?.toInt() ?? 15,
       );
 
   String get cuisineDisplay =>
