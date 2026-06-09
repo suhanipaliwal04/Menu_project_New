@@ -41,6 +41,8 @@ class RestaurantUpdate(BaseModel):
     max_dine_in_per_slot: Optional[int] = None
     max_capacity: Optional[int] = None
     takeaway_slot_duration_mins: Optional[int] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 
 class RestaurantResponse(RestaurantBase):

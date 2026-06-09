@@ -45,6 +45,9 @@ class _HomeScreenState extends State<HomeScreen> {
   String _selectedCity = 'Nagpur';
   String _selectedArea = 'Select Area';
   String? _selectedAreaId;
+  final TextEditingController _customLatCtrl = TextEditingController();
+  final TextEditingController _customLngCtrl = TextEditingController();
+  bool _isManualLocationExpanded = false;
 
   @override
   void initState() {
@@ -125,6 +128,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _queryCtrl.dispose();
     _areaCtrl.dispose();
+    _customLatCtrl.dispose();
+    _customLngCtrl.dispose();
     super.dispose();
   }
 
@@ -454,16 +459,18 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showLocationPicker(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: AppTheme.background,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+      builder: (ctx) => SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.of(context).viewInsets.bottom + 24),
+          decoration: const BoxDecoration(
+            color: AppTheme.background,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Select Area',
                 style: GoogleFonts.outfit(
@@ -503,6 +510,84 @@ class _HomeScreenState extends State<HomeScreen> {
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
               ),
+            ),
+            const SizedBox(height: 12),
+            StatefulBuilder(
+              builder: (BuildContext context, StateSetter setModalState) {
+                return Column(
+                  children: [
+                    TextButton.icon(
+                      onPressed: () {
+                        setModalState(() {
+                          _isManualLocationExpanded = !_isManualLocationExpanded;
+                        });
+                      },
+                      icon: Icon(_isManualLocationExpanded ? Icons.expand_less : Icons.expand_more, color: AppTheme.primary),
+                      label: Text('Or enter coordinates manually', style: GoogleFonts.outfit(color: AppTheme.primary)),
+                    ),
+                    if (_isManualLocationExpanded) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _customLatCtrl,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              decoration: InputDecoration(
+                                labelText: 'Latitude',
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                isDense: true,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: TextField(
+                              controller: _customLngCtrl,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              decoration: InputDecoration(
+                                labelText: 'Longitude',
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                isDense: true,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: () {
+                          final double? lat = double.tryParse(_customLatCtrl.text.trim());
+                          final double? lng = double.tryParse(_customLngCtrl.text.trim());
+                          if (lat != null && lng != null) {
+                            setState(() {
+                              _selectedArea = 'Custom Coordinates';
+                              _selectedCity = 'Within 2km';
+                              _selectedAreaId = null;
+                            });
+                            Navigator.pop(ctx);
+                            context.read<BrowseProvider>().loadRestaurants(
+                              orderType: _selectedTab,
+                              userLat: lat,
+                              userLng: lng,
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Please enter valid numeric coordinates.')),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primary,
+                          minimumSize: const Size.fromHeight(40),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text('Search Area', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ],
+                );
+              }
             ),
             const SizedBox(height: 16),
             Consumer<BrowseProvider>(
@@ -565,6 +650,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

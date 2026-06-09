@@ -523,20 +523,23 @@ class RetailerProvider extends ChangeNotifier {
       if (longitude != null) 'longitude': longitude,
     };
 
-    if (updates.isEmpty) return true;
+    if (updates.isEmpty) {
+      _setState(RetailerState.success);
+      return true;
+    }
 
     try {
       final data = await _api.updateRestaurant(id, updates);
       _myRestaurant = RestaurantModel.fromJson(data);
-      notifyListeners();
+      _setState(RetailerState.success);
       return true;
     } on ApiException catch (e) {
       _errorMessage = e.message;
-      notifyListeners();
+      _setState(RetailerState.error);
       return false;
     } catch (_) {
       _errorMessage = 'Failed to update restaurant.';
-      notifyListeners();
+      _setState(RetailerState.error);
       return false;
     }
   }

@@ -22,6 +22,27 @@ class AreaModel {
       );
 
   String get displayName => '$areaName, $city';
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+  
+    return other is AreaModel &&
+      other.areaId == areaId &&
+      other.areaName == areaName &&
+      other.city == city &&
+      other.pincode == pincode &&
+      other.state == state;
+  }
+
+  @override
+  int get hashCode {
+    return areaId.hashCode ^
+      areaName.hashCode ^
+      city.hashCode ^
+      pincode.hashCode ^
+      state.hashCode;
+  }
 }
 
 // Response for GET /areas/{id}/restaurants
