@@ -56,7 +56,7 @@ Return ONLY a valid JSON array of objects. Do not include markdown blocks (like 
     "section_name": "Category name",
     "is_veg": true or false,
     "calories": 200,
-    "health_score": 5,
+    "health_score": <integer 1-10>,
     "description": ""
   }}
 ]
@@ -66,6 +66,7 @@ CRITICAL RULES:
 2. Prices MUST be numbers (e.g. 150). If an item has multiple prices (e.g., "20/30"), just extract the LOWEST base price.
 3. Do not mistake UI elements (like battery percentage 77) as menu items. Only extract real menu content.
 4. Return ONLY the raw JSON array.
+5. "health_score" MUST be an integer between 1 and 10 (10 = healthiest). Use your best judgment based on ingredients (e.g. salads = 8-10, fried food/desserts = 1-4).
 """
 
             payload = {

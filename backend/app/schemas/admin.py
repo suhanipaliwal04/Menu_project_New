@@ -51,6 +51,7 @@ class MenuItemUpdate(BaseModel):
     is_veg: Optional[bool] = None
     is_available: Optional[bool] = None
     calories: Optional[int] = None
+    health_score: Optional[int] = None
     spice_level: Optional[str] = None
     tags: Optional[List[str]] = None
 

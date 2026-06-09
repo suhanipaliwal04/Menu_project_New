@@ -197,6 +197,14 @@ def update_menu_item(
     if not item:
         raise HTTPException(status_code=404, detail="Menu item not found")
 
+    if updates.health_score is not None:
+        orig = item.original_health_score
+        if orig is not None and abs(updates.health_score - orig) > 2:
+            raise HTTPException(
+                status_code=400, 
+                detail="Health score can only be adjusted by \u00b12 from the AI predicted score."
+            )
+
     update_data = updates.dict(exclude_unset=True)
     for field, value in update_data.items():
         setattr(item, field, value)
@@ -593,6 +601,7 @@ async def admin_upload_menu(
                 is_veg=item_data.get("is_veg", True),
                 calories=item_data.get("calories"),
                 health_score=h_score,
+                original_health_score=h_score,
                 health_label=h_label,
             )
             db.add(menu_item)

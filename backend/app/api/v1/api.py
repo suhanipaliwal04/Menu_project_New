@@ -3,13 +3,14 @@ API Router - Combine all endpoint routers
 """
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import areas, restaurants, menus, chat, admin, auth, voice, dine, bookings, orders, system_admin, reviews
+from app.api.v1.endpoints import areas, restaurants, menus, chat, admin, auth, voice, dine, bookings, orders, system_admin, reviews, locations
 
 api_router = APIRouter()
 
 # Include all endpoint routers
 api_router.include_router(auth.router,        prefix="/auth",        tags=["Auth"])
 api_router.include_router(areas.router,       prefix="/areas",       tags=["Areas"])
+api_router.include_router(locations.router,   prefix="/locations",   tags=["Locations"])
 api_router.include_router(restaurants.router, prefix="/restaurants", tags=["Restaurants"])
 api_router.include_router(menus.router,       prefix="/menus",       tags=["Menus"])
 api_router.include_router(chat.router,        prefix="/chat",        tags=["Chat"])

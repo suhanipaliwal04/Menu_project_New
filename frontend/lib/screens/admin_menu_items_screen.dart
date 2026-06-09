@@ -333,7 +333,9 @@ class _EditItemSheet extends StatefulWidget {
 
 class _EditItemSheetState extends State<_EditItemSheet> {
   late final TextEditingController _nameCtrl;
+  late final TextEditingController _descCtrl;
   late final TextEditingController _priceCtrl;
+  late final TextEditingController _healthScoreCtrl;
   late bool _isVeg;
   late bool _isAvailable;
 
@@ -341,7 +343,9 @@ class _EditItemSheetState extends State<_EditItemSheet> {
   void initState() {
     super.initState();
     _nameCtrl = TextEditingController(text: widget.item.itemName);
+    _descCtrl = TextEditingController(text: widget.item.description ?? '');
     _priceCtrl = TextEditingController(text: widget.item.price.toStringAsFixed(0));
+    _healthScoreCtrl = TextEditingController(text: widget.item.healthScore?.toString() ?? '');
     _isVeg = widget.item.isVeg;
     _isAvailable = widget.item.isAvailable;
   }
@@ -349,7 +353,9 @@ class _EditItemSheetState extends State<_EditItemSheet> {
   @override
   void dispose() {
     _nameCtrl.dispose();
+    _descCtrl.dispose();
     _priceCtrl.dispose();
+    _healthScoreCtrl.dispose();
     super.dispose();
   }
 
@@ -366,11 +372,17 @@ class _EditItemSheetState extends State<_EditItemSheet> {
       return;
     }
 
+    final desc = _descCtrl.text.trim();
+    final hsStr = _healthScoreCtrl.text.trim();
+    final hs = hsStr.isNotEmpty ? int.tryParse(hsStr) : null;
+
     final updates = <String, dynamic>{
       'item_name': name,
       if (price != null) 'price': price,
       'is_veg': _isVeg,
       'is_available': _isAvailable,
+      'description': desc.isNotEmpty ? desc : null,
+      if (hs != null) 'health_score': hs,
     };
 
     final success = await context.read<AdminProvider>().updateMenuItem(widget.item.itemId, updates);
@@ -415,7 +427,13 @@ class _EditItemSheetState extends State<_EditItemSheet> {
             // Name field
             _buildField('Item Name', _nameCtrl),
             const SizedBox(height: 12),
-            _buildField('Price (₹)', _priceCtrl, keyboardType: TextInputType.number),
+            _buildField('Description', _descCtrl, maxLines: 3),
+            const SizedBox(height: 12),
+            Row(children: [
+              Expanded(child: _buildField('Price (₹)', _priceCtrl, keyboardType: TextInputType.number)),
+              const SizedBox(width: 12),
+              Expanded(child: _buildField('Health (1-10)', _healthScoreCtrl, keyboardType: TextInputType.number)),
+            ]),
             const SizedBox(height: 16),
 
             // Toggles
@@ -462,7 +480,7 @@ class _EditItemSheetState extends State<_EditItemSheet> {
     );
   }
 
-  Widget _buildField(String label, TextEditingController ctrl, {TextInputType? keyboardType}) {
+  Widget _buildField(String label, TextEditingController ctrl, {TextInputType? keyboardType, int maxLines = 1}) {
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.surface,
@@ -472,6 +490,7 @@ class _EditItemSheetState extends State<_EditItemSheet> {
       child: TextField(
         controller: ctrl,
         keyboardType: keyboardType,
+        maxLines: maxLines,
         style: GoogleFonts.outfit(color: AppTheme.textPrimary),
         decoration: InputDecoration(
           labelText: label,

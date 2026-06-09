@@ -453,6 +453,34 @@ class ApiService {
     return data as Map<String, dynamic>;
   }
 
+  /// PUT /auth/me
+  Future<Map<String, dynamic>> updateMe(Map<String, dynamic> body) async {
+    final data = await _put('/auth/me', body);
+    return data as Map<String, dynamic>;
+  }
+
+  // ── Locations ────────────────────────────────────────────────────────────────
+  
+  Future<List<dynamic>> getStates() async {
+    final data = await _get('/locations/states');
+    return data as List<dynamic>;
+  }
+
+  Future<List<dynamic>> getCities(String stateName) async {
+    final data = await _get('/locations/states/$stateName/cities');
+    return data as List<dynamic>;
+  }
+
+  Future<Map<String, dynamic>> createState(String stateName) async {
+    final data = await _post('/locations/states', {'state_name': stateName}, auth: true);
+    return data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> createCity(String cityName, String stateId) async {
+    final data = await _post('/locations/cities', {'city_name': cityName, 'state_id': stateId}, auth: true);
+    return data as Map<String, dynamic>;
+  }
+
   // ── Admin Dashboard ───────────────────────────────────────────────────────────
 
   /// GET /admin/dashboard/{restaurantId} — Live stats for a restaurant.
