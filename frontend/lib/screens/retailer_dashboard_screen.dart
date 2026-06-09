@@ -8,6 +8,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:image_picker/image_picker.dart';
 import '../core/theme.dart';
 import '../providers/retailer_provider.dart';
+import '../providers/auth_provider.dart';
 import '../models/admin_models.dart';
 import '../models/area_model.dart';
 import '../models/restaurant_model.dart';
@@ -48,7 +49,8 @@ class _RetailerDashboardScreenState extends State<RetailerDashboardScreen>
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final p = context.read<RetailerProvider>();
-      await p.fetchAreas();
+      final auth = context.read<AuthProvider>();
+      await p.fetchAreas(city: auth.city);
       if (p.myRestaurant != null) {
         p.fetchDashboard();
         p.fetchMenuItems();

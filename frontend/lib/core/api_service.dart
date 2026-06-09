@@ -435,10 +435,14 @@ class ApiService {
   }
 
   /// POST /auth/register/{role}
-  Future<Map<String, dynamic>> register(String email, String password, String role) async {
+  Future<Map<String, dynamic>> register(String email, String password, String role, String fullName, String phone, String state, String city) async {
     final data = await _post('${AppConstants.authRegisterEndpoint}/$role', {
       'email': email,
       'password': password,
+      'full_name': fullName,
+      'phone_number': phone,
+      'state': state,
+      'city': city,
     });
     return data as Map<String, dynamic>;
   }

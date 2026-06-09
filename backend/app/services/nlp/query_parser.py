@@ -97,11 +97,11 @@ def _rule_parse(query: str) -> Dict[str, Any]:
     if m:
         result["max_calories"] = int(m.group(1))
 
-    if any(w in q for w in _LOW_CAL_WORDS):
+    if re.search(r'\b(?:' + '|'.join(map(re.escape, _LOW_CAL_WORDS)) + r')\b', q):
         result["max_calories"] = result["max_calories"] or 400
 
     # ── Health score ──────────────────────────────────────────────────────────
-    if any(w in q for w in _HEALTHY_WORDS):
+    if re.search(r'\b(?:' + '|'.join(map(re.escape, _HEALTHY_WORDS)) + r')\b', q):
         result["min_health_score"] = 6
 
     m = re.search(r'health\s*(?:score)?\s*(?:above|over|>=|>)\s*(\d+)', q)
@@ -109,14 +109,14 @@ def _rule_parse(query: str) -> Dict[str, Any]:
         result["min_health_score"] = int(m.group(1))
 
     # ── Veg / Non-veg ─────────────────────────────────────────────────────────
-    if any(w in q for w in _NONVEG_WORDS):
+    if re.search(r'\b(?:' + '|'.join(map(re.escape, _NONVEG_WORDS)) + r')\b', q):
         result["is_veg"] = False
-    elif any(w in q for w in _VEG_WORDS):
+    elif re.search(r'\b(?:' + '|'.join(map(re.escape, _VEG_WORDS)) + r')\b', q):
         result["is_veg"] = True
 
     # ── Category / section ────────────────────────────────────────────────────
     for keywords, section in _SECTION_KEYWORDS:
-        if any(kw in q for kw in keywords):
+        if re.search(r'\b(?:' + '|'.join(map(re.escape, keywords)) + r')\b', q):
             result["section_name"] = section
             break
 
@@ -165,12 +165,13 @@ Return ONLY a JSON object (no extra text):
 }}
 
 CRITICAL RULES:
-1. is_veg: MUST be `null` UNLESS the user explicitly says "veg", "vegetarian", "plant based" (true) OR "chicken", "mutton", "fish", "meat", "egg", "non veg" (false). Do NOT guess. Default is ALWAYS `null`.
+1. is_veg: MUST be `null` UNLESS the user explicitly states a hard dietary filter like "veg", "vegetarian", "plant based" (true) OR "chicken", "mutton", "fish", "meat", "egg", "non veg" (false). Do NOT guess. Do NOT infer it from cuisine (e.g. "North Indian", "Burger" does NOT imply non-veg). Default is ALWAYS `null`.
 2. max_price: The upper limit in rupees (e.g., "under 200", "below 500"). Must be `null` if not mentioned.
 3. min_price: The lower limit in rupees (e.g., "over 200", "above 500"). Must be `null` if not mentioned.
 4. min_health_score: 6 if "healthy", 7 if "very healthy". `null` otherwise.
 5. section_name: Match to a category like "North Indian", "Chinese", "Desserts", etc. `null` if not mentioned.
 6. semantic_query: The remaining food intent with prices/dietary words removed.
+7. CONFIDENCE: If you are not 100% sure about a filter, set it to `null`. It's better to have fewer hard filters than incorrect ones.
 
 EXAMPLES:
 Q: "something over 200 rs"
@@ -181,6 +182,9 @@ Q: "healthy veg food under 300"
 
 Q: "spicy chicken biryani"
 {{"is_veg": false, "max_price": null, "min_price": null, "max_calories": null, "min_health_score": null, "section_name": "Biryani", "semantic_query": "spicy chicken biryani"}}
+
+Q: "Something in North Indian"
+{{"is_veg": null, "max_price": null, "min_price": null, "max_calories": null, "min_health_score": null, "section_name": "North Indian", "semantic_query": "Something in"}}
 
 Q: "{query}"
 """

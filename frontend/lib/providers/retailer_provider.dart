@@ -210,10 +210,9 @@ class RetailerProvider extends ChangeNotifier {
 
   // ── Setup — create restaurant ──────────────────────────────────────────────
 
-  Future<void> fetchAreas() async {
-    if (_areas.isNotEmpty) return;
+  Future<void> fetchAreas({String? city}) async {
     try {
-      _areas = await _api.getAreas();
+      _areas = await _api.getAreas(city: city);
       notifyListeners();
     } catch (_) {}
   }

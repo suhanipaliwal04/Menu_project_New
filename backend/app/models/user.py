@@ -16,6 +16,11 @@ class User(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     role = Column(String(50), nullable=False)  # 'SYSTEM_ADMIN', 'RESTAURANT_ADMIN', 'CUSTOMER'
     is_approved = Column(Boolean, default=False, nullable=False)
+    
+    full_name = Column(String(255), nullable=True)
+    phone_number = Column(String(20), nullable=True)
+    state = Column(String(100), nullable=True)
+    city = Column(String(100), nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
