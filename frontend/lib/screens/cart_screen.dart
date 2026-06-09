@@ -23,7 +23,7 @@ class _CartScreenState extends State<CartScreen> {
   String? _nameError;
   String? _phoneError;
 
-  List<String> _timeSlots = ['ASAP'];
+  List<String> _timeSlots = [];
   bool _isLoadingSlots = false;
 
   @override
@@ -69,7 +69,7 @@ class _CartScreenState extends State<CartScreen> {
       endTime = endTime.add(const Duration(days: 1));
     }
     
-    List<String> slots = ['ASAP'];
+    List<String> slots = [];
     while (startTime.isBefore(endTime) || startTime.isAtSameMomentAs(endTime)) {
       final h = startTime.hour;
       final m = startTime.minute.toString().padLeft(2, '0');
