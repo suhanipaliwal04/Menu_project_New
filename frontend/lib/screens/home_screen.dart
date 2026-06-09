@@ -749,7 +749,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   Positioned(
-                    bottom: 56, // Shifted up so the floating buttons don't overlap the text
+                    bottom: 76, // Shifted up even more to completely clear the floating buttons
                     left: 20,
                     right: 20,
                     child: Align(
