@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+/ ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -260,7 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   context,
                   MaterialPageRoute(builder: (_) => const CustomerSettingsScreen()),
                 );
-                if (!context.mounted) return;
+                if (!mounted) return;
                 final authProvider = context.read<AuthProvider>();
                 if (authProvider.city != null && authProvider.city!.isNotEmpty && authProvider.city != _selectedCity) {
                   setState(() {
@@ -270,7 +270,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   });
                   final provider = context.read<BrowseProvider>();
                   provider.loadAreas(city: _selectedCity);
-                  provider.loadRestaurants(orderType: _selectedTab);
                 }
               },
               child: Container(
