@@ -377,6 +377,12 @@ class EmbeddingService:
             where_clauses.append("mi.health_score >= %s")
             params.append(filters["min_health_score"])
 
+        if filters.get("min_rating") is not None:
+            where_clauses.append("""
+                (SELECT avg(rating) FROM restaurant_reviews rr WHERE rr.restaurant_id = r.restaurant_id) >= %s
+            """)
+            params.append(filters["min_rating"])
+
         # Exclude keywords logic
         exclude_words = filters.get("exclude_keywords")
         if exclude_words:

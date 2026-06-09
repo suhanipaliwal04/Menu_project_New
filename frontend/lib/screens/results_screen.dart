@@ -23,15 +23,17 @@ class ResultsScreen extends StatefulWidget {
 }
 
 class _ResultsScreenState extends State<ResultsScreen> {
+  late VoiceAgentProvider _voiceAgentProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    _voiceAgentProvider = context.read<VoiceAgentProvider>();
+  }
+
   @override
   void dispose() {
-    // Stop speaking when user leaves results page
-    // Using a microtask instead of context to avoid unmounted errors,
-    // or we can just access it immediately before super.dispose()
-    // However, context in dispose is not safe for provider if we do it post-frame.
-    // Instead we do it directly:
-    final provider = Provider.of<VoiceAgentProvider>(context, listen: false);
-    provider.stopEverything();
+    _voiceAgentProvider.stopEverything();
     super.dispose();
   }
 
