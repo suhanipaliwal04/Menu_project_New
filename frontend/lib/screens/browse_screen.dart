@@ -268,9 +268,6 @@ class _BrowseScreenState extends State<BrowseScreen> {
                             const SizedBox(height: 12),
                             Row(
                               children: [
-                                const Icon(Icons.timer_outlined, size: 16, color: AppTheme.textMuted),
-                                const SizedBox(width: 4),
-                                Text('30-35 mins', style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontSize: 13)),
                                 const Spacer(),
                                 Text('FREE DELIVERY', style: GoogleFonts.outfit(color: AppTheme.primary, fontWeight: FontWeight.w800, fontSize: 11)),
                               ],

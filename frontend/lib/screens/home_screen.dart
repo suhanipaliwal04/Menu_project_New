@@ -486,76 +486,77 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const VoiceFab(),
-                const SizedBox(width: 16),
-                Consumer<CartProvider>(
-                  builder: (context, cart, _) {
-                    return FloatingActionButton(
-                      heroTag: 'cart_fab_home',
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const CartScreen()),
-                        );
-                      },
-                      backgroundColor: AppTheme.surfaceAlt,
-                      elevation: 4,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        clipBehavior: Clip.none,
-                        children: [
-                          const Icon(Icons.shopping_bag_outlined, color: AppTheme.textPrimary, size: 26),
-                          if (cart.items.isNotEmpty)
-                            Positioned(
-                              right: -8,
-                              top: -8,
-                              child: Container(
-                                padding: const EdgeInsets.all(5),
-                                decoration: const BoxDecoration(
-                                  color: AppTheme.primary,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Text(
-                                  '${cart.items.length}',
-                                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const VoiceFab(),
+                  const SizedBox(width: 16),
+                  Consumer<CartProvider>(
+                    builder: (context, cart, _) {
+                      return FloatingActionButton(
+                        heroTag: 'cart_fab_home',
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const CartScreen()),
+                          );
+                        },
+                        backgroundColor: AppTheme.surfaceAlt,
+                        elevation: 4,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          clipBehavior: Clip.none,
+                          children: [
+                            const Icon(Icons.shopping_bag_outlined, color: AppTheme.textPrimary, size: 26),
+                            if (cart.items.isNotEmpty)
+                              Positioned(
+                                right: -8,
+                                top: -8,
+                                child: Container(
+                                  padding: const EdgeInsets.all(5),
+                                  decoration: const BoxDecoration(
+                                    color: AppTheme.primary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    '${cart.items.length}',
+                                    style: GoogleFonts.outfit(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                  ),
                                 ),
                               ),
-                            ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(width: 16),
-            FloatingActionButton(
-              heroTag: 'book_table_home',
-              onPressed: () {
-                context.read<BrowseProvider>().loadRestaurants(orderType: 'Dine In', areaId: _selectedAreaId);
-                context.read<CartProvider>().setOrderType('Dine In');
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const CategoryResultsScreen(categoryName: 'Dine In'),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-              backgroundColor: AppTheme.primary,
-              child: const Icon(Icons.deck_rounded, color: Colors.white),
-            ),
-          ],
+                ],
+              ),
+              const SizedBox(width: 16),
+              FloatingActionButton(
+                heroTag: 'book_table_home',
+                onPressed: () {
+                  context.read<BrowseProvider>().loadRestaurants(orderType: 'Dine In', areaId: _selectedAreaId);
+                  context.read<CartProvider>().setOrderType('Dine In');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const CategoryResultsScreen(categoryName: 'Dine In'),
+                    ),
+                  );
+                },
+                backgroundColor: AppTheme.primary,
+                child: const Icon(Icons.deck_rounded, color: Colors.white),
+              ),
+            ],
+          ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: CustomScrollView(
         slivers: [
           _buildAppBar(),
@@ -597,7 +598,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return SliverAppBar(
       floating: true,
       pinned: true,
-      expandedHeight: 80,
+      expandedHeight: 60,
       
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
@@ -706,7 +707,7 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         CarouselSlider(
           options: CarouselOptions(
-            height: 240, // Reduced height so "Popular Near You" becomes visible on shorter screens
+            height: 200, // Reduced further so the whole carousel fits on a short screen
             viewportFraction: 0.82,
             enlargeCenterPage: true,
             autoPlay: true,
@@ -749,7 +750,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   Positioned(
-                    bottom: 76, // Shifted up even more to completely clear the floating buttons
+                    bottom: 24, // Restored to original position as requested
                     left: 20,
                     right: 20,
                     child: Align(
@@ -830,7 +831,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: AnimatedContainer(
                 duration: 300.ms,
                 margin: const EdgeInsets.symmetric(horizontal: 4),
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
                   color: active ? AppTheme.primary : AppTheme.surfaceAlt,
                   borderRadius: BorderRadius.circular(12),
@@ -867,7 +868,7 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         _buildSectionHeader('In the mood for?'),
         SizedBox(
-          height: 100,
+          height: 85,
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             scrollDirection: Axis.horizontal,
@@ -885,8 +886,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     children: [
                       Container(
-                        height: 68,
-                        width: 68,
+                        height: 56,
+                        width: 56,
                         padding: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
@@ -911,7 +912,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Text(
                         cat['name'],
                         style: GoogleFonts.outfit(
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: FontWeight.w600,
                             color: AppTheme.textPrimary),
                       ),
@@ -930,7 +931,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return GestureDetector(
       onTap: () => _searchFocus.requestFocus(),
       child: Container(
-        padding: const EdgeInsets.all(16), // Reduced padding
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [Color(0xFFF5E6D3), Color(0xFFFDF5E6)],
@@ -953,13 +954,13 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Row(
               children: [
-                Image.asset('assets/images/eatbot_logo.png', height: 52, width: 52), // Smaller logo
+                Image.asset('assets/images/eatbot_logo.png', height: 40, width: 40),
                 const SizedBox(width: 12),
                 Text(
                   'eatbot',
                   style: GoogleFonts.outfit(
                     fontWeight: FontWeight.w800,
-                    fontSize: 28, // Slightly smaller text
+                    fontSize: 24,
                     letterSpacing: -0.5,
                     color: AppTheme.textPrimary,
                   ),
@@ -967,7 +968,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const Spacer(),
               ],
             ),
-            const SizedBox(height: 12), // Reduced spacing
+            const SizedBox(height: 8),
             TextField(
               controller: _queryCtrl,
               focusNode: _searchFocus,
@@ -980,7 +981,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 fillColor: Colors.white.withValues(alpha: 0.85),
                 filled: true,
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Reduced padding
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 prefixIcon: IconButton(
                   icon: const Icon(Icons.mic_none_rounded, color: AppTheme.primary, size: 20),
                   onPressed: _showVoiceSearch,
@@ -1175,19 +1176,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                     color: AppTheme.textPrimary,
                                     fontWeight: FontWeight.bold)),
                             const Spacer(),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: AppTheme.primaryGlow,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text('25 min',
-                                  style: GoogleFonts.outfit(
-                                      fontSize: 10,
-                                      color: AppTheme.primary,
-                                      fontWeight: FontWeight.bold)),
-                            ),
                           ],
                         ),
                       ],
