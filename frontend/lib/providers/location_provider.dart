@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/api_service.dart';
+import '../models/create_models.dart';
 
 enum LocationStateStatus { idle, loading, success, error }
 
@@ -63,6 +64,18 @@ class LocationProvider extends ChangeNotifier {
   Future<bool> createCity(String cityName, String stateId) async {
     try {
       await _api.createCity(cityName, stateId);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> createArea(String areaName, String city, {String? state}) async {
+    try {
+      final req = CreateAreaRequest(areaName: areaName, city: city, state: state);
+      await _api.createArea(req);
       return true;
     } catch (e) {
       _errorMessage = e.toString();

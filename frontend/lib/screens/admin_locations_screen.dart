@@ -14,7 +14,9 @@ class AdminLocationsScreen extends StatefulWidget {
 class _AdminLocationsScreenState extends State<AdminLocationsScreen> {
   final _stateCtrl = TextEditingController();
   final _cityCtrl = TextEditingController();
+  final _areaCtrl = TextEditingController();
   String? _selectedStateId;
+  String? _selectedCityId;
 
   @override
   void initState() {
@@ -28,6 +30,7 @@ class _AdminLocationsScreenState extends State<AdminLocationsScreen> {
   void dispose() {
     _stateCtrl.dispose();
     _cityCtrl.dispose();
+    _areaCtrl.dispose();
     super.dispose();
   }
 
@@ -68,6 +71,30 @@ class _AdminLocationsScreenState extends State<AdminLocationsScreen> {
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(provider.errorMessage ?? 'Failed to add city'), backgroundColor: AppTheme.error));
+    }
+  }
+
+  void _addArea() async {
+    final name = _areaCtrl.text.trim();
+    if (name.isEmpty || _selectedStateId == null || _selectedCityId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter an area name and select state & city'), backgroundColor: AppTheme.error));
+      return;
+    }
+
+    final provider = context.read<LocationProvider>();
+    final cityData = provider.cities.firstWhere((c) => c['city_id'] == _selectedCityId, orElse: () => null);
+    final stateData = provider.states.firstWhere((s) => s['state_id'] == _selectedStateId, orElse: () => null);
+    
+    if (cityData == null) return;
+
+    final success = await provider.createArea(name, cityData['city_name'], state: stateData?['state_name']);
+    if (!mounted) return;
+
+    if (success) {
+      _areaCtrl.clear();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Area added successfully'), backgroundColor: AppTheme.success));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(provider.errorMessage ?? 'Failed to add area'), backgroundColor: AppTheme.error));
     }
   }
 
@@ -143,6 +170,7 @@ class _AdminLocationsScreenState extends State<AdminLocationsScreen> {
                       onChanged: (val) {
                         setState(() {
                           _selectedStateId = val;
+                          _selectedCityId = null; // Reset city when state changes
                         });
                         if (val != null) {
                           final st = provider.states.firstWhere((s) => s['state_id'] == val);
@@ -170,6 +198,65 @@ class _AdminLocationsScreenState extends State<AdminLocationsScreen> {
                     const SizedBox(width: 12),
                     ElevatedButton(
                       onPressed: _addCity,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text('Add', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+
+                Text('Add New Area', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                const SizedBox(height: 12),
+                // City Dropdown for Area
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _selectedCityId,
+                      hint: Text('Select City', style: GoogleFonts.outfit(color: AppTheme.textMuted)),
+                      isExpanded: true,
+                      dropdownColor: AppTheme.surface,
+                      style: GoogleFonts.outfit(color: AppTheme.textPrimary),
+                      items: provider.cities.map((c) {
+                        return DropdownMenuItem<String>(
+                          value: c['city_id'],
+                          child: Text(c['city_name']),
+                        );
+                      }).toList(),
+                      onChanged: provider.cities.isEmpty ? null : (val) {
+                        setState(() {
+                          _selectedCityId = val;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _areaCtrl,
+                        style: GoogleFonts.outfit(color: AppTheme.textPrimary),
+                        decoration: InputDecoration(
+                          hintText: 'Area Name',
+                          filled: true,
+                          fillColor: AppTheme.surface,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: _addArea,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primary,
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),

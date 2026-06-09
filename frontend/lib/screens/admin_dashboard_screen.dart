@@ -224,25 +224,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminRestaurantsScreen())),
                   delay: 400,
                 ),
-                const SizedBox(height: 12),
-                _buildModuleCard(
-                  context: context,
-                  title: 'Menu Items',
-                  subtitle: 'View, edit, and delete menu items for a restaurant',
-                  icon: Icons.restaurant_menu_rounded,
-                  color: const Color(0xFFE67E22),
-                  onTap: provider.selectedRestaurant == null
-                      ? () => ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Select a restaurant first', style: GoogleFonts.outfit()),
-                              backgroundColor: AppTheme.error,
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          )
-                      : () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminMenuItemsScreen())),
-                  delay: 450,
-                ),
-                const SizedBox(height: 12),
+
                 _buildModuleCard(
                   context: context,
                   title: 'Menu Digitization',

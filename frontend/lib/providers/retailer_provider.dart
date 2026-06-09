@@ -478,6 +478,7 @@ class RetailerProvider extends ChangeNotifier {
     String? name,
     String? phone,
     String? address,
+    String? areaId,
     List<String>? cuisineType,
     String? priceCategory,
     bool? hasDineIn,
@@ -486,6 +487,9 @@ class RetailerProvider extends ChangeNotifier {
     String? openingTime,
     String? closingTime,
   }) async {
+    _state = RetailerState.loading;
+    notifyListeners();
+
     final id = _myRestaurant?.restaurantId;
     if (id == null) return false;
 
@@ -493,6 +497,7 @@ class RetailerProvider extends ChangeNotifier {
       if (name != null && name.isNotEmpty) 'restaurant_name': name,
       if (phone != null) 'phone': phone,
       if (address != null) 'address': address,
+      if (areaId != null && areaId.isNotEmpty) 'area_id': areaId,
       if (cuisineType != null) 'cuisine_type': cuisineType,
       if (priceCategory != null) 'price_category': priceCategory,
       if (hasDineIn != null) 'has_dine_in': hasDineIn,

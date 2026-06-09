@@ -14,6 +14,7 @@ import '../models/area_model.dart';
 import '../models/restaurant_model.dart';
 import 'customer_login_screen.dart';
 import '../providers/reviews_provider.dart';
+import '../providers/location_provider.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN SCREEN
@@ -2333,6 +2334,12 @@ class _SettingsTabState extends State<_SettingsTab> {
   String _setupPriceCategory = 'mid-range';
   AreaModel? _selectedArea;
 
+  // Edit location state
+  String? _selectedStateId;
+  String? _selectedCityId;
+  AreaModel? _editSelectedArea;
+  bool _locationsLoaded = false;
+
   TimeOfDay? _parseTime(String? timeStr) {
     if (timeStr == null || timeStr.isEmpty) return null;
     try {
@@ -2364,6 +2371,13 @@ class _SettingsTabState extends State<_SettingsTab> {
       _isOpenManually = r.isOpenManually;
       _openingTime = _parseTime(r.openingTime);
       _closingTime = _parseTime(r.closingTime);
+
+      if (!_locationsLoaded) {
+        _locationsLoaded = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          context.read<LocationProvider>().fetchStates();
+        });
+      }
     }
   }
 
@@ -2401,6 +2415,7 @@ class _SettingsTabState extends State<_SettingsTab> {
       isOpenManually: _isOpenManually,
       openingTime: _formatTime(_openingTime),
       closingTime: _formatTime(_closingTime),
+      areaId: _editSelectedArea?.areaId,
     );
 
     if (mounted) {
@@ -2482,6 +2497,8 @@ class _SettingsTabState extends State<_SettingsTab> {
             _formField(
                 _addressCtrl, 'Street Address', Icons.location_on_rounded,
                 maxLines: 2),
+            const SizedBox(height: 10),
+            _buildEditLocationSelectors(p),
             const SizedBox(height: 10),
             _formField(_cuisineCtrl, 'Cuisine Types (comma separated)',
                 Icons.restaurant_menu_rounded),
@@ -3053,6 +3070,100 @@ class _SettingsTabState extends State<_SettingsTab> {
         ],
       ),
     );
+  }
+
+  Widget _buildEditLocationSelectors(RetailerProvider p) {
+    return Consumer<LocationProvider>(builder: (ctx, loc, child) {
+      return Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            decoration: BoxDecoration(color: AppTheme.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppTheme.divider)),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _selectedStateId,
+                hint: Text('Select State', style: GoogleFonts.outfit(color: AppTheme.textMuted)),
+                isExpanded: true,
+                dropdownColor: AppTheme.surface,
+                style: GoogleFonts.outfit(color: AppTheme.textPrimary),
+                items: loc.states.map((s) {
+                  return DropdownMenuItem<String>(
+                    value: s['state_id'],
+                    child: Text(s['state_name']),
+                  );
+                }).toList(),
+                onChanged: (val) {
+                  setState(() {
+                    _selectedStateId = val;
+                    _selectedCityId = null;
+                    _editSelectedArea = null;
+                  });
+                  if (val != null) {
+                    final st = loc.states.firstWhere((s) => s['state_id'] == val);
+                    loc.fetchCities(st['state_name']);
+                  }
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            decoration: BoxDecoration(color: AppTheme.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppTheme.divider)),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _selectedCityId,
+                hint: Text('Select City', style: GoogleFonts.outfit(color: AppTheme.textMuted)),
+                isExpanded: true,
+                dropdownColor: AppTheme.surface,
+                style: GoogleFonts.outfit(color: AppTheme.textPrimary),
+                items: loc.cities.map((c) {
+                  return DropdownMenuItem<String>(
+                    value: c['city_id'],
+                    child: Text(c['city_name']),
+                  );
+                }).toList(),
+                onChanged: loc.cities.isEmpty ? null : (val) {
+                  setState(() {
+                    _selectedCityId = val;
+                    _editSelectedArea = null;
+                  });
+                  if (val != null) {
+                    final c = loc.cities.firstWhere((c) => c['city_id'] == val);
+                    p.fetchAreas(city: c['city_name']);
+                  }
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            decoration: BoxDecoration(color: AppTheme.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppTheme.divider)),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<AreaModel>(
+                value: _editSelectedArea,
+                hint: Text('Update Area (Optional)', style: GoogleFonts.outfit(color: AppTheme.textMuted)),
+                isExpanded: true,
+                dropdownColor: AppTheme.surface,
+                style: GoogleFonts.outfit(color: AppTheme.textPrimary),
+                items: p.areas.map((a) {
+                  return DropdownMenuItem<AreaModel>(
+                    value: a,
+                    child: Text('${a.areaName}, ${a.city}'),
+                  );
+                }).toList(),
+                onChanged: p.areas.isEmpty ? null : (val) {
+                  setState(() {
+                    _editSelectedArea = val;
+                  });
+                },
+              ),
+            ),
+          ),
+        ],
+      );
+    });
   }
 }
 

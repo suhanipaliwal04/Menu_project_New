@@ -1,7 +1,7 @@
 class AppConstants {
   // ── API ─────────────────────────────────────────────────────────────────────
-   static const String _renderBase = 'https://eatbot-lifa.onrender.com/api/v1';
-//  tatic const String _renderBase = 'http://localhost:8000/api/v1';
+  // static const String _renderBase = 'https://eatbot-lifa.onrender.com/api/v1';
+  static const String _renderBase = 'http://localhost:8000/api/v1';
 
   static String get baseUrl => _renderBase;
 

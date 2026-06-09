@@ -254,12 +254,24 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 12),
             // Profile Settings
             GestureDetector(
-              onTap: () {
+              onTap: () async {
                 Navigator.pop(ctx);
-                Navigator.push(
+                await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const CustomerSettingsScreen()),
                 );
+                if (!context.mounted) return;
+                final authProvider = context.read<AuthProvider>();
+                if (authProvider.city != null && authProvider.city!.isNotEmpty && authProvider.city != _selectedCity) {
+                  setState(() {
+                    _selectedCity = authProvider.city!;
+                    _selectedArea = 'Select Area';
+                    _selectedAreaId = null;
+                  });
+                  final provider = context.read<BrowseProvider>();
+                  provider.loadAreas(city: _selectedCity);
+                  provider.loadRestaurants(orderType: _selectedTab);
+                }
               },
               child: Container(
                 padding: const EdgeInsets.all(18),
@@ -459,7 +471,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     fontWeight: FontWeight.w800,
                     color: AppTheme.textPrimary)),
             const SizedBox(height: 6),
-            Text('Nagpur locations',
+            Text('$_selectedCity locations',
                 style: GoogleFonts.outfit(
                     color: AppTheme.textSecondary, fontSize: 13)),
             const SizedBox(height: 24),
@@ -492,27 +504,30 @@ class _HomeScreenState extends State<HomeScreen> {
                       final String cityName = useFallback ? fallbackAreas[index]['city']! : provider.areas[index].city;
                       final String areaId = useFallback ? fallbackAreas[index]['id']! : provider.areas[index].areaId;
                       
-                      return ListTile(
-                        leading: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: AppTheme.primaryGlow,
-                            shape: BoxShape.circle,
+                      return Material(
+                        color: Colors.transparent,
+                        child: ListTile(
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: const BoxDecoration(
+                              color: AppTheme.primaryGlow,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.location_on_rounded, color: AppTheme.primary, size: 20),
                           ),
-                          child: const Icon(Icons.location_on_rounded, color: AppTheme.primary, size: 20),
+                          title: Text(areaName, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16)),
+                          subtitle: Text(cityName, style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary)),
+                          onTap: () {
+                            setState(() {
+                              _selectedArea = areaName;
+                              _selectedCity = cityName;
+                              _selectedAreaId = areaId;
+                            });
+                            Navigator.pop(ctx);
+                            // Refresh restaurants based on selected area
+                            provider.loadRestaurants(areaId: areaId, orderType: _selectedTab);
+                          },
                         ),
-                        title: Text(areaName, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16)),
-                        subtitle: Text(cityName, style: GoogleFonts.outfit(fontSize: 12, color: AppTheme.textSecondary)),
-                        onTap: () {
-                          setState(() {
-                            _selectedArea = areaName;
-                            _selectedCity = cityName;
-                            _selectedAreaId = areaId;
-                          });
-                          Navigator.pop(ctx);
-                          // Refresh restaurants based on selected area
-                          provider.loadRestaurants(areaId: areaId, orderType: _selectedTab);
-                        },
                       );
                     },
                   ),
