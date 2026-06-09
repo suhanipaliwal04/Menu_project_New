@@ -145,11 +145,14 @@ class DineBookingService:
                 Booking.status.in_(["PENDING", "CONFIRMED"])
             ).all()
             restaurant = db.query(Restaurant).filter(Restaurant.restaurant_id == restaurant_id).first()
-            max_capacity = getattr(restaurant, "max_dine_in_per_slot", 5) if restaurant else 5
+            max_dine_in_per_slot = getattr(restaurant, "max_dine_in_per_slot", 5) if restaurant else 5
+            max_capacity = getattr(restaurant, "max_capacity", 100) if restaurant else 100
 
             num_bookings = len(bookings)
-            if num_bookings >= max_capacity:
-                logger.info(f"DineBooking: '{matched_slot}' full for {party_size} at '{restaurant_name}' (Current: {num_bookings}/{max_capacity})")
+            slot_people_count = sum(b.party_size for b in bookings)
+            
+            if num_bookings >= max_dine_in_per_slot or (slot_people_count + party_size) > max_capacity:
+                logger.info(f"DineBooking: '{matched_slot}' full for {party_size} at '{restaurant_name}' (Bookings: {num_bookings}/{max_dine_in_per_slot}, Capacity: {slot_people_count + party_size}/{max_capacity})")
                 return {
                     "available": False,
                     "confirmed_slot": None,
@@ -237,17 +240,20 @@ class DineBookingService:
             ).all()
 
             restaurant = db.query(Restaurant).filter(Restaurant.restaurant_id == restaurant_id).first()
-            max_capacity = getattr(restaurant, "max_dine_in_per_slot", 5) if restaurant else 5
+            max_dine_in_per_slot = getattr(restaurant, "max_dine_in_per_slot", 5) if restaurant else 5
+            max_capacity = getattr(restaurant, "max_capacity", 100) if restaurant else 100
 
             # Group bookings by slot
             slot_booking_count = {s: 0 for s in valid_slots}
+            slot_people_count = {s: 0 for s in valid_slots}
             for b in bookings:
                 if b.time_slot in slot_booking_count:
                     slot_booking_count[b.time_slot] += 1
+                    slot_people_count[b.time_slot] += b.party_size
 
             result = []
             for s in valid_slots:
-                available = slot_booking_count[s] < max_capacity
+                available = slot_booking_count[s] < max_dine_in_per_slot and slot_people_count[s] < max_capacity
                 result.append({
                     "time_slot": s,
                     "available": available,

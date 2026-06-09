@@ -488,6 +488,7 @@ class RetailerProvider extends ChangeNotifier {
     String? closingTime,
     int? slotDurationMins,
     int? maxDineInPerSlot,
+    int? maxCapacity,
   }) async {
     _state = RetailerState.loading;
     notifyListeners();
@@ -509,6 +510,7 @@ class RetailerProvider extends ChangeNotifier {
       if (closingTime != null) 'closing_time': closingTime,
       if (slotDurationMins != null) 'slot_duration_mins': slotDurationMins,
       if (maxDineInPerSlot != null) 'max_dine_in_per_slot': maxDineInPerSlot,
+      if (maxCapacity != null) 'max_capacity': maxCapacity,
     };
 
     if (updates.isEmpty) return true;

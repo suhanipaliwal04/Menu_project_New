@@ -42,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _selectedTab = 'Dine In'; // Takeaway, Dine In
   String _activePopularTab = 'Trending';
   String _selectedCity = 'Nagpur';
-  String _selectedArea = 'Sitabuldi';
+  String _selectedArea = 'Select Area';
   String? _selectedAreaId;
 
   @override
@@ -484,7 +484,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
                 final bool useFallback = provider.areas.isEmpty || provider.areasState == BrowseState.error;
                 final List<Map<String, String>> fallbackAreas = [
-                  {'id': '1', 'name': 'Sitabuldi', 'city': 'Nagpur'},
                   {'id': '2', 'name': 'Dharampeth', 'city': 'Nagpur'},
                   {'id': '3', 'name': 'VR Mall', 'city': 'Nagpur'},
                   {'id': '4', 'name': 'Sadar', 'city': 'Nagpur'},

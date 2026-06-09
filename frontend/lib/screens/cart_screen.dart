@@ -46,12 +46,15 @@ class _CartScreenState extends State<CartScreen> {
     if (openingStr == null || closingStr == null) return;
     
     TimeOfDay parseTime(String t) {
-      final parts = t.split(' ');
-      final hm = parts[0].split(':');
-      int h = int.parse(hm[0]);
-      int m = int.parse(hm[1]);
-      if (parts[1].toUpperCase() == 'PM' && h != 12) h += 12;
-      if (parts[1].toUpperCase() == 'AM' && h == 12) h = 0;
+      t = t.trim().toUpperCase();
+      bool isPM = t.contains('PM');
+      bool isAM = t.contains('AM');
+      t = t.replaceAll(RegExp(r'[A-Z ]'), '');
+      final parts = t.split(':');
+      int h = int.parse(parts[0]);
+      int m = parts.length > 1 ? int.parse(parts[1]) : 0;
+      if (isPM && h != 12) h += 12;
+      if (isAM && h == 12) h = 0;
       return TimeOfDay(hour: h, minute: m);
     }
     

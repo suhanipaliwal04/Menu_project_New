@@ -37,6 +37,7 @@ class RestaurantUpdate(BaseModel):
     closing_time: Optional[time] = None
     slot_duration_mins: Optional[int] = None
     max_dine_in_per_slot: Optional[int] = None
+    max_capacity: Optional[int] = None
 
 
 class RestaurantResponse(RestaurantBase):
@@ -54,6 +55,7 @@ class RestaurantResponse(RestaurantBase):
     closing_time: Optional[time] = None
     slot_duration_mins: int = 15
     max_dine_in_per_slot: int = 5
+    max_capacity: int = 100
     average_rating: float = 4.8
     total_reviews: int = 0
     created_at: Optional[datetime] = None

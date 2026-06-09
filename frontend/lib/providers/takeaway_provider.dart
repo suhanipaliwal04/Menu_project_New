@@ -32,9 +32,9 @@ class TakeawayProvider extends ChangeNotifier {
 
   // Nearby restaurants for Test Case 2 fallback
   static const _nearbyRestaurants = [
-    NearbyRestaurant(id: 'nb-1', name: 'Spice Garden',      cuisine: 'Indian',       area: 'Sitabuldi',   rating: 4.2),
+    NearbyRestaurant(id: 'nb-1', name: 'Spice Garden',      cuisine: 'Indian',       area: 'Sadar',       rating: 4.2),
     NearbyRestaurant(id: 'nb-2', name: 'Haldirams',         cuisine: 'North Indian', area: 'Dharampeth',  rating: 4.5),
-    NearbyRestaurant(id: 'nb-3', name: 'Hotel Centre Point',cuisine: 'Continental',  area: 'Sitabuldi',   rating: 4.6),
+    NearbyRestaurant(id: 'nb-3', name: 'Hotel Centre Point',cuisine: 'Continental',  area: 'VR Mall',     rating: 4.6),
   ];
 
   // Pre-check if the restaurant supports takeaway

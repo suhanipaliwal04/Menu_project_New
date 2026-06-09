@@ -2328,6 +2328,7 @@ class _SettingsTabState extends State<_SettingsTab> {
   TimeOfDay? _closingTime;
   final _slotDurationCtrl = TextEditingController(text: '15');
   final _maxDineInCtrl = TextEditingController(text: '5');
+  final _maxCapacityCtrl = TextEditingController(text: '100');
 
   // Setup (new restaurant) fields
   final _setupNameCtrl = TextEditingController();
@@ -2376,6 +2377,7 @@ class _SettingsTabState extends State<_SettingsTab> {
       _closingTime = _parseTime(r.closingTime);
       _slotDurationCtrl.text = r.slotDurationMins.toString();
       _maxDineInCtrl.text = r.maxDineInPerSlot.toString();
+      _maxCapacityCtrl.text = r.maxCapacity.toString();
 
       if (!_locationsLoaded) {
         _locationsLoaded = true;
@@ -2398,6 +2400,7 @@ class _SettingsTabState extends State<_SettingsTab> {
     _setupCuisineCtrl.dispose();
     _slotDurationCtrl.dispose();
     _maxDineInCtrl.dispose();
+    _maxCapacityCtrl.dispose();
     super.dispose();
   }
 
@@ -2424,6 +2427,7 @@ class _SettingsTabState extends State<_SettingsTab> {
       closingTime: _formatTime(_closingTime),
       slotDurationMins: int.tryParse(_slotDurationCtrl.text.trim()) ?? 15,
       maxDineInPerSlot: int.tryParse(_maxDineInCtrl.text.trim()) ?? 5,
+      maxCapacity: int.tryParse(_maxCapacityCtrl.text.trim()) ?? 100,
       areaId: _editSelectedArea?.areaId,
     );
 
@@ -2837,6 +2841,13 @@ class _SettingsTabState extends State<_SettingsTab> {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 16),
+          _formField(
+            _maxCapacityCtrl,
+            'Total Restaurant Capacity (Total people allowed)',
+            Icons.groups_rounded,
+            type: TextInputType.number,
           ),
         ],
       ),
