@@ -21,6 +21,10 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
   bool _obscurePassword = true;
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  final _nameCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _stateCtrl = TextEditingController();
+  final _cityCtrl = TextEditingController();
 
   Future<void> _submit() async {
     if (_emailCtrl.text.isEmpty || _passCtrl.text.isEmpty) {
@@ -33,7 +37,13 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
     final auth = context.read<AuthProvider>();
     bool success;
     if (_isSignUp) {
-      success = await auth.register(_emailCtrl.text.trim(), _passCtrl.text, 'customer');
+      if (_nameCtrl.text.isEmpty || _phoneCtrl.text.isEmpty || _stateCtrl.text.isEmpty || _cityCtrl.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please fill all fields for sign up'), backgroundColor: AppTheme.error),
+        );
+        return;
+      }
+      success = await auth.register(_emailCtrl.text.trim(), _passCtrl.text, 'customer', _nameCtrl.text.trim(), _phoneCtrl.text.trim(), _stateCtrl.text.trim(), _cityCtrl.text.trim());
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Registration successful! Please login.'), backgroundColor: AppTheme.primary),
@@ -114,6 +124,56 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   ),
                 ),
+                if (_isSignUp) ...[
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _nameCtrl,
+                    style: GoogleFonts.outfit(color: AppTheme.textPrimary),
+                    decoration: InputDecoration(
+                      labelText: 'Full Name',
+                      prefixIcon: const Icon(Icons.person_outline, color: Colors.grey),
+                      filled: true,
+                      fillColor: AppTheme.surface.withOpacity(0.9),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _phoneCtrl,
+                    style: GoogleFonts.outfit(color: AppTheme.textPrimary),
+                    decoration: InputDecoration(
+                      labelText: 'Phone Number',
+                      prefixIcon: const Icon(Icons.phone_outlined, color: Colors.grey),
+                      filled: true,
+                      fillColor: AppTheme.surface.withOpacity(0.9),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _stateCtrl,
+                    style: GoogleFonts.outfit(color: AppTheme.textPrimary),
+                    decoration: InputDecoration(
+                      labelText: 'State',
+                      prefixIcon: const Icon(Icons.map_outlined, color: Colors.grey),
+                      filled: true,
+                      fillColor: AppTheme.surface.withOpacity(0.9),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _cityCtrl,
+                    style: GoogleFonts.outfit(color: AppTheme.textPrimary),
+                    decoration: InputDecoration(
+                      labelText: 'City',
+                      prefixIcon: const Icon(Icons.location_city_outlined, color: Colors.grey),
+                      filled: true,
+                      fillColor: AppTheme.surface.withOpacity(0.9),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 24),
   
                 ElevatedButton(

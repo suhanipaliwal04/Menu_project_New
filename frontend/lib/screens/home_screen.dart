@@ -52,9 +52,16 @@ class _HomeScreenState extends State<HomeScreen> {
       // This silent ping runs in background so the server is ready
       // by the time the user makes their first real request.
       ApiService().healthCheck().catchError((_) => false);
+      final authProvider = context.read<AuthProvider>();
+      if (authProvider.city != null && authProvider.city!.isNotEmpty) {
+        setState(() {
+          _selectedCity = authProvider.city!;
+        });
+      }
+      
       final provider = context.read<BrowseProvider>();
       provider.loadRestaurants(orderType: _selectedTab);
-      provider.loadAreas();
+      provider.loadAreas(city: _selectedCity);
       context.read<CartProvider>().setOrderType(_selectedTab);
     });
   }

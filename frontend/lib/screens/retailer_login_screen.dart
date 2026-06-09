@@ -18,6 +18,10 @@ class RetailerLoginScreen extends StatefulWidget {
 class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  final _nameCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _stateCtrl = TextEditingController();
+  final _cityCtrl = TextEditingController();
   bool _obscurePassword = true;
   bool _isSignUp = false;
 
@@ -46,7 +50,17 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
     }
 
     if (_isSignUp) {
-      final success = await authProvider.register(email, pass, 'restaurant-admin');
+      if (_nameCtrl.text.isEmpty || _phoneCtrl.text.isEmpty || _stateCtrl.text.isEmpty || _cityCtrl.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please fill all fields for sign up', style: GoogleFonts.outfit()),
+            backgroundColor: AppTheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+      final success = await authProvider.register(email, pass, 'restaurant-admin', _nameCtrl.text.trim(), _phoneCtrl.text.trim(), _stateCtrl.text.trim(), _cityCtrl.text.trim());
       if (!mounted) return;
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -145,6 +159,38 @@ class _RetailerLoginScreenState extends State<RetailerLoginScreen> {
 
               // Password Field
               _buildPasswordField(delay: 500),
+
+              if (_isSignUp) ...[
+                const SizedBox(height: 16),
+                _buildInputField(
+                  controller: _nameCtrl,
+                  icon: Icons.person_rounded,
+                  hint: 'Full Name',
+                  delay: 510,
+                ),
+                const SizedBox(height: 16),
+                _buildInputField(
+                  controller: _phoneCtrl,
+                  icon: Icons.phone_rounded,
+                  hint: 'Phone Number',
+                  keyboardType: TextInputType.phone,
+                  delay: 520,
+                ),
+                const SizedBox(height: 16),
+                _buildInputField(
+                  controller: _stateCtrl,
+                  icon: Icons.map_rounded,
+                  hint: 'State',
+                  delay: 530,
+                ),
+                const SizedBox(height: 16),
+                _buildInputField(
+                  controller: _cityCtrl,
+                  icon: Icons.location_city_rounded,
+                  hint: 'City',
+                  delay: 540,
+                ),
+              ],
 
               const SizedBox(height: 40),
 

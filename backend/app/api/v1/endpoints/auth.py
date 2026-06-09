@@ -25,6 +25,10 @@ router = APIRouter()
 class RegisterRequest(BaseModel):
     email: str
     password: str
+    full_name: str
+    phone_number: str
+    state: str
+    city: str
 
 
 class LoginRequest(BaseModel):
@@ -107,7 +111,11 @@ async def register(
             user_id=uuid.UUID(user_id),
             email=body.email,
             role=db_role,
-            is_approved=is_approved
+            is_approved=is_approved,
+            full_name=body.full_name,
+            phone_number=body.phone_number,
+            state=body.state,
+            city=body.city
         )
         db.add(new_user)
         try:
@@ -218,12 +226,19 @@ def get_me(
     restaurant = db.query(Restaurant).filter(
         Restaurant.owner_id == current_user
     ).first()
+    
+    local_user = db.query(User).filter(User.user_id == current_user).first()
 
     with open("debug.log", "a") as f:
         f.write(f"GET ME CALLED! current_user: {current_user}, restaurant: {restaurant.restaurant_id if restaurant else None}\n")
 
     return UserInfo(
         user_id=current_user,
+        email=local_user.email if local_user else None,
+        full_name=local_user.full_name if local_user else None,
+        phone_number=local_user.phone_number if local_user else None,
+        state=local_user.state if local_user else None,
+        city=local_user.city if local_user else None,
         restaurant_id=restaurant.restaurant_id if restaurant else None,
         restaurant_name=restaurant.restaurant_name if restaurant else None,
     )

@@ -12,5 +12,8 @@ class UserInfo(BaseModel):
     user_id: uuid.UUID
     email: Optional[str] = None
     full_name: Optional[str] = None
+    phone_number: Optional[str] = None
+    state: Optional[str] = None
+    city: Optional[str] = None
     restaurant_id: Optional[uuid.UUID] = None
     restaurant_name: Optional[str] = None
