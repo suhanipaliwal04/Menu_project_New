@@ -11,6 +11,7 @@ from typing import Dict, List, Any
 from pathlib import Path
 
 from app.core.config import settings
+from app.services.nlp.category_classifier import CATEGORY_DESCRIPTIONS
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +43,8 @@ class VisionLLMExtractor:
             
             base64_image = self._encode_image(image_path)
             
+            allowed_cats = ", ".join(CATEGORY_DESCRIPTIONS.keys())
+            
             prompt = f"""You are a strict data extractor for a restaurant menu digitizer.
 Below is an image of a menu for the restaurant '{restaurant_name}'.
 
@@ -67,6 +70,11 @@ CRITICAL RULES:
 3. Do not mistake UI elements (like battery percentage 77) as menu items. Only extract real menu content.
 4. Return ONLY the raw JSON array.
 5. "health_score" MUST be an integer between 1 and 10 (10 = healthiest). Use your best judgment based on ingredients (e.g. salads = 8-10, fried food/desserts = 1-4).
+6. "section_name" MUST be chosen ONLY from the Permitted Categories list below. DO NOT invent categories based on menu headers. Base classification on the food's cuisine type.
+7. is_veg = false for chicken, mutton, fish, prawn, egg, meat.
+
+Permitted Categories:
+[{allowed_cats}]
 """
 
             payload = {
