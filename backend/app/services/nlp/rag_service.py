@@ -36,8 +36,8 @@ class RAGService:
         self._groq_client = None
 
     # ── Hard vs Soft filter split ──────────────────────────────────────────────
-    HARD_FILTER_KEYS = {"is_veg", "max_price", "min_price"}
-    SOFT_FILTER_KEYS = {"section_name", "min_health_score", "max_calories"}
+    HARD_FILTER_KEYS = {"is_veg", "max_price", "min_price", "min_rating", "max_calories", "min_health_score"}
+    SOFT_FILTER_KEYS = {"section_name"}
 
     # ── Public API ─────────────────────────────────────────────────────────────
 
@@ -135,10 +135,12 @@ class RAGService:
             hint_lines.append(f"- MUST be strictly over ₹{filters['min_price']}")
         if filters.get("section_name"):
             hint_lines.append(f"- Prefer {filters['section_name']} items")
-        if filters.get("min_health_score"):
-            hint_lines.append(f"- Prefer health score >= {filters['min_health_score']}/10")
-        if filters.get("max_calories"):
-            hint_lines.append(f"- Prefer items <= {filters['max_calories']} kcal")
+        if filters.get("min_health_score") is not None:
+            hint_lines.append(f"- MUST have health score >= {filters['min_health_score']}/10")
+        if filters.get("max_calories") is not None:
+            hint_lines.append(f"- MUST be strictly <= {filters['max_calories']} kcal")
+        if filters.get("min_rating") is not None:
+            hint_lines.append(f"- MUST be from a restaurant with avg rating >= {filters['min_rating']} stars")
         if filters.get("exclude_keywords"):
             hint_lines.append(f"- MUST EXCLUDE items containing: {', '.join(filters['exclude_keywords'])}")
 

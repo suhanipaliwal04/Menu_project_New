@@ -91,6 +91,7 @@ class FiltersUsed {
   final int? minPrice;
   final int? maxCalories;
   final int? minHealthScore;
+  final double? minRating;
   final String? sectionName;
   final String semanticQuery;
 
@@ -100,6 +101,7 @@ class FiltersUsed {
     this.minPrice,
     this.maxCalories,
     this.minHealthScore,
+    this.minRating,
     this.sectionName,
     required this.semanticQuery,
   });
@@ -110,6 +112,7 @@ class FiltersUsed {
         minPrice: ChatMenuItem._parseInt(json['min_price']),
         maxCalories: ChatMenuItem._parseInt(json['max_calories']),
         minHealthScore: ChatMenuItem._parseInt(json['min_health_score']),
+        minRating: ChatMenuItem._parseDouble(json['min_rating']),
         sectionName: json['section_name']?.toString(),
         semanticQuery: json['semantic_query']?.toString() ?? '',
       );
@@ -122,6 +125,7 @@ class FiltersUsed {
     if (minPrice != null) f.add('Over ₹$minPrice');
     if (minHealthScore != null) f.add('Health ≥ $minHealthScore/10');
     if (maxCalories != null) f.add('Max ${maxCalories}kcal');
+    if (minRating != null) f.add('Over $minRating⭐');
     if (sectionName != null) f.add(sectionName!);
     return f;
   }
