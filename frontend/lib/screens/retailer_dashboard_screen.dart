@@ -1629,6 +1629,7 @@ class _EditItemSheetState extends State<_EditItemSheet> {
   late TextEditingController _priceCtrl;
   late TextEditingController _descCtrl;
   late TextEditingController _calCtrl;
+  late TextEditingController _healthScoreCtrl;
   late bool _isVeg;
   late bool _isAvailable;
   bool _loading = false;
@@ -1643,6 +1644,8 @@ class _EditItemSheetState extends State<_EditItemSheet> {
         TextEditingController(text: widget.item.description ?? '');
     _calCtrl = TextEditingController(
         text: widget.item.calories?.toString() ?? '');
+    _healthScoreCtrl = TextEditingController(
+        text: widget.item.healthScore?.toString() ?? '');
     _isVeg = widget.item.isVeg;
     _isAvailable = widget.item.isAvailable;
   }
@@ -1653,6 +1656,7 @@ class _EditItemSheetState extends State<_EditItemSheet> {
     _priceCtrl.dispose();
     _descCtrl.dispose();
     _calCtrl.dispose();
+    _healthScoreCtrl.dispose();
     super.dispose();
   }
 
@@ -1675,17 +1679,28 @@ class _EditItemSheetState extends State<_EditItemSheet> {
     }
     final cal = int.tryParse(_calCtrl.text);
     if (cal != widget.item.calories) updates['calories'] = cal;
+    
+    final hsStr = _healthScoreCtrl.text.trim();
+    if (hsStr.isNotEmpty) {
+      final hs = int.tryParse(hsStr);
+      if (hs != widget.item.healthScore) updates['health_score'] = hs;
+    } else if (widget.item.healthScore != null) {
+      // If it was cleared, but the API doesn't support clearing, we might skip or send null
+      // We will skip clearing for now as health_score is usually not completely cleared
+    }
 
     if (updates.isNotEmpty) {
       final ok = await context
           .read<RetailerProvider>()
           .updateMenuItem(widget.item.itemId, updates);
       setState(() => _loading = false);
-      if (ok && mounted) {
+      if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Item updated!', style: GoogleFonts.outfit()),
-          backgroundColor: AppTheme.success,
+          content: Text(
+              ok ? 'Item updated!' : context.read<RetailerProvider>().errorMessage ?? 'Update failed',
+              style: GoogleFonts.outfit()),
+          backgroundColor: ok ? AppTheme.success : AppTheme.error,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12)),
@@ -1735,8 +1750,8 @@ class _EditItemSheetState extends State<_EditItemSheet> {
                     type: TextInputType.number)),
             const SizedBox(width: 10),
             Expanded(
-                child: _field(_calCtrl, 'Calories',
-                    Icons.local_fire_department_rounded,
+                child: _field(_healthScoreCtrl, 'Health (1-10)',
+                    Icons.monitor_heart_rounded,
                     type: TextInputType.number)),
           ]),
           const SizedBox(height: 10),
