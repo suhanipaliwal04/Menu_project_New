@@ -514,6 +514,17 @@ class ApiService {
     return data as Map<String, dynamic>;
   }
 
+  /// GET /system-admin/restaurants
+  Future<List<Map<String, dynamic>>> getSystemAdminRestaurants() async {
+    final data = await _get('/system-admin/restaurants', auth: true);
+    return (data as List).cast<Map<String, dynamic>>();
+  }
+
+  /// DELETE /system-admin/restaurants/{restaurant_id}
+  Future<void> deleteSystemAdminRestaurant(String restaurantId) async {
+    await _deleteReq('/system-admin/restaurants/$restaurantId');
+  }
+
   // ── Admin Menu Items ─────────────────────────────────────────────────────────
 
   /// GET /admin/restaurants/{id}/items — All menu items for admin (with optional filters).

@@ -213,7 +213,8 @@ class AdminProvider extends ChangeNotifier {
     _setState(AdminState.loading);
     _errorMessage = null;
     try {
-      _restaurants = await _api.getRestaurants();
+      final data = await _api.getSystemAdminRestaurants();
+      _restaurants = data.map((e) => RestaurantModel.fromJson(e)).toList();
       _setState(AdminState.success);
     } on ApiException catch (e) {
       _errorMessage = e.message;
@@ -247,6 +248,30 @@ class AdminProvider extends ChangeNotifier {
       return false;
     } catch (e) {
       _errorMessage = 'Failed to create restaurant';
+      _setState(AdminState.error);
+      return false;
+    }
+  }
+
+  Future<bool> deleteRestaurant(String restaurantId) async {
+    _setState(AdminState.loading);
+    _errorMessage = null;
+    try {
+      await _api.deleteSystemAdminRestaurant(restaurantId);
+      _restaurants.removeWhere((r) => r.restaurantId == restaurantId);
+      if (_selectedRestaurant?.restaurantId == restaurantId) {
+        _selectedRestaurant = null;
+        _dashboardStats = null;
+        _menuItems = [];
+      }
+      _setState(AdminState.success);
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.message;
+      _setState(AdminState.error);
+      return false;
+    } catch (e) {
+      _errorMessage = 'Failed to delete restaurant';
       _setState(AdminState.error);
       return false;
     }

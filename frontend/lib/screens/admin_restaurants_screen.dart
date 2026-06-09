@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../core/theme.dart';
 import '../providers/admin_provider.dart';
 import '../models/area_model.dart';
+import '../models/restaurant_model.dart';
 
 class AdminRestaurantsScreen extends StatefulWidget {
   const AdminRestaurantsScreen({super.key});
@@ -35,6 +36,42 @@ class _AdminRestaurantsScreenState extends State<AdminRestaurantsScreen> {
       builder: (ctx) => const _AddRestaurantBottomSheet(),
     );
   }
+
+  void _confirmDelete(BuildContext context, RestaurantModel restaurant) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: Text('Delete Restaurant', style: GoogleFonts.outfit(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
+        content: Text('Are you sure you want to completely delete "${restaurant.restaurantName}"? This will permanently remove all associated menus, sections, and items.',
+            style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel', style: GoogleFonts.outfit(color: AppTheme.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final provider = context.read<AdminProvider>();
+              final success = await provider.deleteRestaurant(restaurant.restaurantId);
+              if (success && mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Restaurant deleted successfully'), backgroundColor: AppTheme.success),
+                );
+              } else if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(provider.errorMessage ?? 'Failed to delete'), backgroundColor: AppTheme.error),
+                );
+              }
+            },
+            child: Text('Delete', style: GoogleFonts.outfit(color: AppTheme.error, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -107,6 +144,12 @@ class _AdminRestaurantsScreenState extends State<AdminRestaurantsScreen> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(r.isActive ? 'Active' : 'Offline', style: GoogleFonts.outfit(fontSize: 10, color: r.isActive ? AppTheme.success : AppTheme.error, fontWeight: FontWeight.bold)),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline_rounded, color: AppTheme.error),
+                        onPressed: () => _confirmDelete(context, r),
+                        tooltip: 'Delete Restaurant',
                       ),
                     ],
                   ),
