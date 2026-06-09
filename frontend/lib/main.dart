@@ -65,36 +65,83 @@ class MenuIntelligenceApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         builder: (context, child) {
           final mediaQueryData = MediaQuery.of(context);
-          return MediaQuery(
-            data: mediaQueryData.copyWith(textScaler: const TextScaler.linear(1.0)),
-            child: Consumer<AuthProvider>(
-              builder: (ctx, auth, _) {
-                String bgPath = 'assets/images/eatbot_bg.png';
-                if (auth.role == 'restaurant_admin') {
-                  bgPath = 'assets/images/restaurant_bg.png';
-                } else if (auth.role == 'system_admin') {
-                  bgPath = 'assets/images/admin_bg.png';
-                }
+          final bool isMobile = mediaQueryData.size.width < 600;
 
-                return Container(
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage(bgPath),
-                      fit: BoxFit.cover,
-                      colorFilter: const ColorFilter.mode(Colors.white70, BlendMode.lighten),
-                      opacity: 0.40, // Increased opacity slightly as requested
-                    ),
+          if (isMobile) {
+            // Force optical scaling so layout matches exactly 100% proportion of a 411px wide device
+            final double designWidth = 411.0; 
+            final double scale = mediaQueryData.size.width / designWidth;
+            final double scaledHeight = mediaQueryData.size.height / scale;
+
+            return FittedBox(
+              fit: BoxFit.fitWidth,
+              alignment: Alignment.topCenter,
+              child: SizedBox(
+                width: designWidth,
+                height: scaledHeight,
+                child: MediaQuery(
+                  data: mediaQueryData.copyWith(
+                    size: Size(designWidth, scaledHeight),
+                    textScaler: const TextScaler.linear(1.0),
                   ),
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 480),
-                      child: child,
-                    ),
+                  child: Consumer<AuthProvider>(
+                    builder: (ctx, auth, _) {
+                      String bgPath = 'assets/images/eatbot_bg.png';
+                      if (auth.role == 'restaurant_admin') {
+                        bgPath = 'assets/images/restaurant_bg.png';
+                      } else if (auth.role == 'system_admin') {
+                        bgPath = 'assets/images/admin_bg.png';
+                      }
+
+                      return Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage(bgPath),
+                            fit: BoxFit.cover,
+                            colorFilter: const ColorFilter.mode(Colors.white70, BlendMode.lighten),
+                            opacity: 0.40,
+                          ),
+                        ),
+                        child: child,
+                      );
+                    },
                   ),
-                );
-              },
-            ),
-          );
+                ),
+              ),
+            );
+          } else {
+            // Laptop / Web Behavior
+            return MediaQuery(
+              data: mediaQueryData.copyWith(textScaler: const TextScaler.linear(1.0)),
+              child: Consumer<AuthProvider>(
+                builder: (ctx, auth, _) {
+                  String bgPath = 'assets/images/eatbot_bg.png';
+                  if (auth.role == 'restaurant_admin') {
+                    bgPath = 'assets/images/restaurant_bg.png';
+                  } else if (auth.role == 'system_admin') {
+                    bgPath = 'assets/images/admin_bg.png';
+                  }
+
+                  return Container(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage(bgPath),
+                        fit: BoxFit.cover,
+                        colorFilter: const ColorFilter.mode(Colors.white70, BlendMode.lighten),
+                        opacity: 0.40,
+                      ),
+                    ),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 480),
+                        child: child,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          }
         },
         home: const AuthWrapper(),
       ),
