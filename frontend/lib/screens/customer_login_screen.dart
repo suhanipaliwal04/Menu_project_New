@@ -99,7 +99,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
   
                 // Title
                 Text(
-                  _isSignUp ? 'Create an Account' : 'Welcome Back',
+                  _isSignUp ? 'Create an Account' : 'Welcome',
                   style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
                 ),
                 const SizedBox(height: 24),
