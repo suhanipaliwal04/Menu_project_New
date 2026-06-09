@@ -10,6 +10,8 @@ class ChatRequest(BaseModel):
     query: str
     area_name: Optional[str] = ""       # user's location — searches all nearby restaurants
     restaurant_id: Optional[str] = None  # optional: restrict to one restaurant
+    user_lat: Optional[float] = None
+    user_lng: Optional[float] = None
 
 
 class ChatItemResponse(BaseModel):

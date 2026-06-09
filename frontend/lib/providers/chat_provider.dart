@@ -53,6 +53,8 @@ class ChatProvider extends ChangeNotifier {
     required String query,
     required String areaName,
     String? restaurantId,
+    double? userLat,
+    double? userLng,
   }) async {
     _state = ChatState.loading;
     _errorMessage = null;
@@ -67,6 +69,8 @@ class ChatProvider extends ChangeNotifier {
         query: query,
         areaName: areaName,
         restaurantId: restaurantId,
+        userLat: userLat,
+        userLng: userLng,
       );
       _state = ChatState.success;
     } on ApiException catch (e) {

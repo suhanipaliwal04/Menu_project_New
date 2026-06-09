@@ -280,11 +280,15 @@ class ApiService {
     required String query,
     String? areaName,
     String? restaurantId,
+    double? userLat,
+    double? userLng,
   }) async {
     final data = await _post(AppConstants.chatEndpoint, {
       'query': query,
       if (areaName != null && areaName.isNotEmpty) 'area_name': areaName,
       if (restaurantId != null) 'restaurant_id': restaurantId,
+      if (userLat != null) 'user_lat': userLat,
+      if (userLng != null) 'user_lng': userLng,
     });
     return ChatResponse.fromJson(data as Map<String, dynamic>);
   }

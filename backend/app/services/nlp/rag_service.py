@@ -44,7 +44,8 @@ class RAGService:
     def chat(self,
              query:         str,
              area_name:     str = "",
-             restaurant_id: Optional[str] = None) -> Dict[str, Any]:
+             restaurant_id: Optional[str] = None,
+             restaurant_ids: Optional[List[str]] = None) -> Dict[str, Any]:
         """
         Answer a natural language food query for a given area.
         Searches across ALL restaurants in the area unless restaurant_id is given.
@@ -71,14 +72,14 @@ class RAGService:
         if filters.get("exclude_keywords"):
             search_filters["exclude_keywords"] = filters["exclude_keywords"]
 
-        restaurant_ids = [restaurant_id] if restaurant_id else None
+        final_restaurant_ids = restaurant_ids or ([restaurant_id] if restaurant_id else None)
 
         svc = get_embedding_service()
         items = svc.hybrid_search(
             query=query,
             filters=search_filters,
             top_k=self.top_k,
-            restaurant_ids=restaurant_ids,
+            restaurant_ids=final_restaurant_ids,
             area_name=area_name or None,
         )
 

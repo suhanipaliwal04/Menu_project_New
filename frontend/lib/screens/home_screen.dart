@@ -45,6 +45,8 @@ class _HomeScreenState extends State<HomeScreen> {
   String _selectedCity = 'Nagpur';
   String _selectedArea = 'Select Area';
   String? _selectedAreaId;
+  double? _userLat;
+  double? _userLng;
   final TextEditingController _customLatCtrl = TextEditingController();
   final TextEditingController _customLngCtrl = TextEditingController();
   bool _isManualLocationExpanded = false;
@@ -410,7 +412,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _search() {
     final query = _queryCtrl.text.trim();
-    final area = _areaCtrl.text.trim();
+    // Pass the actual selected Area to ChatProvider.
+    // If it's a manual Area string, pass that.
+    // Otherwise, if using coordinates, pass empty string or descriptive name, but rely on userLat/userLng.
+    final area = _selectedAreaId != null ? _selectedArea : (_userLat != null ? '' : _selectedArea);
 
     if (query.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -424,7 +429,12 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final provider = context.read<ChatProvider>();
-    provider.search(query: query, areaName: area);
+    provider.search(
+      query: query,
+      areaName: area,
+      userLat: _userLat,
+      userLng: _userLng,
+    );
 
     Navigator.push(
       context,
@@ -491,13 +501,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       _selectedArea = 'Current Location';
                       _selectedCity = 'Within 2km';
                       _selectedAreaId = null;
+                      _userLat = pos.latitude;
+                      _userLng = pos.longitude;
                     });
                     if (context.mounted) {
                       Navigator.pop(context);
                       context.read<BrowseProvider>().loadRestaurants(
                         orderType: _selectedTab,
-                        userLat: pos.latitude,
-                        userLng: pos.longitude,
+                        userLat: _userLat,
+                        userLng: _userLng,
+
                       );
                     }
                   }
@@ -564,12 +577,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               _selectedArea = 'Custom Coordinates';
                               _selectedCity = 'Within 2km';
                               _selectedAreaId = null;
+                              _userLat = lat;
+                              _userLng = lng;
                             });
                             Navigator.pop(ctx);
                             context.read<BrowseProvider>().loadRestaurants(
                               orderType: _selectedTab,
-                              userLat: lat,
-                              userLng: lng,
+                              userLat: _userLat,
+                              userLng: _userLng,
                             );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
