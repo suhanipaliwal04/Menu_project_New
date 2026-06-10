@@ -154,14 +154,21 @@ class EmbeddingService:
         api_url = f"https://api-inference.huggingface.co/pipeline/feature-extraction/{settings.EMBEDDING_MODEL}"
         headers = {"Authorization": f"Bearer {hf_token}"}
         
-        response = requests.post(
-            api_url, 
-            headers=headers, 
-            json={"inputs": texts, "options": {"wait_for_model": True}}
-        )
-        
-        if response.status_code != 200:
-            logger.error(f"HuggingFace API Error: {response.text}. Falling back to local PyTorch model.")
+        try:
+            # Added a 10 second timeout so it doesn't hang the FastAPI worker indefinitely
+            response = requests.post(
+                api_url, 
+                headers=headers, 
+                json={"inputs": texts, "options": {"wait_for_model": True}},
+                timeout=10
+            )
+            
+            if response.status_code != 200:
+                logger.error(f"HuggingFace API Error ({response.status_code}): {response.text}. Falling back to local PyTorch model.")
+                return self.generate_embeddings(texts)
+                
+        except Exception as e:
+            logger.error(f"HuggingFace API Request Failed: {e}. Falling back to local PyTorch model.")
             return self.generate_embeddings(texts)
             
         embeddings = response.json()
