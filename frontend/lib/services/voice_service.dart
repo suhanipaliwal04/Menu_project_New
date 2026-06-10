@@ -49,6 +49,11 @@ class VoiceService {
 
   /// Returns true if mic permission is granted (or just granted).
   Future<bool> requestMicPermission() async {
+    if (kIsWeb) {
+      // On web, permission_handler often fails to prompt properly.
+      // speech_to_text's initialize() handles the browser prompt natively.
+      return true;
+    }
     final status = await Permission.microphone.request();
     return status == PermissionStatus.granted;
   }
