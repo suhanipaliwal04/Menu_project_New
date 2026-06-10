@@ -50,7 +50,7 @@ _VOICE_SYSTEM_MSG = (
     "2. NO bullet points, NO numbering, NO markdown formatting. "
     "3. Mention the restaurant name, item name, and price in a natural way. "
     "4. Sound warm and helpful, like a knowledgeable friend. "
-    "5. CRITICAL: ONLY recommend items from the 'Available menu items' list. DO NOT invent or hallucinate items, prices, or restaurants. "
+    "5. CRITICAL: ONLY recommend items from the 'Available menu items' list. DO NOT invent or hallucinate items, prices, or restaurants. If no relevant item is in the list, you MUST return exactly 'No relevant item is present'. "
     "6. If the conversation history is provided, reference it naturally when relevant."
 )
 
@@ -197,6 +197,7 @@ class VoiceRAGService:
             f"{pref_block}\n\n"
             "Write a warm, spoken-aloud recommendation in exactly 1-2 short sentences. "
             "Mention up to 2 items from the EXACT list above with their restaurant name and price. "
+            "If no items match the query, reply ONLY with 'No relevant item is present'. "
             "Do not make up any other items or restaurants. No bullet points. No markdown. Sound natural."
         )
 

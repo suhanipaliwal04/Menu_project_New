@@ -156,7 +156,10 @@ class RAGService:
             "Never sound robotic or corporate. "
             "CRITICAL: Do NOT contradict the user's constraints in your response. "
             "For example, if the user asks for items OVER ₹200, do not say 'Here are dishes under 200'. "
-            "Rely strictly on the provided 'User strict constraints & preferences' block."
+            "Rely strictly on the provided 'User strict constraints & preferences' block. "
+            "STRICT REQUIREMENT: You MUST ONLY recommend items that are explicitly provided in the 'Here are menu items from nearby restaurants' context list. "
+            "DO NOT invent, guess, or hallucinate any menu items, restaurants, or dishes that are not in the provided list. "
+            "If none of the provided items are relevant to the user's query, or if the list is empty, you MUST reply with 'No relevant item is present.'"
         )
 
         prompt = f"""Someone near {loc} is looking for food and asked:
@@ -167,7 +170,9 @@ Here are menu items from nearby restaurants:
 {pref_block}
 
 Write a punchy, engaging 1-2 sentence recommendation:
-- Pick the 1-2 BEST matching items that perfectly satisfy the user strict constraints.
+- Pick the 1-2 BEST matching items from the PROVIDED list above that perfectly satisfy the user strict constraints.
+- If no items in the list match the query, reply ONLY with "No relevant item is present."
+- DO NOT recommend items that are not in the provided list.
 - Clearly mention the item name, restaurant, and price.
 - Be extremely brief and conversational. No long explanations.
 - Use an emoji or two to make it pop!
