@@ -504,13 +504,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       _userLat = pos.latitude;
                       _userLng = pos.longitude;
                     });
+                    if (ctx.mounted) {
+                      Navigator.pop(ctx);
+                    }
                     if (context.mounted) {
-                      Navigator.pop(context);
                       context.read<BrowseProvider>().loadRestaurants(
                         orderType: _selectedTab,
                         userLat: _userLat,
                         userLng: _userLng,
-
                       );
                     }
                   }
