@@ -14,6 +14,7 @@ class ChatProvider extends ChangeNotifier {
   // Sorting/filtering state
   bool _vegOnly = false;
   String _sortBy = 'relevance';
+  bool _isFastMode = false;
 
   ChatState get state => _state;
   ChatResponse? get response => _response;
@@ -22,6 +23,7 @@ class ChatProvider extends ChangeNotifier {
   String get lastArea => _lastArea;
   bool get vegOnly => _vegOnly;
   String get sortBy => _sortBy;
+  bool get isFastMode => _isFastMode;
 
   List<ChatMenuItem> get displayItems {
     if (_response == null) return [];
@@ -71,6 +73,7 @@ class ChatProvider extends ChangeNotifier {
         restaurantId: restaurantId,
         userLat: userLat,
         userLng: userLng,
+        isFast: _isFastMode,
       );
       _state = ChatState.success;
     } on ApiException catch (e) {
@@ -92,6 +95,11 @@ class ChatProvider extends ChangeNotifier {
 
   void setSortBy(String value) {
     _sortBy = value;
+    notifyListeners();
+  }
+
+  void toggleFastMode(bool value) {
+    _isFastMode = value;
     notifyListeners();
   }
 

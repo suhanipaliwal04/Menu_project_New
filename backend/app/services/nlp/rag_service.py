@@ -45,7 +45,8 @@ class RAGService:
              query:         str,
              area_name:     str = "",
              restaurant_id: Optional[str] = None,
-             restaurant_ids: Optional[List[str]] = None) -> Dict[str, Any]:
+             restaurant_ids: Optional[List[str]] = None,
+             is_fast:       bool = False) -> Dict[str, Any]:
         """
         Answer a natural language food query for a given area.
         Searches across ALL restaurants in the area unless restaurant_id is given.
@@ -81,6 +82,7 @@ class RAGService:
             top_k=self.top_k,
             restaurant_ids=final_restaurant_ids,
             area_name=area_name or None,
+            is_fast=is_fast,
         )
 
         if not items:

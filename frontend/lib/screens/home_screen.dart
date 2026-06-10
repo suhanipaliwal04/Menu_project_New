@@ -1184,6 +1184,30 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 12),
+            Consumer<ChatProvider>(
+              builder: (context, chatProv, _) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text('⚡ Fast Query (Cloud)', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.primary)),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      height: 24,
+                      child: Switch(
+                        value: chatProv.isFastMode,
+                        onChanged: (val) {
+                          chatProv.toggleFastMode(val);
+                        },
+                        activeColor: AppTheme.primary,
+                        inactiveThumbColor: AppTheme.textMuted,
+                        inactiveTrackColor: AppTheme.divider,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
           ],
         ),
       ),

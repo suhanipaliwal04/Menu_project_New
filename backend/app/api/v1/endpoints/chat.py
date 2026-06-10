@@ -67,7 +67,8 @@ async def chat(req: ChatRequest, db: Session = Depends(get_db)):
         query=req.query,
         area_name=area_name,
         restaurant_id=rest_id,
-        restaurant_ids=restaurant_ids
+        restaurant_ids=restaurant_ids,
+        is_fast=req.is_fast
     )
 
     return ChatResponse(**result)
