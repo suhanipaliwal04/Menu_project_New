@@ -184,7 +184,7 @@ Write a punchy, engaging 1-2 sentence recommendation:
                 return self._fallback_answer(query, items)
 
             response = client.chat.completions.create(
-                model="llama-3.1-8b-instant",  # Groq's fast llama3 model
+                model="llama-3.3-70b-versatile",  # Groq's larger versatile llama3 model
                 messages=[
                     {"role": "system", "content": system_msg},
                     {"role": "user",   "content": prompt},
