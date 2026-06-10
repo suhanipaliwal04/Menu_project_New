@@ -12,6 +12,7 @@ class ChatRequest(BaseModel):
     restaurant_id: Optional[str] = None  # optional: restrict to one restaurant
     user_lat: Optional[float] = None
     user_lng: Optional[float] = None
+    is_fast: bool = False
 
 
 class ChatItemResponse(BaseModel):

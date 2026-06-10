@@ -275,6 +275,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     _selectedCity = authProvider.city!;
                     _selectedArea = 'Select Area';
                     _selectedAreaId = null;
+                    _userLat = null;
+                    _userLng = null;
                   });
                   final provider = context.read<BrowseProvider>();
                   provider.loadAreas(city: _selectedCity);
@@ -652,6 +654,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               _selectedArea = areaName;
                               _selectedCity = cityName;
                               _selectedAreaId = areaId;
+                              _userLat = null;
+                              _userLng = null;
                             });
                             Navigator.pop(ctx);
                             // Refresh restaurants based on selected area
@@ -1179,6 +1183,30 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: _search,
                 ),
               ),
+            ),
+            const SizedBox(height: 12),
+            Consumer<ChatProvider>(
+              builder: (context, chatProv, _) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text('⚡ Fast Query (Cloud)', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.primary)),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      height: 24,
+                      child: Switch(
+                        value: chatProv.isFastMode,
+                        onChanged: (val) {
+                          chatProv.toggleFastMode(val);
+                        },
+                        activeColor: AppTheme.primary,
+                        inactiveThumbColor: AppTheme.textMuted,
+                        inactiveTrackColor: AppTheme.divider,
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ),

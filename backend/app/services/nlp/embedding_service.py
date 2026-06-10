@@ -22,6 +22,7 @@ from typing import List, Dict, Any, Optional
 
 import numpy as np
 import psycopg2
+import requests
 from pgvector.psycopg2 import register_vector
 from sentence_transformers import SentenceTransformer
 
@@ -129,7 +130,7 @@ class EmbeddingService:
     def generate_embeddings(self,
                             texts: List[str]) -> np.ndarray:
         """
-        Batch-generate normalized embeddings.
+        Batch-generate normalized embeddings using local PyTorch model.
         Shape: (len(texts), 384)
         """
         vectors = self.model.encode(
@@ -139,6 +140,41 @@ class EmbeddingService:
             normalize_embeddings=True,   # cosine similarity → dot product
         )
         return vectors.astype(np.float32)
+
+    def generate_embeddings_api(self, texts: List[str]) -> np.ndarray:
+        """
+        Batch-generate normalized embeddings using HuggingFace Inference API.
+        Shape: (len(texts), 384)
+        """
+        hf_token = settings.HUGGINGFACE_API_KEY
+        if not hf_token:
+            logger.warning("HUGGINGFACE_API_KEY is not set. Falling back to local PyTorch model.")
+            return self.generate_embeddings(texts)
+            
+        api_url = f"https://api-inference.huggingface.co/pipeline/feature-extraction/{settings.EMBEDDING_MODEL}"
+        headers = {"Authorization": f"Bearer {hf_token}"}
+        
+        response = requests.post(
+            api_url, 
+            headers=headers, 
+            json={"inputs": texts, "options": {"wait_for_model": True}}
+        )
+        
+        if response.status_code != 200:
+            logger.error(f"HuggingFace API Error: {response.text}. Falling back to local PyTorch model.")
+            return self.generate_embeddings(texts)
+            
+        embeddings = response.json()
+        vecs = np.array(embeddings, dtype=np.float32)
+        
+        # Normalize embeddings exactly like sentence-transformers local model does
+        # so they match perfectly with Supabase's stored vectors
+        norms = np.linalg.norm(vecs, axis=1, keepdims=True)
+        # Avoid division by zero
+        norms = np.where(norms == 0, 1e-10, norms)
+        vecs = vecs / norms
+        
+        return vecs
 
     # ── Store ─────────────────────────────────────────────────────────────────
 
@@ -262,7 +298,8 @@ class EmbeddingService:
     def search(self,
                query: str,
                top_k: int = 10,
-               restaurant_ids: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+               restaurant_ids: Optional[List[str]] = None,
+               is_fast: bool = False) -> List[Dict[str, Any]]:
         """
         Embed a natural-language query and return the top-k most similar
         menu items using pgvector cosine similarity (<=>).
@@ -275,7 +312,10 @@ class EmbeddingService:
         Returns:
             List of dicts: { id, restaurant_id, section_name, item_name, price, similarity }
         """
-        query_vector = self.generate_embeddings([query])[0]
+        if is_fast:
+            query_vector = self.generate_embeddings_api([query])[0]
+        else:
+            query_vector = self.generate_embeddings([query])[0]
 
         conn = self._get_conn()
         with conn.cursor() as cur:
@@ -324,7 +364,8 @@ class EmbeddingService:
                       filters: Dict[str, Any],
                       top_k: int = 8,
                       restaurant_ids: Optional[List[str]] = None,
-                      area_name: Optional[str] = None) -> List[Dict[str, Any]]:
+                      area_name: Optional[str] = None,
+                      is_fast: bool = False) -> List[Dict[str, Any]]:
         """
         Semantic search combined with SQL column filters in one query.
         JOINs with restaurants + areas to support area-based multi-restaurant search.
@@ -340,7 +381,10 @@ class EmbeddingService:
             List of dicts with item details + restaurant_name + similarity score
         """
         semantic_q = filters.get("semantic_query") or query
-        query_vector = self.generate_embeddings([semantic_q])[0]
+        if is_fast:
+            query_vector = self.generate_embeddings_api([semantic_q])[0]
+        else:
+            query_vector = self.generate_embeddings([semantic_q])[0]
 
         # ── Build WHERE clauses dynamically ──────────────────────────────────
         where_clauses = []
